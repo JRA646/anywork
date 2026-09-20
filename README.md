@@ -1,28 +1,56 @@
 # ANYwork Services
 
-A responsive customer + operations web app for ANYwork Services.
-
-## Positioning
 **Print. Build. Install. Maintain.**  
 *Literally any work.*
 
-## Included
-- Public customer-facing homepage
-- Service categories: Print, Build, Install, Maintain, Site, Custom
-- Customer quote request wizard
-- Photo upload UI and job details
-- Customer jobs, quotes and messages
-- Job status tracking
-- Customer-friendly quote approval flow
-- Admin operations dashboard
-- Jobs, quotes, customers, schedule, projects, invoices and messages navigation
-- Responsive mobile layout
-- ANYwork visual direction: black, white, warm orange accent, industrial/professional styling
+This branch contains the recommended ANYwork customer and operations web app concept.
+
+## Customer experience
+- Public homepage with clear **Request a Quote** CTA
+- Service discovery: Print, Build, Install, Maintain, Site, Custom
+- Service detail cards with descriptions and service lists
+- Quote request wizard:
+  - service selection
+  - job description
+  - preferred date and location
+  - photo/reference upload UI
+  - contact details
+  - confirmation/request number
+- Customer portal:
+  - My Jobs
+  - job detail and timeline
+  - progress tracking
+  - quote review
+  - quote approval / request changes
+  - job photos
+  - messages
+  - profile and saved address
+- Portfolio/project showcase
+- Responsive mobile navigation
+
+## Operations
+- Dashboard
+- Jobs
+- Quotes
+- Customers
+- Schedule
+- Projects
+- Invoices
+- Messages
+- Job pipeline
+- Daily schedule
+- Recent requests
+- Customer/job/quote/invoice workspaces
+
+## UX principle
+Customers do not need to understand internal operations. They should always know:
+**what they requested → what ANYwork quoted → what happens next → when the work is scheduled → whether it is in progress → when it is complete → invoice/review.**
 
 ## Run
 ```bash
 npm install
 npm run dev
+npm run build
 ```
 
-This first implementation uses local mock data and UI flows. Backend persistence, authentication, real uploads, payments, notifications and database integration can be added next.
+The current branch is a frontend prototype with local/mock data. Production persistence, authentication, real file uploads, notifications, payments, and database APIs are intentionally separated as the next integration layer.

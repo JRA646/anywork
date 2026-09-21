@@ -25,6 +25,7 @@ import { HelpCenterPage } from '../pages/HelpCenterPage'
 import { GuestRequestPage } from '../pages/GuestRequestPage'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
+import { BrandLogo } from '../components/BrandLogo'
 import '../styles/modern.css'
 import '../styles/polish.css'
 import '../styles/providers-public.css'
@@ -339,7 +340,7 @@ function PublicHeader({
     <header className="publicHeader">
       <div className="container publicHeaderInner">
         <button className="brandButton brandButtonLogo" onClick={() => onNavigate('/')} aria-label="ANYwork home">
-          <img className="headerBrandImage" src="/anywork.png" alt="ANYwork Services" />
+          <BrandLogo variant="header" />
         </button>
         <nav className="publicNav">
           <button className={active === 'services' ? 'active' : ''} onClick={() => onNavigate('/services')}>Services</button>
@@ -386,7 +387,7 @@ function PublicFooter({ onNavigate, onQuote }: { onNavigate: (path: string) => v
       <div className="container footerGrid">
         <div>
           <button className="footerBrandButton" onClick={() => onNavigate('/')} aria-label="ANYwork home">
-            <img className="footerBrandImage" src="/anywork.png" alt="ANYwork Services" />
+            <BrandLogo variant="header" />
           </button>
           <p>Find the right service. Request the work. Track it to done.</p>
         </div>

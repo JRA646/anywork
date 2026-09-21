@@ -714,3 +714,33 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
   object-position:left center;
   filter:brightness(0) invert(1) drop-shadow(0 8px 18px rgba(0,0,0,.22)) !important;
 }
+
+/* Workspace sidebar branding */
+.workspaceSidebar .workspaceBrand.workspaceBrandLogo{
+  width:100%;
+  min-height:92px;
+  justify-content:center;
+  align-items:center;
+  padding:12px 8px 24px;
+  margin:0;
+}
+.workspaceSidebar .workspaceBrand.workspaceBrandLogo .brandImage-sidebar{
+  display:block;
+  width:150px;
+  height:76px;
+  object-fit:contain;
+  object-position:center;
+  filter:brightness(0) invert(1) drop-shadow(0 8px 18px rgba(0,0,0,.2)) !important;
+}
+.workspaceSidebar .workspaceBrand.workspaceBrandLogo:hover{
+  background:transparent;
+}
+@media(max-width:900px){
+  .workspaceSidebar .workspaceBrand.workspaceBrandLogo{
+    min-height:88px;
+  }
+  .workspaceSidebar .workspaceBrand.workspaceBrandLogo .brandImage-sidebar{
+    width:142px;
+    height:72px;
+  }
+}

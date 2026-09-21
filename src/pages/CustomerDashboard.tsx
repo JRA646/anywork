@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ArrowRight, CalendarDays, CircleDollarSign, Clock3, FileText, TrendingUp } from 'lucide-react'
 import { ProviderCard } from '../components/ProviderCard'
 import { StatusBadge } from '../components/StatusBadge'
@@ -124,7 +124,7 @@ function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString(undefined, { day: '2-digit', month: 'short' }) : 'Date not set'
 }
 
-function Metric({ icon, label, value, note }: { icon: React.ReactNode; label: string; value: string; note: string }) {
+function Metric({ icon, label, value, note }: { icon: ReactNode; label: string; value: string; note: string }) {
   return <div className="metricCard"><div className="metricIcon">{icon}</div><span>{label}</span><strong>{value}</strong><small>{note}</small></div>
 }
 

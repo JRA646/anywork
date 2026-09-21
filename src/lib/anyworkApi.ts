@@ -528,46 +528,34 @@ export async function createQuote(input: {
   message: string
 }) {
   const client = requireSupabase()
-  const providerId = await getCurrentUserId()
-
-  const { data, error } = await client
-    .from('anywork_quotes')
-    .insert({
-      request_id: input.requestId,
-      provider_id: providerId,
-      amount: input.amount,
-      availability: input.availability || null,
-      message: input.message,
-      status: 'Pending',
-    })
-    .select('*')
-    .single()
-
+  const { data, error } = await client.rpc('anywork_create_quote', {
+    p_request_id: input.requestId,
+    p_amount: input.amount,
+    p_availability: input.availability || null,
+    p_message: input.message,
+  })
   if (error) throw error
 
-  await client
-    .from('anywork_service_requests')
-    .update({ status: 'Quoted' })
-    .eq('id', input.requestId)
+  const quote = data as DbQuote
 
   try {
     const { data: emailData, error: emailError } = await client.functions.invoke('send-quote-email', {
-      body: { quoteId: data.id },
+      body: { quoteId: quote.id },
     })
 
     if (emailError) {
-      return { quote: data as DbQuote, emailSent: false, emailError: emailError.message }
+      return { quote, emailSent: false, emailError: emailError.message }
     }
 
     const response = emailData as { sent?: boolean; error?: string } | null
     return {
-      quote: data as DbQuote,
+      quote,
       emailSent: Boolean(response?.sent),
       emailError: response?.error,
     }
   } catch (emailError) {
     return {
-      quote: data as DbQuote,
+      quote,
       emailSent: false,
       emailError: emailError instanceof Error ? emailError.message : 'Unable to send quote email.',
     }
@@ -595,16 +583,10 @@ export async function acceptQuote(requestId: string, quoteId: string, providerId
 
 export async function updateProviderJobStatus(requestId: string, status: 'In Progress' | 'Completed') {
   const client = requireSupabase()
-  const providerId = await getCurrentUserId()
-
-  const { data, error } = await client
-    .from('anywork_service_requests')
-    .update({ status })
-    .eq('id', requestId)
-    .eq('selected_provider_id', providerId)
-    .select('*')
-    .single()
-
+  const { data, error } = await client.rpc('anywork_update_job_status', {
+    p_request_id: requestId,
+    p_status: status,
+  })
   if (error) throw error
   return data as DbRequest
 }

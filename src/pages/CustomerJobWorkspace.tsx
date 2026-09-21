@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ArrowLeft, CalendarDays, CheckCircle2, Clock3, MessageCircle, Send, Star } from 'lucide-react'
 import { StatusBadge } from '../components/StatusBadge'
 import { RequestPhotos } from '../components/RequestPhotos'
@@ -24,7 +24,7 @@ export function CustomerJobWorkspace({ requestId, onBack, onNavigate }: { reques
   const [reviewed, setReviewed] = useState(false)
   const [error, setError] = useState('')
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true); setError('')
     try {
       const dbRequest = await getRequest(requestId)
@@ -38,9 +38,9 @@ export function CustomerJobWorkspace({ requestId, onBack, onNavigate }: { reques
       if (scheduleRow?.proposed_start) setScheduleValue(new Date(scheduleRow.proposed_start).toISOString().slice(0,16))
     } catch (e) { setError(e instanceof Error ? e.message : 'Unable to load this job.') }
     finally { setLoading(false) }
-  }
+  }, [requestId])
 
-  useEffect(() => { void load() }, [requestId])
+  useEffect(() => { void load() }, [load])
 
   const providerName = provider?.company_name || provider?.display_name || [provider?.first_name, provider?.last_name].filter(Boolean).join(' ') || 'Provider'
   const status = request?.status || 'Requested'

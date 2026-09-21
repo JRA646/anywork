@@ -198,32 +198,6 @@ export async function getCurrentUserId() {
   throw new Error('Your login session is no longer available. Please sign in again.')
 }
 
-export async function listCustomerRequests() {
-  const client = requireSupabase()
-  const customerId = await getCurrentUserId()
-  const { data, error } = await client
-    .from('anywork_service_requests')
-    .select('*')
-    .eq('customer_id', customerId)
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return (data || []) as DbRequest[]
-}
-
-export async function listCustomerQuotes(requestIds?: string[]) {
-  const client = requireSupabase()
-  const customerId = await getCurrentUserId()
-  let query = client
-    .from('anywork_quotes')
-    .select('*, anywork_service_requests!inner(customer_id)')
-    .eq('anywork_service_requests.customer_id', customerId)
-    .order('created_at', { ascending: false })
-  if (requestIds?.length) query = query.in('request_id', requestIds)
-  const { data, error } = await query
-  if (error) throw error
-  return (data || []).map(({ anywork_service_requests: _request, ...quote }) => quote) as DbQuote[]
-}
-
 export async function uploadRequestPhoto(requestId: string, file: File) {
   const client = requireSupabase()
   const customerId = await getCurrentUserId()

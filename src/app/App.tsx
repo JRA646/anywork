@@ -131,7 +131,7 @@ function Application() {
       : section === 'requests'
         ? <CustomerRequestsPage onNavigate={navigate} />
         : section === 'messages'
-          ? <CustomerMessagesPage />
+          ? <CustomerMessagesPage onNavigate={navigate} />
           : section === 'profile'
             ? <ProfilePage role="customer" />
             : section === 'help'

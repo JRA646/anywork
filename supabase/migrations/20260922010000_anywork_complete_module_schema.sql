@@ -69,6 +69,10 @@ alter table public.anywork_service_requests add column if not exists selected_pr
 alter table public.anywork_service_requests add column if not exists created_at timestamptz default now();
 alter table public.anywork_service_requests add column if not exists updated_at timestamptz default now();
 
+update public.anywork_service_requests
+set request_number = private.anywork_request_number()
+where nullif(trim(request_number),'') is null;
+
 create unique index if not exists anywork_requests_number_idx on public.anywork_service_requests(request_number);
 create index if not exists anywork_requests_customer_idx on public.anywork_service_requests(customer_id, created_at desc);
 create index if not exists anywork_requests_provider_idx on public.anywork_service_requests(selected_provider_id, created_at desc);

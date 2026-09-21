@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { CheckCircle2, FileText, LifeBuoy, Plus, ShieldCheck, Trash2, WalletCards, Star } from 'lucide-react'
-import { listAdminServices, listPublicServices, type DbService, type DbRequest, submitJobReview } from '../lib/anyworkApi'
+import { listAdminServices, listPublicServices, type DbService, type DbRequest, submitJobReview, updateAdminRequestStatus } from '../lib/anyworkApi'
 import {
   createSupportTicket, deleteAddress, getProviderVerification, submitProviderReview, updateSupportTicket, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments,
   listInvoices, listPayments, listProviderAvailability, createInvoice, recordPayment, listProviderTimeOff, listReviews, listServiceFields, listSupportTickets,
@@ -138,8 +138,10 @@ async function addCheckin(requestId:string,type:string){if(!requestId)throw new 
 
 function AdminJobsPage() {
   const [rows,setRows]=useState<DbRequest[]>([])
-  useEffect(()=>{void listAdminJobs().then(setRows).catch(()=>setRows([]))},[])
-  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="OPERATIONS" title="Job management" description="Monitor scheduled, active and completed jobs."/><Panel title="Jobs" kicker="LIVE OPERATIONS">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.request_number} · {row.title}</strong><span>{row.location} · {row.preferred_date?new Date(row.preferred_date).toLocaleString():'No schedule'}</span></div><StatusBadge status={row.status}/></div>)}{!rows.length&&<Empty text="No jobs found."/>}</Panel></div>
+  const load=()=>void listAdminJobs().then(setRows).catch(()=>setRows([]))
+  useEffect(load,[])
+  const update=async(id:string,status:DbRequest['status'])=>{await updateAdminRequestStatus(id,status);load()}
+  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="OPERATIONS" title="Job management" description="Monitor scheduled, active and completed jobs and correct operational status."/><Panel title="Jobs" kicker="LIVE OPERATIONS">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.request_number} · {row.title}</strong><span>{row.location} · {row.preferred_date?new Date(row.preferred_date).toLocaleString():'No schedule'}</span></div><select value={row.status} onChange={e=>void update(row.id,e.target.value as DbRequest['status'])}><option>Scheduled</option><option>In Progress</option><option>Completed</option></select></div>)}{!rows.length&&<Empty text="No jobs found."/>}</Panel></div>
 }
 
 function AuditPage() {

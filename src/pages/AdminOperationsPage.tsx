@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Activity, ChevronRight, CircleDollarSign, FileText, Search, ShieldCheck, UsersRound } from 'lucide-react'
 import { StatusBadge } from '../components/StatusBadge'
 import {
@@ -45,8 +45,8 @@ function AdminRequestsDynamic() {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('All')
   const [busy, setBusy] = useState<string | null>(null)
-  const load = () => listAdminRequests(200).then(setRows).catch(() => setRows([]))
-  useEffect(() => { void load() }, [])
+  const load = useCallback(() => listAdminRequests(200).then(setRows).catch(() => setRows([])), [])
+  useEffect(() => { void load() }, [load])
   const filtered = useMemo(() => rows.filter((row) => (status === 'All' || row.status === status) && [row.request_number,row.title,row.location,row.service_key].join(' ').toLowerCase().includes(query.toLowerCase())), [rows,query,status])
   const statuses = ['All','Requested','Quoted','Scheduled','In Progress','Completed']
   const move = async (row: DbRequest, next: DbRequest['status']) => {
@@ -63,8 +63,8 @@ function AdminRequestsDynamic() {
 function AdminDirectory({ role }: { role: 'provider' | 'customer' }) {
   const [rows,setRows]=useState<(DbProfile & {created_at:string})[]>([])
   const [query,setQuery]=useState('')
-  const load=()=>listAdminProfiles(role,300).then(setRows).catch(()=>setRows([]))
-  useEffect(()=>{void load()},[role])
+  const load=useCallback(()=>listAdminProfiles(role,300).then(setRows).catch(()=>setRows([])),[role])
+  useEffect(()=>{void load()},[load])
   const filtered=rows.filter(row=>[row.display_name,row.first_name,row.last_name,row.company_name||'',row.city||''].join(' ').toLowerCase().includes(query.toLowerCase()))
   const toggle=async(row:DbProfile & {created_at:string})=>{const updated=await updateAdminProfile(row.user_id,{isActive:!row.is_active});setRows(current=>current.map(item=>item.user_id===row.user_id?{...item,...updated}:item))}
   return <div className="workspaceDashboard adminModern">

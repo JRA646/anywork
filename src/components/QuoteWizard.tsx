@@ -7,6 +7,8 @@ import { createServiceRequest, uploadRequestPhoto, type DbRequest } from '../lib
 import { listServiceFields, saveRequestAnswers, type ServiceField } from '../lib/productionApi'
 import { showError, showSuccess } from '../lib/alerts'
 
+const formatFieldAnswer = (value: unknown) => Array.isArray(value) ? value.map((item) => String(item)).join(', ') : String(value ?? '—')
+
 const getLocalDateTimeMin = () => {
   const now = new Date()
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
@@ -152,7 +154,7 @@ export function QuoteWizard({
     setError('')
 
     try {
-      const customDetails = serviceFields.length ? '\n\nService-specific requirements:\n' + serviceFields.map((field) => `${field.label}: ${Array.isArray(fieldAnswers[field.id]) ? fieldAnswers[field.id].join(', ') : String(fieldAnswers[field.id] ?? '—')}`).join('\n') : ''
+      const customDetails = serviceFields.length ? '\n\nService-specific requirements:\n' + serviceFields.map((field) => `${field.label}: ${formatFieldAnswer(fieldAnswers[field.id])}`).join('\n') : ''
       const created = await createServiceRequest({
         serviceKey: serviceId,
         title: title.trim(),

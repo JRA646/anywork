@@ -7,6 +7,7 @@ import type { AnyWorkProfile } from '../types/auth'
 import { AuthProvider, useAuth } from '../auth/AuthContext'
 import { PublicHome } from '../pages/PublicHome'
 import { PublicServices } from '../pages/PublicServices'
+import { PublicProviders } from '../pages/PublicProviders'
 import { ProviderProfilePage } from '../pages/ProviderProfilePage'
 import { CustomerDashboard } from '../pages/CustomerDashboard'
 import { CustomerRequestsPage } from '../pages/CustomerRequestsPage'
@@ -110,7 +111,9 @@ function Application() {
     ? <PublicHome services={services} providers={providers} onNavigate={navigate} onQuote={openQuote} />
     : path === '/services'
       ? <PublicServices services={services} providers={providers} onQuote={openQuote} onProvider={(id) => navigate('/providers/' + id)} />
-      : path === '/help'
+      : path === '/providers'
+        ? <PublicProviders services={services} providers={providers} onProvider={(id) => navigate('/providers/' + id)} />
+        : path === '/help'
         ? <HelpCenterPage />
       : path.startsWith('/providers/')
         ? <ProviderProfilePage provider={providers.find((item) => item.id === path.split('/')[2]) || providers[0]} services={services} onQuote={openQuote} />
@@ -298,7 +301,16 @@ function PublicHeader({
 }) {
   const [mobile, setMobile] = useState(false)
   const active = useMemo(
-    () => path === '/' ? 'home' : path.startsWith('/services') ? 'services' : '',
+    () =>
+      path === '/'
+        ? 'home'
+        : path.startsWith('/services')
+          ? 'services'
+          : path === '/providers' || path.startsWith('/providers/')
+            ? 'providers'
+            : path.startsWith('/customer/requests')
+              ? 'requests'
+              : '',
     [path],
   )
   const workspacePath = profile?.role ? '/' + profile.role : '/signin'
@@ -311,7 +323,9 @@ function PublicHeader({
         </button>
         <nav className="publicNav">
           <button className={active === 'services' ? 'active' : ''} onClick={() => onNavigate('/services')}>Services</button>
+          <button className={active === 'providers' ? 'active' : ''} onClick={() => onNavigate('/providers')}>Providers</button>
           <button onClick={() => onNavigate('/')}>How it works</button>
+          <button className={active === 'requests' ? 'active' : ''} onClick={() => onNavigate(profile ? '/customer/requests' : '/signin')}>My Requests</button>
         </nav>
         <div className="publicHeaderActions">
           {profile ? (
@@ -335,6 +349,9 @@ function PublicHeader({
       {mobile && (
         <div className="mobilePublicNav">
           <button onClick={() => { onNavigate('/services'); setMobile(false) }}>Services</button>
+          <button onClick={() => { onNavigate('/providers'); setMobile(false) }}>Providers</button>
+          <button onClick={() => { onNavigate('/'); setMobile(false) }}>How it works</button>
+          <button onClick={() => { onNavigate(profile ? '/customer/requests' : '/signin'); setMobile(false) }}>My Requests</button>
           <button onClick={() => { onNavigate(workspacePath); setMobile(false) }}>{profile ? 'My workspace' : 'Sign in'}</button>
           <button onClick={() => { onQuote(); setMobile(false) }}>Request a service</button>
         </div>

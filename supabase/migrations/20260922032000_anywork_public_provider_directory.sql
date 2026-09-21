@@ -71,3 +71,25 @@ $$;
 
 revoke execute on function public.anywork_list_public_providers() from public,anon;
 grant execute on function public.anywork_list_public_providers() to anon,authenticated;
+
+
+create or replace function public.anywork_list_public_provider_reviews(p_provider_id uuid)
+returns table(
+  id uuid,
+  rating integer,
+  comment text,
+  created_at timestamptz
+)
+language sql
+security definer
+set search_path=public,private
+as $$
+  select r.id,r.rating,r.comment,r.created_at
+  from public.anywork_reviews r
+  where r.provider_id=p_provider_id
+  order by r.created_at desc
+  limit 20;
+$$;
+
+revoke execute on function public.anywork_list_public_provider_reviews(uuid) from public,anon;
+grant execute on function public.anywork_list_public_provider_reviews(uuid) to anon,authenticated;

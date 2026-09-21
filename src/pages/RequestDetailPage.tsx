@@ -28,6 +28,7 @@ import {
   type DbProfile,
   type DbQuote,
   type DbRequest,
+  type DbRequestEvent,
 } from '../lib/anyworkApi'
 
 type QuoteView = DbQuote & { provider: DbProfile | null; providerMock?: typeof mockProviders[number] }
@@ -47,6 +48,7 @@ export function RequestDetailPage({
   const [dbRequest, setDbRequest] = useState<DbRequest | null>(null)
   const [dbQuotes, setDbQuotes] = useState<DbQuote[]>([])
   const [dbProfiles, setDbProfiles] = useState<DbProfile[]>([])
+  const [events, setEvents] = useState<DbRequestEvent[]>([])
   const [tab, setTab] = useState<'quotes' | 'activity'>('quotes')
   const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null)
   const [loading, setLoading] = useState(isUuid)
@@ -92,6 +94,7 @@ export function RequestDetailPage({
         setDbQuotes(rows)
         setDbProfiles(profiles)
         setSelectedQuoteId(rows.find((quote) => quote.status === 'Accepted')?.id || null)
+        setEvents(await listRequestEvents(request.id))
       } catch (loadError) {
         const message = loadError instanceof Error ? loadError.message : 'Unable to load this request.'
         setError(message)
@@ -107,6 +110,7 @@ export function RequestDetailPage({
     if (!isUuid) return
     let requestCleanup: (() => void) | undefined
     let quoteCleanup: (() => void) | undefined
+    let eventCleanup: (() => void) | undefined
 
     void subscribeToRequests((change) => {
       if (change.record?.id === requestId) setDbRequest(change.record)
@@ -128,7 +132,11 @@ export function RequestDetailPage({
       }
     }).then((dispose) => { quoteCleanup = dispose }).catch(() => undefined)
 
-    return () => { requestCleanup?.(); quoteCleanup?.() }
+    void subscribeToRequestEvents(requestId, (event) => {
+      setEvents((current) => current.some((item) => item.id === event.id) ? current : [...current, event])
+    }).then((dispose) => { eventCleanup = dispose }).catch(() => undefined)
+
+    return () => { requestCleanup?.(); quoteCleanup?.(); eventCleanup?.() }
   }, [requestId, isUuid, dbProfiles])
 
   const request = dbRequest || mockRequest
@@ -344,13 +352,24 @@ export function RequestDetailPage({
             <section className="requestActivitySection">
               <div className="requestSectionHeading"><div><span className="eyebrow">ACTIVITY</span><h2>Request history</h2></div></div>
               <div className="updatesTimeline professionalTimeline">
-                <TimelineItem title="Request submitted" detail="Your service request was created." done />
-                <TimelineItem title="Providers contacted" detail="Matching providers were notified." done={requestStatus !== 'Requested'} />
-                <TimelineItem title="Quotes received" detail={quoteViews.length + ' provider responses are available.'} done={quoteViews.length > 0} />
-                <TimelineItem title="Provider selected" detail={selectedQuote ? 'A provider has been selected for the next step.' : 'Choose a quote to move forward.'} done={Boolean(selectedQuote)} />
-                <TimelineItem title="Appointment scheduled" detail={requestDate} done={['Scheduled', 'In Progress', 'Completed'].includes(requestStatus)} />
-                <TimelineItem title="Work in progress" detail="Provider completes the requested work." done={['In Progress', 'Completed'].includes(requestStatus)} />
-                <TimelineItem title="Completed & ready for review" detail="Review the completed service when the job is finished." done={requestStatus === 'Completed'} />
+                {events.length ? events.map((event) => (
+                  <TimelineItem
+                    key={event.id}
+                    title={event.title}
+                    detail={event.detail || ''}
+                    done
+                  />
+                )) : (
+                  <>
+                    <TimelineItem title="Request submitted" detail="Your service request was created." done />
+                    <TimelineItem title="Providers contacted" detail="Matching providers were notified." done={requestStatus !== 'Requested'} />
+                    <TimelineItem title="Quotes received" detail={quoteViews.length + ' provider responses are available.'} done={quoteViews.length > 0} />
+                    <TimelineItem title="Provider selected" detail={selectedQuote ? 'A provider has been selected for the next step.' : 'Choose a quote to move forward.'} done={Boolean(selectedQuote)} />
+                    <TimelineItem title="Appointment scheduled" detail={requestDate} done={['Scheduled', 'In Progress', 'Completed'].includes(requestStatus)} />
+                    <TimelineItem title="Work in progress" detail="Provider completes the requested work." done={['In Progress', 'Completed'].includes(requestStatus)} />
+                    <TimelineItem title="Completed & ready for review" detail="Review the completed service when the job is finished." done={requestStatus === 'Completed'} />
+                  </>
+                )}
               </div>
             </section>
           )}

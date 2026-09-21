@@ -2,6 +2,31 @@
 
 ANYwork is a modern two-sided service marketplace where customers discover providers, compare quotes, schedule work, and track jobs from request to completion.
 
+## Authentication
+
+ANYwork is connected to the Supabase **project-app** project for authentication and profile data.
+
+- Customer and Provider use the public /signin flow.
+- Admin uses the direct /admin/signin route and is intentionally not shown on the public login screen.
+- Supabase Auth stores credentials in auth.users.
+- AnyWork application profile data lives in public.anywork_profiles.
+- New users receive a profile automatically from an Auth trigger.
+- Profile RLS allows users to read/update their own profile while admins can read profiles for operations.
+- The public client cannot promote itself to admin.
+
+## Naming convention
+
+AnyWork application tables use the anywork_ prefix:
+
+    anywork_profiles
+    anywork_service_requests
+    anywork_quotes
+    anywork_jobs
+    anywork_messages
+    anywork_reviews
+
+Only anywork_profiles is created in the current authentication integration. The other tables are reserved for the marketplace data migration.
+
 ## Product structure
 
 - Public marketplace: home, services, provider profiles, quote request flow
@@ -19,55 +44,48 @@ Request -> Quote -> Schedule -> In Progress -> Completed
 - TypeScript
 - Vite
 - Lucide React
+- Supabase JavaScript SDK
 - Custom browser-history router for deep-linkable routes
 - Responsive design system with reusable marketplace components
 
-## Demo access
-
-The sign-in screen provides demo role access for Customer, Provider, and Admin. Replace the demo session storage implementation in `src/app/App.tsx` with Supabase/Auth0/Clerk or your preferred authentication provider before production.
-
 ## Routes
 
-```
-/                         Public marketplace
-/services                  Service discovery
-/providers/:id             Provider profile
-/signin                    Authentication / demo role selection
+    /                         Public marketplace
+    /services                 Service discovery
+    /providers/:id            Provider profile
+    /signin                   Customer / Provider authentication
+    /admin/signin             Private operations authentication
 
-/customer                  Customer dashboard
-/customer/requests         Customer requests
-/customer/requests/:id     Request + quote comparison
-/customer/messages         Customer messages
-/customer/profile          Customer profile
+    /customer                 Customer dashboard
+    /customer/requests        Customer requests
+    /customer/requests/:id    Request + quote comparison
+    /customer/messages        Customer messages
+    /customer/profile        Customer profile
 
-/provider                  Provider dashboard
-/provider/requests         Provider request queue
-/provider/requests/:id     Provider quote response
-/provider/jobs             Provider jobs
-/provider/services         Provider service catalog
-/provider/earnings         Provider earnings
-/provider/messages         Provider messages
+    /provider                 Provider dashboard
+    /provider/requests       Provider request queue
+    /provider/requests/:id   Provider quote response
+    /provider/jobs           Provider jobs
+    /provider/services       Provider service catalog
+    /provider/earnings       Provider earnings
+    /provider/messages       Provider messages
+    /provider/profile        Provider profile
 
-/admin                     Operations dashboard
-/admin/requests            Request operations
-/admin/providers           Provider directory
-/admin/services            Service catalog
-/admin/customers           Customer management
-/admin/settings            Marketplace controls
-```
+    /admin                    Operations dashboard
+    /admin/requests           Request operations
+    /admin/providers          Provider directory
+    /admin/services           Service catalog
+    /admin/customers         Customer management
+    /admin/settings           Marketplace controls
 
 ## Local development
 
-```bash
-npm install
-npm run dev
-```
+    npm install
+    npm run dev
 
 ## Quality checks
 
-```bash
-npm run lint
-npm run build
-```
+    npm run lint
+    npm run build
 
-The current UI uses mock data from `src/data/mockData.ts`. The next backend integration should map those types to users, providers, services, service requests, quotes, appointments, messages, reviews, payments, and invoices.
+The marketplace pages still use mock data from src/data/mockData.ts; authentication and profiles now use Supabase.

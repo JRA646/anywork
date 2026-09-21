@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { AlertTriangle, CalendarDays, CheckCircle2, MapPin, RefreshCw, Search, UserCheck, Users } from 'lucide-react'
 import {
   assignProvider,
@@ -148,6 +148,6 @@ export function DispatchCenterPage() {
   )
 }
 
-function Metric({ label, value, note, icon }: { label:string; value:string; note:string; icon:React.ReactNode }) {
+function Metric({ label, value, note, icon }: { label:string; value:string; note:string; icon:ReactNode }) {
   return <div className="metricCard"><div className="metricIcon">{icon}</div><span>{label}</span><strong>{value}</strong><small>{note}</small></div>
 }

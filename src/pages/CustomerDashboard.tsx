@@ -14,7 +14,7 @@ export function CustomerDashboard({ profile, onNavigate }: { profile: AnyWorkPro
 
   return (
     <div className="workspaceDashboard">
-      <div className="workspaceWelcome">
+      <div className="workspaceWelcome experienceWelcome customerWelcome">
         <div>
           <span className="eyebrow">CUSTOMER HOME</span>
           <h1>Welcome, {name}.</h1>

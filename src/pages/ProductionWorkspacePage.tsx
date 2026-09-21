@@ -5,7 +5,7 @@ import {
   createSupportTicket, deleteAddress, getProviderVerification, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments,
   listInvoices, listPayments, listProviderAvailability, listProviderTimeOff, listReviews, listServiceFields, listSupportTickets,
   openDispute, saveAddress, saveProviderAvailability, saveProviderTimeOff, saveServiceField, submitProviderVerification, updateDispute,
-  type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes,
+  type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets,
 } from '../lib/productionApi'
 import type { AnyWorkProfile } from '../types/auth'
 import { StatusBadge } from '../components/StatusBadge'

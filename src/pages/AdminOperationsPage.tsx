@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Activity, CheckCircle2, ChevronRight, CircleDollarSign, FileText, Search, ShieldCheck, UsersRound } from 'lucide-react'
+import { Activity, ChevronRight, CircleDollarSign, FileText, Search, ShieldCheck, UsersRound } from 'lucide-react'
 import { StatusBadge } from '../components/StatusBadge'
 import {
   getAdminOverviewStats, listAdminProfiles, listAdminRequests, updateAdminProfile, updateAdminRequestStatus,

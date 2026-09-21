@@ -4,7 +4,10 @@ import { services as mockServices } from '../data/mockData'
 import type { Service } from '../types/marketplace'
 import { useAuth } from '../auth/AuthContext'
 import { createServiceRequest, uploadRequestPhoto, type DbRequest } from '../lib/anyworkApi'
+import { listServiceFields, saveRequestAnswers, type ServiceField } from '../lib/productionApi'
 import { showError, showSuccess } from '../lib/alerts'
+
+const formatFieldAnswer = (value: unknown) => Array.isArray(value) ? value.map((item) => String(item)).join(', ') : String(value ?? '—')
 
 const getLocalDateTimeMin = () => {
   const now = new Date()
@@ -36,6 +39,8 @@ export function QuoteWizard({
   const [location, setLocation] = useState('')
   const [budget, setBudget] = useState('')
   const [accessNotes, setAccessNotes] = useState('')
+  const [serviceFields, setServiceFields] = useState<ServiceField[]>([])
+  const [fieldAnswers, setFieldAnswers] = useState<Record<string, unknown>>({})
   const [requesterName, setRequesterName] = useState('')
   const [requesterEmail, setRequesterEmail] = useState('')
   const [requesterPhone, setRequesterPhone] = useState('')
@@ -55,6 +60,10 @@ export function QuoteWizard({
     requesterName.trim() &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(requesterEmail.trim()),
   )
+
+  const requiredFieldsValid = serviceFields.filter((field) => field.enabled && field.required).every((field) => { const value = fieldAnswers[field.id]; if (field.field_type === 'boolean' || field.field_type === 'checkbox') return value === true; return Array.isArray(value) ? value.length > 0 : value !== undefined && value !== null && String(value).trim() !== '' })
+
+  useEffect(() => { if (!serviceId) { setServiceFields([]); setFieldAnswers({}); return }; void listServiceFields(serviceId).then((fields) => { setServiceFields(fields.filter((field) => field.enabled)); setFieldAnswers({}) }).catch(() => setServiceFields([])) }, [serviceId])
 
   const photoPreviews = useMemo(
     () => selectedPhotos.map((file) => ({ name: file.name, url: URL.createObjectURL(file) })),
@@ -123,6 +132,10 @@ export function QuoteWizard({
       setError('Add your name and a valid email address so we can send you quotes.')
       return
     }
+    if (!requiredFieldsValid) {
+      setError('Complete all required service-specific fields before reviewing.')
+      return
+    }
     if (companyWebsite.trim()) {
       setError('Unable to process this request.')
       return
@@ -132,7 +145,7 @@ export function QuoteWizard({
   }
 
   const handleSubmit = async () => {
-    if (!serviceId || !detailsValid || !budgetValid || !requesterValid) {
+    if (!serviceId || !detailsValid || !budgetValid || !requesterValid || !requiredFieldsValid) {
       setError('Please complete the required request details before creating the request.')
       return
     }
@@ -141,10 +154,11 @@ export function QuoteWizard({
     setError('')
 
     try {
+      const customDetails = serviceFields.length ? '\n\nService-specific requirements:\n' + serviceFields.map((field) => `${field.label}: ${formatFieldAnswer(fieldAnswers[field.id])}`).join('\n') : ''
       const created = await createServiceRequest({
         serviceKey: serviceId,
         title: title.trim(),
-        description: description.trim(),
+        description: (description.trim() + customDetails).slice(0, 10000),
         location: location.trim(),
         preferredDate: preferredDate ? new Date(preferredDate).toISOString() : null,
         accessNotes: accessNotes.trim() || null,
@@ -156,6 +170,9 @@ export function QuoteWizard({
       })
 
       let uploadWarning = ''
+      if (!isGuest && Object.keys(fieldAnswers).length) {
+        try { await saveRequestAnswers(created.id, fieldAnswers) } catch { uploadWarning = 'Your request was created, but some service-specific answers could not be saved. Please review the request details.' }
+      }
 
       if (!isGuest) {
         for (let index = 0; index < selectedPhotos.length; index += 1) {
@@ -353,6 +370,27 @@ export function QuoteWizard({
                     <span>Access notes <small>(optional)</small></span>
                     <input value={accessNotes} onChange={(event) => setAccessNotes(event.target.value)} maxLength={500} placeholder="Parking, building access, operating hours..." />
                   </label>
+
+                  {serviceFields.length > 0 && (
+                    <div className="requestCustomFields">
+                      <div className="wizardSectionIntro requestContactIntro">
+                        <div><span className="eyebrow">SERVICE REQUIREMENTS</span><h3>Additional details for {service?.label || service?.title}.</h3></div>
+                        <small>These questions are configured by the ANYwork admin for this service.</small>
+                      </div>
+                      <div className="fieldGrid">
+                        {serviceFields.map((field) => {
+                          const value = fieldAnswers[field.id]
+                          const setValue = (next: unknown) => setFieldAnswers((current) => ({ ...current, [field.id]: next }))
+                          if (field.field_type === 'boolean' || field.field_type === 'checkbox') return <label key={field.id} className="customFieldCheck"><input type="checkbox" checked={Boolean(value)} onChange={(e) => setValue(e.target.checked)} /><span>{field.label}{field.required ? ' *' : ''}</span></label>
+                          if (['select','radio'].includes(field.field_type)) return <label key={field.id}><span>{field.label}{field.required ? ' *' : ''}</span><select value={String(value ?? '')} onChange={(e) => setValue(e.target.value)}><option value="">Choose…</option>{(Array.isArray(field.options) ? field.options : []).map((option) => <option key={String(option)} value={String(option)}>{String(option)}</option>)}</select></label>
+                          if (field.field_type === 'multiselect') return <label key={field.id}><span>{field.label}{field.required ? ' *' : ''}</span><select multiple value={Array.isArray(value) ? value.map(String) : []} onChange={(e) => setValue(Array.from(e.target.selectedOptions).map((option) => option.value))}>{(Array.isArray(field.options) ? field.options : []).map((option) => <option key={String(option)} value={String(option)}>{String(option)}</option>)}</select></label>
+                          if (field.field_type === 'textarea') return <label key={field.id}><span>{field.label}{field.required ? ' *' : ''}</span><textarea value={String(value ?? '')} onChange={(e) => setValue(e.target.value)} placeholder={field.placeholder || ''} /></label>
+                          if (['photo','file'].includes(field.field_type)) return <label key={field.id}><span>{field.label}{field.required ? ' *' : ''}</span><input type="file" accept={field.field_type === 'photo' ? 'image/*' : undefined} onChange={(e) => setValue(e.target.files?.[0]?.name || '')} /><small>Use the job photo uploader below for actual file evidence.</small></label>
+                          return <label key={field.id}><span>{field.label}{field.required ? ' *' : ''}</span><input type={field.field_type === 'number' || field.field_type === 'budget' ? 'number' : field.field_type === 'date' ? 'date' : field.field_type === 'time' ? 'time' : 'text'} value={String(value ?? '')} onChange={(e) => setValue(e.target.value)} placeholder={field.placeholder || ''} /></label>
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="requestPhotoUpload">
                     <input id="request-photo-input" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(event) => { handlePhotoSelection(event.target.files); event.currentTarget.value = '' }} />

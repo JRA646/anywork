@@ -1709,3 +1709,99 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
   .adminCategoryTabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}
   .adminCategoryTabs button{white-space:nowrap}
 }
+
+
+/* Customer need-first service discovery */
+.servicesNeedFirstPage .servicesNeedHero{max-width:900px}
+.servicesNeedHero h1{max-width:850px}
+.serviceNeedSearch{display:flex;gap:10px;align-items:center;margin:28px 0 18px}
+.serviceNeedSearch .searchField{flex:1;max-width:none}
+.serviceBrowseHeading{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:30px 0 16px}
+.serviceBrowseHeading h2{margin:6px 0 0;font-size:30px;letter-spacing:-1.2px}
+.serviceBrowseHeading h3{margin:6px 0 0;font-size:22px;letter-spacing:-.8px}
+.serviceBrowseHeading p{margin:8px 0 0;color:#817a72;font-size:11px;line-height:1.55}
+.serviceBrowseHint{color:#8e877e;font-size:10px;font-weight:800;white-space:nowrap}
+.categoryNeedGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.categoryNeedCard{position:relative;min-height:205px;text-align:left;border:1px solid #e0dbd2;background:#fff;border-radius:16px;padding:20px;cursor:pointer;transition:.18s;box-shadow:0 5px 18px rgba(17,17,17,.025)}
+.categoryNeedCard:hover{transform:translateY(-3px);border-color:#cfc7bc;box-shadow:0 16px 34px rgba(17,17,17,.07)}
+.categoryNeedCardTop{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.categoryNeedIcon{width:42px;height:42px;border-radius:12px;background:#f2eee7;color:#c86b2e;display:grid;place-items:center}
+.categoryNeedCount{font-size:9px;color:#928b82;font-weight:800}
+.categoryNeedCard h3{margin:24px 0 12px;font-size:21px;letter-spacing:-.6px;color:#171717}
+.categoryNeedPreview{display:flex;flex-wrap:wrap;gap:6px;padding-right:28px}
+.categoryNeedPreview span{background:#f7f5ef;border:1px solid #ebe6dd;border-radius:999px;padding:6px 8px;color:#756f67;font-size:9px;font-weight:700}
+.categoryNeedAction{position:absolute;left:20px;bottom:18px;display:flex;align-items:center;gap:5px;color:#171717;font-size:10px;font-weight:900}
+.serviceBrowsePanel{margin-top:12px;padding:24px;background:#fff;border:1px solid #e2ddd5;border-radius:17px}
+.serviceBackLink{display:flex;align-items:center;gap:5px;border:0;background:none;padding:0;margin:0 0 15px;color:#756f67;font-size:10px;font-weight:800;cursor:pointer}
+.subcategoryNeedGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.subcategoryNeedCard{display:flex;align-items:center;gap:10px;min-height:76px;padding:12px;border:1px solid #e4dfd7;background:#faf9f6;border-radius:12px;text-align:left;cursor:pointer;transition:.16s}
+.subcategoryNeedCard:hover,.subcategoryNeedCard.active{background:#111;color:#fff;border-color:#111}
+.subcategoryNeedIcon{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:9px;background:#eeeae2;color:#c86b2e}
+.subcategoryNeedCard:hover .subcategoryNeedIcon,.subcategoryNeedCard.active .subcategoryNeedIcon{background:#292929}
+.subcategoryNeedCopy{min-width:0;display:grid;gap:3px;flex:1}
+.subcategoryNeedCopy strong{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.subcategoryNeedCopy small{font-size:8px;color:#918a81}
+.subcategoryNeedCard:hover .subcategoryNeedCopy small,.subcategoryNeedCard.active .subcategoryNeedCopy small{color:#aaa49c}
+.subcategoryServices{margin-top:24px;padding-top:8px;border-top:1px solid #eee9e1}
+.serviceBrowseHeading.compact{margin-top:18px}
+.serviceSearchResults{margin-top:10px}
+.serviceSearchGrid{margin-bottom:10px}
+.serviceNeedEmpty{display:flex;align-items:center;gap:15px;padding:20px;border:1px dashed #d7d1c8;border-radius:14px;background:#faf9f6}
+.serviceNeedEmpty>svg{flex:none;color:#c86b2e}
+.serviceNeedEmpty>div{flex:1}
+.serviceNeedEmpty strong{font-size:12px}
+.serviceNeedEmpty p{margin:4px 0 0;color:#817a72;font-size:10px}
+@media(max-width:980px){
+  .categoryNeedGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .subcategoryNeedGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .serviceNeedSearch{align-items:stretch;flex-direction:column}
+  .serviceNeedSearch .filterButton{width:100%;justify-content:center}
+  .serviceBrowseHeading{align-items:flex-start;flex-direction:column;gap:8px}
+  .categoryNeedGrid,.subcategoryNeedGrid{grid-template-columns:1fr}
+  .serviceBrowsePanel{padding:16px}
+  .serviceNeedEmpty{align-items:flex-start;flex-direction:column}
+  .serviceNeedEmpty .buttonPrimary{width:100%;justify-content:center}
+}
+
+
+/* Marketplace UX v2 */
+.searchableSelect{position:relative;display:grid;gap:7px;margin-bottom:14px}
+.searchableSelectLabel,.adminServiceForm>label>span{font-size:10px;font-weight:800;color:#4f4b45}
+.searchableSelectTrigger{height:43px;width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #ded9d0;background:#fff;border-radius:10px;padding:0 12px;color:#222;font-size:12px;cursor:pointer}
+.searchableSelectTrigger .placeholder{color:#a39b91}
+.searchableSelectTrigger:hover{border-color:#cfc7bc}
+.searchableSelectMenu{position:absolute;z-index:80;left:0;right:0;top:67px;background:#fff;border:1px solid #ddd7ce;border-radius:12px;box-shadow:0 18px 50px rgba(17,17,17,.14);overflow:hidden}
+.searchableSelectSearch{display:flex;align-items:center;gap:8px;padding:9px;border-bottom:1px solid #eee9e1}
+.searchableSelectSearch svg{color:#91897f}
+.searchableSelectSearch input{border:0!important;box-shadow:none!important;padding:8px!important}
+.searchableSelectOptions{max-height:220px;overflow:auto;padding:5px}
+.searchableSelectOptions button{width:100%;display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border:0;background:#fff;border-radius:8px;text-align:left;font-size:11px;cursor:pointer}
+.searchableSelectOptions button:hover,.searchableSelectOptions button.selected{background:#f5f2ec}
+.searchableSelectOptions button.selected{font-weight:800}
+.searchableSelectEmpty{padding:16px;text-align:center;color:#948c83;font-size:10px}
+.searchableSelectClear{display:flex;align-items:center;gap:5px;width:100%;padding:9px 12px;border:0;border-top:1px solid #eee9e1;background:#faf9f6;color:#777068;font-size:9px;cursor:pointer}
+.adminServiceForm>label>span small{margin-left:auto;color:#9a9289;font-weight:700}
+.adminServiceForm>label>small{color:#9a9289;font-size:9px}
+.adminServiceImageField{display:grid;gap:8px}
+.adminImageUpload{display:grid;grid-template-columns:128px 1fr;gap:12px;align-items:center}
+.adminImagePreview{width:128px;height:86px;border:1px dashed #d5cec4;border-radius:11px;background:#f7f5f0;display:grid;place-items:center;color:#aaa197;overflow:hidden}
+.adminImagePreview img{width:100%;height:100%;object-fit:cover}
+.adminImageUpload input[type=file]{width:100%;font-size:10px}
+.adminImageUpload small{display:block;margin-top:6px;color:#968e84;font-size:9px;line-height:1.5}
+.adminImageUpload .textLink{margin-top:7px;padding:0}
+.adminServiceImageWrap{height:120px;border-radius:14px;overflow:hidden;background:#f1eee8;display:grid;place-items:center}
+.adminServiceImageWrap img{width:100%;height:100%;object-fit:cover}
+.adminServiceCardModern{overflow:hidden}
+.adminServiceCardModern .adminServiceHeader{padding:13px 14px 0}
+.serviceCardCategory{font-size:8px;color:#d9d3ca;text-transform:uppercase;letter-spacing:.8px;font-weight:800}
+.serviceCardTags{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.serviceCardTags span{padding:5px 7px;border-radius:999px;background:rgba(255,255,255,.1);font-size:8px;color:#eee}
+@media(max-width:600px){
+  .adminImageUpload{grid-template-columns:1fr}
+  .adminImagePreview{width:100%;height:150px}
+  .searchableSelectMenu{top:67px}
+}
+
+.adminLivePreview{margin:18px 0;padding:14px;border:1px solid #e6e0d7;border-radius:14px;background:#faf9f6}.adminLivePreview>div:first-child{display:grid;gap:4px;margin-bottom:10px}.adminLivePreview>div:first-child strong{font-size:12px}.adminLivePreviewCard{display:grid;grid-template-columns:92px 1fr;gap:12px;background:#fff;border:1px solid #e4dfd7;border-radius:11px;overflow:hidden}.adminLivePreviewCard img,.adminLivePreviewPlaceholder{width:92px;height:112px;object-fit:cover}.adminLivePreviewPlaceholder{display:grid;place-items:center;background:#f1eee8;color:#aaa197}.adminLivePreviewCard>div:last-child{padding:11px 11px 11px 0}.adminLivePreviewCard small{font-size:8px;color:#9a9289;text-transform:uppercase;font-weight:800}.adminLivePreviewCard h4{margin:5px 0;font-size:14px}.adminLivePreviewCard p{margin:0 0 8px!important;font-size:9px!important;line-height:1.45!important;color:#817a72!important}.adminLivePreviewCard strong{font-size:10px}

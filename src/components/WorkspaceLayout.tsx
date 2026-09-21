@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import moment from 'moment'
 import {
   Bell,
   BriefcaseBusiness,
@@ -15,6 +16,9 @@ import {
   UserRound,
   UsersRound,
   X,
+  Star,
+  CalendarDays,
+  ShieldCheck,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Role } from '../types/marketplace'
@@ -29,22 +33,36 @@ import {
 import { confirmAction } from '../lib/alerts'
 
 const nav = {
-  customer: ['dashboard', 'requests', 'jobs', 'messages', 'profile'],
-  provider: ['dashboard', 'requests', 'jobs', 'services', 'earnings', 'messages', 'profile'],
-  admin: ['dashboard', 'requests', 'providers', 'services', 'customers', 'settings', 'profile'],
+  customer: ['dashboard', 'requests', 'jobs', 'messages', 'account', 'profile'],
+  provider: ['dashboard', 'requests', 'jobs', 'calendar', 'messages', 'services', 'earnings', 'verification', 'checkins', 'invoices', 'reviews', 'support', 'profile'],
+  admin: ['dashboard', 'requests', 'dispatch', 'jobs', 'providers', 'verification', 'services', 'customers', 'payments', 'reviews', 'support', 'settings', 'profile'],
 } as const
 
 const labels: Record<string, string> = {
   dashboard: 'Dashboard',
   requests: 'Requests',
+  dispatch: 'Dispatch',
   jobs: 'Jobs',
   services: 'Services',
   earnings: 'Earnings',
   messages: 'Messages',
+  account: 'Account',
   profile: 'Profile',
   providers: 'Providers',
   customers: 'Customers',
+  verification: 'Verification',
   settings: 'Settings',
+  addresses: 'Addresses',
+  favorites: 'Favorites',
+  invoices: 'Invoices',
+  payments: 'Payments',
+  reviews: 'Reviews',
+  support: 'Support',
+  calendar: 'Calendar',
+  checkins: 'Job Check-in',
+  'service-builder': 'Service Builder',
+  disputes: 'Disputes',
+  audit: 'Audit Log',
 }
 
 const icons: Record<string, LucideIcon> = {
@@ -54,10 +72,22 @@ const icons: Record<string, LucideIcon> = {
   services: Store,
   earnings: CircleDollarSign,
   messages: MessageCircle,
+  account: UserRound,
   profile: UserRound,
   providers: UsersRound,
   customers: UsersRound,
   settings: Settings2,
+  addresses: Store,
+  favorites: Star,
+  invoices: FileText,
+  payments: CircleDollarSign,
+  verification: ShieldCheck,
+  reviews: Star,
+  support: CircleHelp,
+  calendar: CalendarDays,
+  checkins: BriefcaseBusiness,
+  'service-builder': Store,
+  dispatch: BriefcaseBusiness,
 }
 
 type NotificationItem = DbNotification
@@ -90,6 +120,7 @@ export function WorkspaceLayout({
   children: ReactNode
 }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [currentDateTime, setCurrentDateTime] = useState(() => moment())
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -107,6 +138,11 @@ export function WorkspaceLayout({
     : role === 'admin'
       ? 'Operations'
       : 'Customer portal'
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setCurrentDateTime(moment()), 1000)
+    return () => window.clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     let cleanup: (() => void) | undefined
@@ -217,6 +253,9 @@ export function WorkspaceLayout({
             <div>
               <span className="workspaceKicker">{portalLabel}</span>
               <strong>{title}</strong>
+              <span className="workspaceDateTime" aria-label="Current date and time">
+                {currentDateTime.format('ddd, MMM D, YYYY')} · {currentDateTime.format('h:mm:ss A')}
+              </span>
             </div>
           </div>
 

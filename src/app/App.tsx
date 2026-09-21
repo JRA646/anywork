@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, LogIn, Menu, UserRound, X } from 'lucide-react'
 import { usePath } from './router'
-import { services as mockServices, providers } from '../data/mockData'
+import { services as mockServices } from '../data/mockData'
 import type { Service } from '../types/marketplace'
-import { listPublicServices } from '../lib/anyworkApi'
+import { listPublicProviders, listPublicServices } from '../lib/anyworkApi'
 import type { Role } from '../types/marketplace'
 import type { AnyWorkProfile } from '../types/auth'
 import { AuthProvider, useAuth } from '../auth/AuthContext'
@@ -26,6 +26,8 @@ import { GuestRequestPage } from '../pages/GuestRequestPage'
 import { InvoicePage } from '../pages/InvoicePage'
 import { CustomerJobWorkspace } from '../pages/CustomerJobWorkspace'
 import { CustomerJobsPage } from '../pages/CustomerJobsPage'
+import { ProductionWorkspacePage } from '../pages/ProductionWorkspacePage'
+import { DispatchCenterPage } from '../pages/DispatchCenterPage'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
 import { BrandLogo } from '../components/BrandLogo'
@@ -52,12 +54,36 @@ function Application() {
   const { path, navigate } = usePath()
   const { session, profile, loading, signOut } = useAuth()
   const [serviceCatalog, setServiceCatalog] = useState<Service[]>(mockServices)
+  const [providerCatalog, setProviderCatalog] = useState<import('../types/marketplace').Provider[]>([])
   const [quoteOpen, setQuoteOpen] = useState(false)
   const [quoteService, setQuoteService] = useState('')
   const [quoteCreatedCallback, setQuoteCreatedCallback] = useState<((requestId: string) => void) | null>(null)
 
   useEffect(() => {
     let mounted = true
+
+    const loadProviders = async () => {
+      try {
+        const rows = await listPublicProviders()
+        if (!mounted) return
+        setProviderCatalog(rows.map((provider) => ({
+          id: provider.id,
+          name: provider.name,
+          initials: provider.initials,
+          serviceIds: provider.service_ids,
+          rating: provider.rating,
+          reviewCount: provider.review_count,
+          completedJobs: provider.completed_jobs,
+          location: provider.location,
+          responseTime: provider.response_time,
+          responseRate: provider.response_rate,
+          summary: provider.summary,
+          verified: provider.verified,
+        })))
+      } catch {
+        if (mounted) setProviderCatalog([])
+      }
+    }
 
     const loadServices = async () => {
       try {
@@ -71,7 +97,11 @@ function Application() {
           description: service.description,
           icon: service.icon,
           items: Array.isArray(service.items) ? service.items : [],
+          tags: Array.isArray(service.tags) ? service.tags : [],
+          category: service.category || service.title,
+          subcategory: service.subcategory || service.label,
           startingPrice: service.starting_price_label || (service.starting_price !== null ? '₱' + Number(service.starting_price).toLocaleString('en-PH') : 'Quote'),
+          imageUrl: service.image_url || null,
         })))
       } catch {
         // Keep the local catalog available when Supabase is unavailable.
@@ -79,6 +109,7 @@ function Application() {
     }
 
     void loadServices()
+    void loadProviders()
 
     if (!loading) {
       if (path === '/signin' || path === '/admin/signin') {
@@ -178,16 +209,22 @@ function Application() {
 
   if (loading) return <AppLoading />
 
+  const publicProvider = path.startsWith('/providers/')
+    ? providerCatalog.find((item) => item.id === path.split('/')[2])
+    : undefined
+
   const publicContent = path === '/'
-    ? <PublicHome services={serviceCatalog} providers={providers} onNavigate={navigate} onQuote={openQuote} />
+    ? <PublicHome services={serviceCatalog} providers={providerCatalog} onNavigate={navigate} onQuote={openQuote} />
     : path === '/services'
-      ? <PublicServices services={serviceCatalog} providers={providers} onQuote={openQuote} onProvider={(id) => navigate('/providers/' + id)} />
+      ? <PublicServices services={serviceCatalog} providers={providerCatalog} onQuote={openQuote} onProvider={(id) => navigate('/providers/' + id)} />
       : path === '/providers'
-        ? <PublicProviders services={serviceCatalog} providers={providers} onProvider={(id) => navigate('/providers/' + id)} />
+        ? <PublicProviders services={serviceCatalog} providers={providerCatalog} onProvider={(id) => navigate('/providers/' + id)} />
         : path === '/help'
         ? <HelpCenterPage />
       : path.startsWith('/providers/')
-        ? <ProviderProfilePage provider={providers.find((item) => item.id === path.split('/')[2]) || providers[0]} services={serviceCatalog} onQuote={openQuote} />
+        ? publicProvider
+          ? <ProviderProfilePage provider={publicProvider} services={serviceCatalog} onQuote={openQuote} />
+          : <main className="pageModern"><div className="container"><div className="providerEmptyPanel"><strong>Provider not found</strong><span>This provider is no longer listed in the public directory.</span></div></div></main>
         : null
 
   if (publicContent) {
@@ -232,7 +269,9 @@ function Application() {
               requestId={new URLSearchParams(window.location.search).get('request') || requestId}
               providerId={new URLSearchParams(window.location.search).get('provider') || undefined}
             />
-          : section === 'profile'
+          : ['account','addresses','favorites','invoices','payments','reviews','support','disputes'].includes(section)
+            ? <ProductionWorkspacePage role="customer" section={section} profile={profile} onNavigate={navigate} />
+        : section === 'profile'
             ? <ProfilePage role="customer" />
             : section === 'help'
               ? <HelpCenterPage />
@@ -243,7 +282,7 @@ function Application() {
         <WorkspaceLayout
           role="customer"
           profile={profile}
-          title={section === 'requests' ? 'Requests' : section === 'jobs' ? 'Jobs' : section === 'messages' ? 'Messages' : section === 'profile' ? 'Profile' : section === 'help' ? 'Help Center' : 'Overview'}
+          title={section === 'dashboard' ? 'Overview' : section === 'requests' ? 'Requests' : section === 'jobs' ? 'Jobs' : section === 'messages' ? 'Messages' : section === 'profile' ? 'Profile' : section === 'help' ? 'Help Center' : section.charAt(0).toUpperCase() + section.slice(1)}
           current={section}
           onNavigate={(item) => navigate('/customer/' + (item === 'dashboard' ? '' : item))}
           onPublicSite={handleSignOut}
@@ -296,7 +335,9 @@ function Application() {
 
   if (path === '/provider' || path.startsWith('/provider/')) {
     const section = path.split('/')[2] || 'dashboard'
-    const providerContent = section === 'profile'
+    const providerContent = ['calendar','verification','checkins','invoices','payments','reviews','support','disputes'].includes(section)
+      ? <ProductionWorkspacePage role="provider" section={section} profile={profile} onNavigate={navigate} />
+      : section === 'profile'
       ? <ProfilePage role="provider" />
       : section === 'help'
         ? <HelpCenterPage />
@@ -307,13 +348,7 @@ function Application() {
             messageRequestId={new URLSearchParams(window.location.search).get('request') || undefined}
             messageProviderId={new URLSearchParams(window.location.search).get('provider') || undefined}
           />
-    const providerTitle = section === 'dashboard'
-      ? 'Overview'
-      : section === 'help'
-        ? 'Help Center'
-        : section === 'profile'
-          ? 'Profile'
-          : section.charAt(0).toUpperCase() + section.slice(1)
+    const providerTitle = section === 'dashboard' ? 'Overview' : section === 'help' ? 'Help Center' : section === 'profile' ? 'Profile' : section === 'service-builder' ? 'Service Builder' : section.charAt(0).toUpperCase() + section.slice(1)
 
     return (
       <WorkspaceLayout
@@ -331,18 +366,16 @@ function Application() {
 
   if (path === '/admin' || path.startsWith('/admin/')) {
     const section = path.split('/')[2] || 'dashboard'
-    const adminContent = section === 'help'
+    const adminContent = section === 'dispatch'
+      ? <DispatchCenterPage />
+      : ['jobs','verification','payments','reviews','disputes','support','audit','service-builder'].includes(section)
+      ? <ProductionWorkspacePage role="admin" section={section} profile={profile} onNavigate={navigate} />
+      : section === 'help'
       ? <HelpCenterPage />
       : section === 'profile'
         ? <ProfilePage role="admin" />
         : <AdminOperationsPage section={section} onNavigate={navigate} />
-    const adminTitle = section === 'dashboard'
-      ? 'Overview'
-      : section === 'help'
-        ? 'Help Center'
-        : section === 'profile'
-          ? 'Profile'
-          : section.charAt(0).toUpperCase() + section.slice(1)
+    const adminTitle = section === 'dashboard' ? 'Overview' : section === 'help' ? 'Help Center' : section === 'profile' ? 'Profile' : section === 'service-builder' ? 'Service Builder' : section === 'audit' ? 'Audit Log' : section.charAt(0).toUpperCase() + section.slice(1)
 
     return (
       <WorkspaceLayout

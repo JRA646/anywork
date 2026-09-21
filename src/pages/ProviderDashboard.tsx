@@ -34,6 +34,7 @@ import {
   type DbRequest,
 } from '../lib/anyworkApi'
 import { confirmAction, showError, showToast } from '../lib/alerts'
+import { listProviderAssignments, respondProviderAssignment, type DbProviderAssignment } from '../lib/productionApi'
 
 type RequestFilter = 'All' | 'Needs quote' | 'Quoted' | 'Scheduled' | 'In Progress' | 'Completed'
 
@@ -64,6 +65,14 @@ function ProviderHome({ profile, onNavigate }: { profile: AnyWorkProfile; onNavi
   const [providerId, setProviderId] = useState('')
   const [loading, setLoading] = useState(true)
   const [realtime, setRealtime] = useState<'connecting' | 'live' | 'offline'>('connecting')
+  const [assignments, setAssignments] = useState<DbProviderAssignment[]>([])
+  const [assignmentBusy, setAssignmentBusy] = useState<string | null>(null)
+
+  useEffect(() => {
+    void listProviderAssignments()
+      .then((rows) => setAssignments(rows.filter((row) => ['Suggested','Invited'].includes(row.status))))
+      .catch(() => setAssignments([]))
+  }, [])
 
   useEffect(() => {
     Promise.all([getCurrentUserId(), listProviderRequests(), listProviderQuotes()])
@@ -123,6 +132,47 @@ function ProviderHome({ profile, onNavigate }: { profile: AnyWorkProfile; onNavi
           <button className="buttonPrimary" onClick={() => onNavigate('/provider/requests')}><BriefcaseBusiness size={16} /> Review requests</button>
         </div>
       </div>
+
+      {assignments.length > 0 && (
+        <section className="dashboardCard providerAssignmentCard">
+          <div className="cardHeading">
+            <div><span className="eyebrow">NEW ASSIGNMENTS</span><h2>Provider invitations</h2></div>
+            <span className="statusBadge neutral">{assignments.length} pending</span>
+          </div>
+          <div className="providerAssignmentList">
+            {assignments.slice(0, 5).map((assignment) => (
+              <div className="productionListRow" key={assignment.id}>
+                <div>
+                  <strong>New service assignment</strong>
+                  <span>Match score {Math.round(Number(assignment.match_score || 0))}% · {Array.isArray(assignment.match_reasons) ? assignment.match_reasons.slice(0, 2).join(' · ') : 'Matched to your service profile'}</span>
+                </div>
+                <div className="productionButtonGrid">
+                  <button
+                    className="buttonSecondary"
+                    disabled={assignmentBusy === assignment.id}
+                    onClick={() => {
+                      setAssignmentBusy(assignment.id)
+                      void respondProviderAssignment(assignment.id, 'Declined')
+                        .then(() => setAssignments((rows) => rows.filter((row) => row.id !== assignment.id)))
+                        .finally(() => setAssignmentBusy(null))
+                    }}
+                  >Decline</button>
+                  <button
+                    className="buttonPrimary"
+                    disabled={assignmentBusy === assignment.id}
+                    onClick={() => {
+                      setAssignmentBusy(assignment.id)
+                      void respondProviderAssignment(assignment.id, 'Assigned')
+                        .then(() => setAssignments((rows) => rows.filter((row) => row.id !== assignment.id)))
+                        .finally(() => setAssignmentBusy(null))
+                    }}
+                  >Accept</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="metricRow providerMetricRow">
         <Metric label="Needs your response" value={loading ? '—' : String(responseNeeded)} note="New opportunities" icon={<Clock3 />} />

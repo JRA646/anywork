@@ -15,14 +15,12 @@ import {
   Store,
   UserCheck,
   X,
-  Smartphone,
-  Globe,
-  Sparkles,
 } from 'lucide-react'
 import { requests, providers, services } from '../data/mockData'
 import type { Provider, ServiceRequest } from '../types/marketplace'
 import { StatusBadge } from '../components/StatusBadge'
-import { createAdminService, deleteAdminService, listAdminServices, updateAdminService, type DbService } from '../lib/anyworkApi'
+import { createAdminService, deleteAdminService, listAdminServices, updateAdminService, uploadServiceImage, type DbService } from '../lib/anyworkApi'
+import { SearchableSelect } from '../components/SearchableSelect'
 
 const customers = [
   { id: 'CUS-1001', name: 'John Doe', email: 'john@example.com', jobs: 2, spend: 2770, status: 'Active' },
@@ -172,14 +170,33 @@ export function AdminServices() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [tagDraft, setTagDraft] = useState('')
   const [form, setForm] = useState({
     category: 'Software',
     subcategory: 'General',
     label: '',
     description: '',
     items: '',
+    tags: [] as string[],
     startingPrice: '',
+    imageUrl: '',
   })
+
+  useEffect(() => {
+    if (!showForm) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = previousOverflow }
+  }, [showForm])
+
+  useEffect(() => {
+    if (!showForm) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setShowForm(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [showForm])
 
   useEffect(() => {
     void listAdminServices()
@@ -192,6 +209,7 @@ export function AdminServices() {
           ...service,
           starting_price: null,
           starting_price_label: service.startingPrice,
+          image_url: service.imageUrl || null,
           enabled: true,
           category: service.title,
           subcategory: service.label,
@@ -204,7 +222,7 @@ export function AdminServices() {
   const categories = Array.from(new Set(catalog.map((service) => service.category).filter(Boolean))).sort((a, b) => a.localeCompare(b))
   const filtered = catalog.filter((service) => {
     const matchesCategory = category === 'All' || service.category === category
-    const haystack = [service.category, service.subcategory, service.title, service.label, service.description].join(' ').toLowerCase()
+    const haystack = [service.category, service.subcategory, service.title, service.label, service.description, ...(service.tags || [])].join(' ').toLowerCase()
     return matchesCategory && haystack.includes(query.toLowerCase())
   })
   const activeCount = Object.values(activeService).filter(Boolean).length
@@ -213,42 +231,51 @@ export function AdminServices() {
     event.preventDefault()
     setSaving(true)
     setError('')
+
     try {
       const items = form.items.split(',').map((item) => item.trim()).filter(Boolean)
       const startingPrice = form.startingPrice.trim() ? Number(form.startingPrice) : null
+      if (!form.label.trim()) throw new Error('Service name is required.')
+      if (form.label.trim().length > 60) throw new Error('Service name must be 60 characters or fewer.')
+      if (form.description.trim().length > 300) throw new Error('Description must be 300 characters or fewer.')
       if (startingPrice !== null && Number.isNaN(startingPrice)) throw new Error('Starting price must be a valid number.')
 
+      const payload = {
+        category: form.category.trim(),
+        subcategory: form.subcategory.trim(),
+        title: form.category.trim(),
+        label: form.label.trim(),
+        description: form.description.trim(),
+        icon: 'Store',
+        items,
+        tags: form.tags,
+        startingPrice,
+        startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
+        imageUrl: form.imageUrl || null,
+      }
+
       if (editingId) {
-        const updated = await updateAdminService(editingId, {
-          category: form.category.trim(),
-          subcategory: form.subcategory.trim(),
-          title: form.category.trim(),
-          label: form.label.trim(),
-          description: form.description.trim(),
-          items,
-          startingPrice,
-          startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
-        })
+        const updated = await updateAdminService(editingId, payload)
         setCatalog((current) => current.map((item) => item.id === editingId ? updated : item))
       } else {
-        const created = await createAdminService({
-          category: form.category.trim(),
-          subcategory: form.subcategory.trim(),
-          title: form.category.trim(),
-          label: form.label.trim(),
-          description: form.description.trim(),
-          icon: 'Store',
-          items,
-          startingPrice,
-          startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
-        })
+        const created = await createAdminService(payload)
         setCatalog((current) => [created, ...current])
         setActiveService((current) => ({ ...current, [created.id]: true }))
       }
 
       setShowForm(false)
       setEditingId(null)
-      setForm({ category: categories[0] || 'General', subcategory: 'General', label: '', description: '', items: '', startingPrice: '' })
+      setForm({
+        category: categories[0] || 'General',
+        subcategory: 'General',
+        label: '',
+        description: '',
+        items: '',
+        tags: [],
+        startingPrice: '',
+        imageUrl: '',
+      })
+      setTagDraft('')
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Unable to save service.')
     } finally {
@@ -302,12 +329,12 @@ export function AdminServices() {
       {filtered.map((service) => {
         const active = activeService[service.id] ?? service.enabled
         return <article className={active ? 'adminServiceCard adminServiceCardModern' : 'adminServiceCard adminServiceCardModern isDisabled'} key={service.id}>
-          <div className="adminServiceHeader"><div className="serviceCardIcon"><Store size={19} /></div><button className={active ? 'adminToggle active' : 'adminToggle'} onClick={() => void toggleService(service)} aria-label={'Toggle ' + service.label}><span /></button></div>
+          <div className="adminServiceImageWrap">{service.image_url ? <img src={service.image_url} alt="" /> : <div className="serviceCardIcon"><Store size={19} /></div>}</div><div className="adminServiceHeader"><button className={active ? 'adminToggle active' : 'adminToggle'} onClick={() => void toggleService(service)} aria-label={'Toggle ' + service.label}><span /></button></div>
           <div className="adminServiceBreadcrumb"><span>{service.category}</span><ChevronRight size={11} /><strong>{service.subcategory}</strong></div>
           <h3>{service.label}</h3>
           <p>{service.description}</p>
-          <div className="adminServiceTags">{service.items.map((item) => <span key={item}>{item}</span>)}</div>
-          <div className="adminServiceFooter"><strong>{service.starting_price_label || 'Quote'}</strong><div className="adminServiceFooterActions"><button className="buttonSecondary" onClick={() => { setEditingId(service.id); setForm({ category: service.category, subcategory: service.subcategory, label: service.label, description: service.description, items: service.items.join(', '), startingPrice: service.starting_price?.toString() || '' }); setShowForm(true) }}>Edit</button><button className="buttonSecondary" onClick={() => { if (window.confirm('Delete this service?')) void deleteService(service.id) }}>Delete</button></div></div>
+          <div className="adminServiceTags">{(service.tags?.length ? service.tags : service.items).map((item) => <span key={item}>{item}</span>)}</div>
+          <div className="adminServiceFooter"><strong>{service.starting_price_label || 'Quote'}</strong><div className="adminServiceFooterActions"><button className="buttonSecondary" onClick={() => { setEditingId(service.id); setForm({ category: service.category, subcategory: service.subcategory, label: service.label, description: service.description, items: service.items.join(', '), tags: service.tags || [], startingPrice: service.starting_price?.toString() || '', imageUrl: service.image_url || '' }); setTagDraft(''); setShowForm(true) }}>Edit</button><button className="buttonSecondary" onClick={() => { if (window.confirm('Delete this service?')) void deleteService(service.id) }}>Delete</button></div></div>
         </article>
       })}
     </div>
@@ -318,13 +345,76 @@ export function AdminServices() {
       <form className="adminServiceForm" onSubmit={submitService}>
         <div className="drawerHeader"><div><span className="eyebrow">SERVICE CATALOG</span><h2>{editingId ? 'Edit service' : 'Add service'}</h2></div><button type="button" className="roundIcon" onClick={() => setShowForm(false)}><X size={17} /></button></div>
         {error && <div className="formError">{error}</div>}
-        <label><span>Category</span><input list="anywork-service-categories" value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))} placeholder="e.g. Software" required /><datalist id="anywork-service-categories">{categories.map((item) => <option key={item} value={item} />)}</datalist></label>
-        <label><span>Subcategory</span><input list="anywork-service-subcategories" value={form.subcategory} onChange={(event) => setForm((current) => ({ ...current, subcategory: event.target.value }))} placeholder="e.g. Web Application" required /><datalist id="anywork-service-subcategories">{Array.from(new Set(catalog.filter((item) => item.category === form.category).map((item) => item.subcategory))).map((item) => <option key={item} value={item} />)}</datalist></label>
-        <label><span>Service name</span><input value={form.label} onChange={(event) => setForm((current) => ({ ...current, label: event.target.value }))} placeholder="e.g. Mobile App Development" required /></label>
-        <label><span>Description</span><textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="Describe what this service includes..." required /></label>
-        <label><span>What's included</span><input value={form.items} onChange={(event) => setForm((current) => ({ ...current, items: event.target.value }))} placeholder="iOS apps, Android apps, API integration" /></label>
+        <SearchableSelect
+          label="Category"
+          value={form.category}
+          options={categories.length ? categories : ['General']}
+          placeholder="Choose a category"
+          onChange={(nextCategory) => {
+            const nextSubcategories = Array.from(new Set(catalog.filter((item) => item.category === nextCategory).map((item) => item.subcategory).filter(Boolean)))
+            setForm((current) => ({ ...current, category: nextCategory, subcategory: nextSubcategories[0] || 'General' }))
+          }}
+        />
+        <SearchableSelect label="Subcategory" value={form.subcategory} options={Array.from(new Set(catalog.filter((item) => item.category === form.category).map((item) => item.subcategory).filter(Boolean))).concat(
+          Array.from(new Set(catalog.filter((item) => item.category === form.category).map((item) => item.subcategory).filter(Boolean))).length ? [] : ['General']
+        )} placeholder="Choose a subcategory" onChange={(value) => setForm((current) => ({ ...current, subcategory: value }))} />
+        <label><span>Service name <small>{form.label.length}/60</small></span><input maxLength={60} value={form.label} onChange={(event) => setForm((current) => ({ ...current, label: event.target.value }))} placeholder="e.g. Mobile App Development" required /></label>
+        <label><span>Description <small>{form.description.length}/300</small></span><textarea maxLength={300} value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="Describe what this service includes..." required /></label>
+        <label><span>What's included</span><input value={form.items} onChange={(event) => setForm((current) => ({ ...current, items: event.target.value }))} placeholder="iOS apps, Android apps, API integration" /><small>Separate items with commas.</small></label>
+        <label className="adminServiceImageField"><span>Service image</span><div className="adminImageUpload"><div className="adminImagePreview">{form.imageUrl ? <img src={form.imageUrl} alt="Service preview" /> : <Store size={24} />}</div><div><input id="admin-service-image" type="file" accept="image/png,image/jpeg,image/webp" onChange={async (event) => { const file = event.target.files?.[0]; if (!file) return; try { setSaving(true); setError(''); const url = await uploadServiceImage(file); setForm((current) => ({ ...current, imageUrl: url })) } catch (uploadError) { setError(uploadError instanceof Error ? uploadError.message : 'Unable to upload image.') } finally { setSaving(false) } }} /><small>JPG, PNG or WEBP · max 5MB · recommended 1200×800.</small>{form.imageUrl && <button type="button" className="textLink" onClick={() => setForm((current) => ({ ...current, imageUrl: '' }))}>Remove image</button>}</div></div></label>
+        <label className="adminTagField">
+          <span>Tags</span>
+          <div className="adminTagInputRow">
+            <input
+              value={tagDraft}
+              onChange={(event) => setTagDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ',') {
+                  event.preventDefault()
+                  const next = tagDraft.trim().replace(/,$/, '')
+                  if (!next || form.tags.some(tag => tag.toLowerCase() === next.toLowerCase())) return
+                  setForm(current => ({ ...current, tags: [...current.tags, next] }))
+                  setTagDraft('')
+                }
+              }}
+              placeholder="e.g. Mobile, API, React"
+            />
+            <button type="button" className="buttonSecondary adminAddTagButton" onClick={() => {
+              const next = tagDraft.trim()
+              if (!next || form.tags.some(tag => tag.toLowerCase() === next.toLowerCase())) return
+              setForm(current => ({ ...current, tags: [...current.tags, next] }))
+              setTagDraft('')
+            }}>Add tag</button>
+          </div>
+          {!!form.tags.length && (
+            <div className="adminFormTags">
+              {form.tags.map(tag => (
+                <button type="button" className="adminFormTag" key={tag} onClick={() => setForm(current => ({ ...current, tags: current.tags.filter(item => item !== tag) }))}>
+                  {tag}<X size={11} />
+                </button>
+              ))}
+            </div>
+          )}
+          <small>Use short tags to help customers scan and filter services quickly.</small>
+        </label>
+
         <label><span>Starting price</span><input type="number" min="0" value={form.startingPrice} onChange={(event) => setForm((current) => ({ ...current, startingPrice: event.target.value }))} placeholder="Leave empty for Quote" /></label>
-        <div className="drawerActions"><button type="button" className="buttonSecondary" onClick={() => setShowForm(false)}>Cancel</button><button type="submit" className="buttonPrimary" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update service' : 'Save service'}</button></div>
+        <section className="adminLivePreview">
+          <div><span className="eyebrow">CUSTOMER PREVIEW</span><strong>How this service will appear</strong></div>
+          <div className="adminLivePreviewCard">
+            {form.imageUrl ? <img src={form.imageUrl} alt="" /> : <div className="adminLivePreviewPlaceholder"><Store size={22} /></div>}
+            <div>
+              <small>{form.category || 'Category'}{form.subcategory ? ' · ' + form.subcategory : ''}</small>
+              <h4>{form.label || 'Service name'}</h4>
+              <p>{form.description || 'Your service description will appear here.'}</p>
+              <strong>{form.startingPrice ? '$' + Number(form.startingPrice).toLocaleString() : 'Quote'}</strong>
+            </div>
+          </div>
+        </section>
+        <div className="drawerActions">
+          <button type="button" className="buttonSecondary" onClick={() => setShowForm(false)}>Cancel</button>
+          <button type="submit" className="buttonPrimary" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update service' : 'Save service'}</button>
+        </div>
       </form>
     </div>}
   </div>

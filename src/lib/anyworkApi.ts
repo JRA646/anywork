@@ -51,18 +51,80 @@ export type DbService = {
   description: string
   icon: string
   items: string[]
+  tags?: string[]
   category?: string
   subcategory?: string
   starting_price: number | null
   starting_price_label: string | null
+  image_url: string | null
   enabled: boolean
+}
+
+export type DbPublicProvider = {
+  id: string
+  name: string
+  initials: string
+  service_ids: string[]
+  rating: number
+  review_count: number
+  completed_jobs: number
+  location: string
+  response_time: string
+  response_rate: string
+  summary: string
+  verified: boolean
+}
+
+export type DbPublicProviderReview = {
+  id: string
+  rating: number
+  comment: string | null
+  created_at: string
+}
+
+export async function listPublicProviders(): Promise<DbPublicProvider[]> {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_list_public_providers')
+  if (error) throw error
+
+  const rows = (data || []) as unknown as Array<Record<string, unknown>>
+  return rows.map((row) => ({
+    id: String(row.id || ''),
+    name: String(row.name || ''),
+    initials: String(row.initials || ''),
+    service_ids: Array.isArray(row.service_ids) ? row.service_ids.map((value) => String(value)) : [],
+    rating: Number(row.rating || 0),
+    review_count: Number(row.review_count || 0),
+    completed_jobs: Number(row.completed_jobs || 0),
+    location: String(row.location || ''),
+    response_time: String(row.response_time || '—'),
+    response_rate: String(row.response_rate || '—'),
+    summary: String(row.summary || ''),
+    verified: Boolean(row.verified),
+  }))
+}
+
+export async function listPublicProviderReviews(providerId: string): Promise<DbPublicProviderReview[]> {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_list_public_provider_reviews', {
+    p_provider_id: providerId,
+  })
+  if (error) throw error
+
+  const rows = (data || []) as unknown as Array<Record<string, unknown>>
+  return rows.map((row) => ({
+    id: String(row.id || ''),
+    rating: Number(row.rating || 0),
+    comment: row.comment == null ? null : String(row.comment),
+    created_at: String(row.created_at || ''),
+  }))
 }
 
 export async function listPublicServices() {
   const client = requireSupabase()
   const { data, error } = await client
     .from('anywork_services')
-    .select('id, title, label, description, icon, items, starting_price, starting_price_label, enabled')
+    .select('id, title, label, description, icon, items, tags, category, subcategory, starting_price, starting_price_label, image_url, enabled')
     .eq('enabled', true)
     .order('title', { ascending: true })
 
@@ -81,14 +143,16 @@ export type AdminServiceInput = {
   items?: string[]
   startingPrice?: number | null
   startingPriceLabel?: string | null
+  tags?: string[]
   enabled?: boolean
+  imageUrl?: string | null
 }
 
 export async function listAdminServices() {
   const client = requireSupabase()
   const { data, error } = await client
     .from('anywork_services')
-    .select('id, category, subcategory, title, label, description, icon, items, starting_price, starting_price_label, enabled')
+    .select('id, category, subcategory, title, label, description, icon, items, tags, starting_price, starting_price_label, image_url, enabled')
     .order('category', { ascending: true })
     .order('subcategory', { ascending: true })
     .order('label', { ascending: true })
@@ -115,9 +179,9 @@ export async function createAdminService(input: AdminServiceInput) {
       description: input.description,
       icon: input.icon || 'Store',
       items: input.items || [],
+      tags: input.tags || [],
       starting_price: input.startingPrice ?? null,
       starting_price_label: input.startingPriceLabel || (input.startingPrice != null ? '$' + Number(input.startingPrice).toLocaleString() : 'Quote'),
-      enabled: input.enabled ?? true,
     })
     .select('*')
     .single()
@@ -138,8 +202,10 @@ export async function updateAdminService(id: string, input: Partial<AdminService
       ...(input.description !== undefined ? { description: input.description } : {}),
       ...(input.icon !== undefined ? { icon: input.icon } : {}),
       ...(input.items !== undefined ? { items: input.items } : {}),
+      ...(input.tags !== undefined ? { tags: input.tags } : {}),
       ...(input.startingPrice !== undefined ? { starting_price: input.startingPrice } : {}),
       ...(input.startingPriceLabel !== undefined ? { starting_price_label: input.startingPriceLabel } : {}),
+      ...(input.imageUrl !== undefined ? { image_url: input.imageUrl } : {}),
       ...(input.enabled !== undefined ? { enabled: input.enabled } : {}),
       updated_at: new Date().toISOString(),
     })
@@ -377,7 +443,7 @@ export async function listCustomerQuotes(requestIds?: string[]) {
   if (requestIds?.length) query = query.in('request_id', requestIds)
   const { data, error } = await query
   if (error) throw error
-  return (data || []).map(({ anywork_service_requests: _request, ...quote }) => quote) as DbQuote[]
+  return (data || []).map((row) => row as unknown as DbQuote)
 }
 
 export async function getRequest(requestId: string) {
@@ -524,46 +590,34 @@ export async function createQuote(input: {
   message: string
 }) {
   const client = requireSupabase()
-  const providerId = await getCurrentUserId()
-
-  const { data, error } = await client
-    .from('anywork_quotes')
-    .insert({
-      request_id: input.requestId,
-      provider_id: providerId,
-      amount: input.amount,
-      availability: input.availability || null,
-      message: input.message,
-      status: 'Pending',
-    })
-    .select('*')
-    .single()
-
+  const { data, error } = await client.rpc('anywork_create_quote', {
+    p_request_id: input.requestId,
+    p_amount: input.amount,
+    p_availability: input.availability || null,
+    p_message: input.message,
+  })
   if (error) throw error
 
-  await client
-    .from('anywork_service_requests')
-    .update({ status: 'Quoted' })
-    .eq('id', input.requestId)
+  const quote = data as DbQuote
 
   try {
     const { data: emailData, error: emailError } = await client.functions.invoke('send-quote-email', {
-      body: { quoteId: data.id },
+      body: { quoteId: quote.id },
     })
 
     if (emailError) {
-      return { quote: data as DbQuote, emailSent: false, emailError: emailError.message }
+      return { quote, emailSent: false, emailError: emailError.message }
     }
 
     const response = emailData as { sent?: boolean; error?: string } | null
     return {
-      quote: data as DbQuote,
+      quote,
       emailSent: Boolean(response?.sent),
       emailError: response?.error,
     }
   } catch (emailError) {
     return {
-      quote: data as DbQuote,
+      quote,
       emailSent: false,
       emailError: emailError instanceof Error ? emailError.message : 'Unable to send quote email.',
     }
@@ -581,45 +635,20 @@ export async function retryQuoteEmail(quoteId: string) {
 
 export async function acceptQuote(requestId: string, quoteId: string, providerId: string) {
   const client = requireSupabase()
-
-  const { error: quoteError } = await client
-    .from('anywork_quotes')
-    .update({ status: 'Declined' })
-    .eq('request_id', requestId)
-
-  if (quoteError) throw quoteError
-
-  const { error: acceptedError } = await client
-    .from('anywork_quotes')
-    .update({ status: 'Accepted' })
-    .eq('id', quoteId)
-    .eq('request_id', requestId)
-
-  if (acceptedError) throw acceptedError
-
-  const { error: requestError } = await client
-    .from('anywork_service_requests')
-    .update({
-      selected_provider_id: providerId,
-      status: 'Quoted',
-    })
-    .eq('id', requestId)
-
-  if (requestError) throw requestError
+  const { data, error } = await client.rpc('anywork_accept_quote', {
+    p_request_id: requestId,
+    p_quote_id: quoteId,
+  })
+  if (error) throw error
+  if (data?.provider_id && data.provider_id !== providerId) throw new Error('The selected quote provider no longer matches the request.')
 }
 
 export async function updateProviderJobStatus(requestId: string, status: 'In Progress' | 'Completed') {
   const client = requireSupabase()
-  const providerId = await getCurrentUserId()
-
-  const { data, error } = await client
-    .from('anywork_service_requests')
-    .update({ status })
-    .eq('id', requestId)
-    .eq('selected_provider_id', providerId)
-    .select('*')
-    .single()
-
+  const { data, error } = await client.rpc('anywork_update_job_status', {
+    p_request_id: requestId,
+    p_status: status,
+  })
   if (error) throw error
   return data as DbRequest
 }
@@ -1125,6 +1154,22 @@ export async function updateAdminProfile(userId: string, changes: { isActive?: b
   const { data, error } = await client.from('anywork_profiles').update(payload).eq('user_id', userId).select('*').single()
   if (error) throw error
   return data as DbProfile
+}
+
+export async function uploadServiceImage(file: File) {
+  const client = requireSupabase()
+  if (!file.type.startsWith('image/')) throw new Error('Please choose an image file.')
+  if (file.size > 5 * 1024 * 1024) throw new Error('Service images must be 5MB or smaller.')
+  const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+  const path = 'services/' + crypto.randomUUID() + '.' + extension
+  const { error } = await client.storage.from('anywork-service-images').upload(path, file, {
+    cacheControl: '3600',
+    upsert: false,
+    contentType: file.type,
+  })
+  if (error) throw error
+  const { data } = client.storage.from('anywork-service-images').getPublicUrl(path)
+  return data.publicUrl
 }
 
 export async function deleteAdminService(id: string) {

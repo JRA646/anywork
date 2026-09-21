@@ -624,3 +624,167 @@
 .providerAnalyticsCard{grid-column:span 2}
 
 @media (max-width: 760px){.providerAnalyticsCard{grid-column:span 1}.dashboardChart{min-width:620px}.dashboardChartWrap{overflow-x:auto;padding-bottom:4px}.dashboardChartLegend{font-size:9px}.chartLabel{font-size:9px}}
+
+/* Production marketplace modules */
+.productionWorkspace{max-width:1200px}
+.productionPanel{margin-bottom:15px}
+.productionFormGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:15px}
+.productionFormGrid label,.productionField{display:grid;gap:7px;font-size:11px;font-weight:800;color:#555}
+.productionFormGrid input,.productionFormGrid textarea,.productionFormGrid select,.productionField input,.productionPanel>select{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px 12px;outline:0}
+.productionFormGrid input:focus,.productionFormGrid textarea:focus,.productionFormGrid select:focus,.productionField input:focus,.productionPanel>select:focus{border-color:#999}
+.productionListRow{display:flex;justify-content:space-between;align-items:center;gap:15px;border-top:1px solid #eee;padding:14px 0}
+.productionListRow>div{display:grid;gap:5px;min-width:0}
+.productionListRow strong{font-size:13px}
+.productionListRow span{font-size:10px;color:#888;line-height:1.5}
+.productionReview{display:flex;justify-content:space-between;gap:20px;border-top:1px solid #eee;padding:15px 0}
+.productionReview div{display:grid;gap:6px}
+.productionReview strong{letter-spacing:2px}
+.productionReview span,.productionReview small{font-size:11px;color:#777}
+.verificationGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.verificationGrid>div{background:#f7f5ef;border-radius:12px;padding:16px;display:grid;gap:7px}
+.verificationGrid svg{width:19px;color:var(--brand)}
+.verificationGrid strong{font-size:12px}
+.verificationGrid span{font-size:10px;color:#888}
+.productionButtonGrid{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+.productionCheckbox{display:flex!important;align-items:center;gap:8px!important;padding:12px 0}
+.productionCheckbox input{width:auto!important}
+@media(max-width:760px){.productionFormGrid{grid-template-columns:1fr}.verificationGrid{grid-template-columns:1fr 1fr}.productionListRow{align-items:flex-start}.productionListRow .statusBadge{margin-left:auto}.productionWorkspace .metricRow{grid-template-columns:1fr 1fr}}
+
+.requestCustomFields{margin-top:18px;padding-top:18px;border-top:1px solid #eee}.requestCustomFields .fieldGrid{margin-top:12px}.customFieldCheck{display:flex!important;align-items:center;gap:8px}.customFieldCheck input{width:auto!important}.requestCustomFields select[multiple]{min-height:100px}.productionButtonGrid .buttonPrimary,.productionButtonGrid .buttonSecondary{white-space:nowrap}
+
+
+/* Service-company dispatch center */
+.dispatchToolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:8px 0 14px;flex-wrap:wrap}
+.dispatchToolbar .searchField{min-width:280px;flex:1}
+.dispatchToolbar .requestFilterTabs{margin:0}
+.dispatchQueue{display:grid;gap:8px}
+.dispatchRow{display:grid;grid-template-columns:90px minmax(0,1fr) 110px auto;gap:14px;align-items:center;text-align:left;width:100%;padding:15px 16px;border:1px solid #e9e6df;border-radius:13px;background:#fff;cursor:pointer;transition:.18s ease}
+.dispatchRow:hover,.dispatchRow.active{border-color:#bdb7ad;box-shadow:0 7px 20px rgba(20,20,20,.05);transform:translateY(-1px)}
+.dispatchPriority{display:flex;align-items:center}
+.priorityDot{display:inline-flex;align-items:center;gap:6px;font-size:9px;font-weight:900;text-transform:uppercase}
+.priorityDot:before{content:"";width:7px;height:7px;border-radius:50%;background:#aaa}
+.priorityHigh:before,.priorityUrgent:before{background:#c85b3e}
+.priorityNormal:before{background:#c8a04a}
+.priorityLow:before{background:#6b9c77}
+.dispatchMain{display:grid;gap:5px;min-width:0}
+.dispatchMain strong{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dispatchMain small{display:flex;align-items:center;gap:4px;color:#888;font-size:10px}
+.dispatchDate{display:grid;gap:4px}
+.dispatchDate span{font-weight:800;font-size:11px}
+.dispatchDate small{font-size:9px;color:#999}
+.dispatchMatches{margin-top:15px}
+.dispatchMatches .cardHeading p{margin:4px 0 0;color:#888;font-size:11px}
+.dispatchLoading,.dispatchMessage{display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:10px;background:#f6f4ef;color:#666;font-size:11px;margin:10px 0}
+.providerMatchGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.providerMatchCard{border:1px solid #e9e6df;border-radius:14px;padding:16px;background:#fff;display:grid;gap:13px}
+.providerMatchTop{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center}
+.providerMatchTop>div:nth-child(2){display:grid;gap:3px}
+.providerMatchTop span{font-size:10px;color:#888}
+.providerMatchTop>b{font-size:16px}
+.providerMatchAvatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#f0eee8;font-weight:900}
+.providerMatchReasons{display:grid;gap:5px}
+.providerMatchReasons span{font-size:10px;color:#666}
+.providerMatchCard .buttonPrimary{width:100%;justify-content:center}
+@media(max-width:760px){
+  .dispatchRow{grid-template-columns:1fr;gap:8px}
+  .dispatchDate{display:flex;justify-content:space-between}
+  .providerMatchGrid{grid-template-columns:1fr}
+}
+
+
+.customerActionCenter{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:22px 24px;margin-bottom:16px;border:1px solid #e5e1d8;border-radius:16px;background:linear-gradient(135deg,#fff,#f7f5ef)}
+.customerActionCenter>div{min-width:0}
+.customerActionCenter h2{font-size:22px;letter-spacing:-.7px;margin:5px 0}
+.customerActionCenter p{margin:0;color:#777;max-width:680px;font-size:12px;line-height:1.55}
+.customerQuickLinks{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.customerQuickLinks button{display:grid;grid-template-columns:1fr auto;gap:5px;text-align:left;padding:15px;border:1px solid #e8e4dc;border-radius:13px;background:#fff;cursor:pointer}
+.customerQuickLinks button:hover{border-color:#cfc9be;box-shadow:0 5px 16px rgba(20,20,20,.04)}
+.customerQuickLinks strong{font-size:12px}
+.customerQuickLinks span{font-size:10px;color:#888}
+.customerQuickLinks svg{grid-row:1 / span 2;grid-column:2;align-self:center}
+@media(max-width:760px){.customerActionCenter{align-items:flex-start;flex-direction:column}.customerActionCenter .buttonPrimary{width:100%;justify-content:center}.customerQuickLinks{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.customerQuickLinks{grid-template-columns:1fr}}
+
+
+.accountModuleGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.accountModuleCard{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px;border:1px solid #e7e3db;border-radius:14px;background:#fff;text-align:left;cursor:pointer}
+.accountModuleCard:hover{border-color:#c9c3b8;box-shadow:0 6px 18px rgba(20,20,20,.04)}
+.accountModuleCard>div{display:grid;gap:5px}
+.accountModuleCard strong{font-size:13px}
+.accountModuleCard span{font-size:10px;color:#888;line-height:1.5}
+@media(max-width:650px){.accountModuleGrid{grid-template-columns:1fr}}
+
+
+/* Provider calendar / weekly availability */
+.providerCalendarWorkspace .productionPanel{box-shadow:0 7px 26px rgba(18,18,18,.025)}
+.calendarAvailabilityPanel{display:grid;gap:0}
+.calendarAvailabilityMeta{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:0 0 12px}
+.calendarAvailabilityMeta span{font-size:11px;font-weight:800;color:#777}
+.calendarAvailabilityMeta small{font-size:10px;color:#aaa;text-align:right}
+.calendarAvailabilityList{border-top:1px solid #eee}
+.calendarAvailabilityRow{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:74px;border-bottom:1px solid #eee}
+.calendarDay{display:grid;gap:4px;min-width:0}
+.calendarDay strong{font-size:13px;line-height:1.2}
+.calendarDay span{font-size:10px;color:#888}
+.calendarAvailabilityStatus{min-width:106px;justify-content:center;border-radius:10px!important;padding:10px 14px!important;font-size:12px!important;transition:border-color .16s ease,background .16s ease,color .16s ease,transform .16s ease}
+.calendarAvailabilityStatus.is-available{border-color:#dfd9d0;background:#fff;color:#111}
+.calendarAvailabilityStatus.is-available:hover{background:#f7f5f1;border-color:#cfc8be;transform:translateY(-1px)}
+.calendarAvailabilityStatus.is-unavailable{border-color:#ead7d2;background:#fff8f6;color:#8e4f45}
+.calendarAvailabilityStatus:disabled{opacity:.65}
+.calendarAvailabilityStatus:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+@media(max-width:600px){
+  .calendarAvailabilityMeta{display:grid;gap:4px;align-items:start}
+  .calendarAvailabilityMeta small{text-align:left}
+  .calendarAvailabilityRow{min-height:68px;gap:12px}
+  .calendarAvailabilityStatus{min-width:96px}
+}
+
+
+/* Admin service drawer polish + tags */
+.adminServiceForm select{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px 12px;outline:0}
+.adminTagField{display:grid;gap:8px}
+.adminTagInputRow{display:grid;grid-template-columns:1fr auto;gap:8px}
+.adminAddTagButton{white-space:nowrap}
+.adminFormTags{display:flex;flex-wrap:wrap;gap:7px}
+.adminFormTag{display:inline-flex;align-items:center;gap:6px;border:1px solid #ded8ce;background:#f4f1eb;color:#111;border-radius:999px;padding:7px 9px;font-size:10px;font-weight:800}
+.adminFormTag:hover{background:#ebe7df}
+.adminTagField small{font-size:9px;color:#999;font-weight:500}
+
+/* Provider weekly calendar view */
+.providerWeekCalendar{display:grid;min-width:760px}
+.providerWeekHeader,.providerWeekBody{display:grid;grid-template-columns:68px repeat(7,minmax(90px,1fr))}
+.providerWeekHeader{border-bottom:1px solid #ece8e1}
+.providerWeekTimeGutter{display:flex;align-items:center;justify-content:center;padding:12px 6px;color:#a09a91;font-size:8px;letter-spacing:1.5px;font-weight:900}
+.providerWeekDayHead{display:grid;gap:4px;padding:12px 8px;border-left:1px solid #eee;min-width:0}
+.providerWeekDayHead strong{font-size:11px}
+.providerWeekDayHead span{font-size:9px;color:#999}
+.providerWeekDayHead.is-enabled strong{color:#111}
+.providerWeekDayHead.is-disabled strong,.providerWeekDayHead.is-disabled span{color:#9c827e}
+.providerWeekBody{min-height:390px}
+.providerWeekTimes{align-items:flex-start;justify-content:space-between;padding:16px 6px;border-right:1px solid #eee;color:#aaa;font-size:8px}
+.providerWeekDayColumn{border-left:1px solid #eee}
+.providerWeekCanvas{position:relative;height:390px;padding:14px 8px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 76px,#eee 77px)}
+.providerWeekCanvas.is-disabled{background-color:#fbf8f6}
+.providerWeekEvent{position:absolute;left:8px;right:8px;top:48px;min-height:105px;display:grid;align-content:start;gap:5px;text-align:left;border:1px solid #ded9d1;border-radius:10px;padding:10px 9px;background:#fff;color:#111;box-shadow:0 5px 15px rgba(18,18,18,.04)}
+.providerWeekEvent:hover{border-color:#bbb3a8;transform:translateY(-1px)}
+.providerWeekEvent.available{border-left:3px solid #c86b2e}
+.providerWeekEvent.unavailable{border-left:3px solid #a06f67;background:#fff9f7;color:#7c514a}
+.providerWeekEvent strong{font-size:10px}
+.providerWeekEvent span{font-size:9px;color:#888}
+.providerWeekTimeOff{position:absolute;left:8px;right:8px;bottom:12px;display:grid;gap:3px;padding:8px;border-radius:9px;background:#f1efeb;border:1px dashed #d5cec4;color:#666}
+.providerWeekTimeOff strong{font-size:9px}
+.providerWeekTimeOff span{font-size:8px;color:#999}
+@media(max-width:900px){
+  .providerWeekCalendar{min-width:0;overflow-x:auto}
+  .providerWeekHeader,.providerWeekBody{min-width:760px}
+}
+
+
+.workspaceDateTime{display:block;font-size:9px;color:#9b968e;line-height:1.2;letter-spacing:.15px;white-space:nowrap}
+@media(max-width:600px){.workspaceDateTime{font-size:8px;overflow:hidden;text-overflow:ellipsis;max-width:42vw}}
+
+
+.providerAssignmentCard{margin-bottom:15px}
+.providerAssignmentList{display:grid;gap:0}
+.providerAssignmentCard .productionListRow{align-items:center}
+@media(max-width:760px){.providerAssignmentCard .productionButtonGrid{width:100%}.providerAssignmentCard .productionButtonGrid .buttonPrimary,.providerAssignmentCard .productionButtonGrid .buttonSecondary{flex:1;justify-content:center}}

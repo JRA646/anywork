@@ -45,7 +45,7 @@ export function PublicProviders({
             </p>
           </div>
           <div className="providerDirectoryStats">
-            <span><strong>{providers.length}</strong><small>verified providers</small></span>
+            <span><strong>{providers.length}</strong><small>active providers</small></span>
             <span><strong>4.9/5</strong><small>average rating</small></span>
             <span><strong>1,200+</strong><small>jobs requested</small></span>
           </div>

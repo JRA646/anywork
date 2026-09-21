@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { ArrowRight, CalendarDays, CircleDollarSign, Clock3, FileText, TrendingUp } from 'lucide-react'
 import { ProviderCard } from '../components/ProviderCard'
 import { StatusBadge } from '../components/StatusBadge'
@@ -25,7 +25,7 @@ export function CustomerDashboard({ profile, onNavigate }: { profile: AnyWorkPro
   const accepted = quotes.filter((quote) => quote.status === 'Accepted')
   const spend = accepted.reduce((sum, quote) => sum + Number(quote.amount), 0)
   const quoteCount = quotes.filter((quote) => quote.status === 'Pending').length
-  const monthly = useMemo(() => buildMonthlySeries(requests, accepted), [requests, accepted])
+  const monthly = buildMonthlySeries(requests, accepted)
   const maxMonthly = Math.max(...monthly.map((item) => item.value), 1)
 
   return (
@@ -39,11 +39,33 @@ export function CustomerDashboard({ profile, onNavigate }: { profile: AnyWorkPro
         <button className="buttonPrimary" onClick={() => onNavigate('/services')}>Find a service <ArrowRight size={17} /></button>
       </div>
 
+      <section className="customerActionCenter">
+        <div>
+          <span className="eyebrow">NEXT ACTION</span>
+          <h2>{quoteCount > 0 ? 'You have provider quotes waiting.' : active.length ? 'Your service work is moving.' : 'Ready to get something done?'}</h2>
+          <p>{quoteCount > 0 ? 'Review the quotes, compare availability and choose the provider that fits your job.' : active.length ? 'Open your active request to see the latest status, messages and appointment details.' : 'Tell us what you need and ANYwork will help connect you with the right provider.'}</p>
+        </div>
+        <button className="buttonPrimary" onClick={() => quoteCount > 0
+          ? onNavigate('/customer/requests/' + (quotes.find((quote) => quote.status === 'Pending')?.request_id || ''))
+          : active.length
+            ? onNavigate('/customer/requests/' + active[0].id)
+            : onNavigate('/services')}>
+          {quoteCount > 0 ? 'Compare quotes' : active.length ? 'View my work' : 'Request a service'} <ArrowRight size={16}/>
+        </button>
+      </section>
+
       <div className="metricRow">
         <Metric icon={<FileText />} label="Active requests" value={loading ? '—' : String(active.length)} note={requests.length + ' total requests'} />
         <Metric icon={<Clock3 />} label="Quotes waiting" value={loading ? '—' : String(quoteCount)} note="Ready to compare" />
-        <Metric icon={<CircleDollarSign />} label="Accepted spend" value={loading ? '—' : '$' + spend.toLocaleString()} note="From accepted quotes" />
+        <Metric icon={<CircleDollarSign />} label="Accepted spend" value={loading ? '—' : '₱' + spend.toLocaleString('en-PH')} note="From accepted quotes" />
         <Metric icon={<CalendarDays />} label="Upcoming jobs" value={loading ? '—' : String(requests.filter((r) => r.status === 'Scheduled').length)} note="Scheduled work" />
+      </div>
+
+      <div className="customerQuickLinks">
+        <button onClick={() => onNavigate('/services')}><strong>Browse services</strong><span>Find the service you need</span><ArrowRight size={15}/></button>
+        <button onClick={() => onNavigate('/customer/jobs')}><strong>My jobs</strong><span>Track active and completed work</span><ArrowRight size={15}/></button>
+        <button onClick={() => onNavigate('/customer/messages')}><strong>Messages</strong><span>Talk to your provider</span><ArrowRight size={15}/></button>
+        <button onClick={() => onNavigate('/customer/profile')}><strong>Account</strong><span>Profile and saved details</span><ArrowRight size={15}/></button>
       </div>
 
       <div className="dashboardGrid">

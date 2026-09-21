@@ -14,7 +14,11 @@ export type Service = {
   description: string
   icon: string
   items: string[]
+  tags?: string[]
+  category?: string
+  subcategory?: string
   startingPrice: string
+  imageUrl?: string | null
 }
 
 export type Provider = {

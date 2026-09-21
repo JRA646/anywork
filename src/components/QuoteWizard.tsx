@@ -21,6 +21,7 @@ export function QuoteWizard({
   const [budget, setBudget] = useState('')
   const [accessNotes, setAccessNotes] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [createdRequest, setCreatedRequest] = useState<DbRequest | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const service = services.find((item) => item.id === serviceId)
@@ -43,8 +44,8 @@ export function QuoteWizard({
         accessNotes: accessNotes.trim() || null,
         budget: budget ? Number(budget) : null,
       })
+      setCreatedRequest(created)
       setSubmitted(true)
-      onCreated?.(created)
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'We could not create the request. Please try again.')
     } finally {
@@ -63,7 +64,7 @@ export function QuoteWizard({
         <span><CalendarDays size={15} /> Providers can now review the request</span>
         <span><MapPin size={15} /> {location || 'Your service area'}</span>
       </div>
-      <button className="buttonPrimary" onClick={onClose}>Done <ArrowRight size={17} /></button>
+      <button className="buttonPrimary" onClick={() => { if (createdRequest) onCreated?.(createdRequest); onClose() }}>Done <ArrowRight size={17} /></button>
     </div> : <>
       <span className="eyebrow">REQUEST A SERVICE</span>
       <h2>Create a new service request.</h2>

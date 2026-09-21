@@ -16,6 +16,7 @@ import {
 import { quotes as mockQuotes, requests as mockRequests, providers as mockProviders, services } from '../data/mockData'
 import { StatusBadge } from '../components/StatusBadge'
 import { ProviderCard } from '../components/ProviderCard'
+import { RequestPhotos } from '../components/RequestPhotos'
 import {
   acceptQuote,
   getRequest,
@@ -242,6 +243,7 @@ export function RequestDetailPage({
 
       <div className="requestDetailLayout">
         <main>
+          {isUuid && <RequestPhotos requestId={requestId} canUpload />}
           <div className="requestContentTabs" id="request-quotes">
             <button className={tab === 'quotes' ? 'active' : ''} onClick={() => setTab('quotes')}>Quotes ({quoteViews.length})</button>
             <button className={tab === 'activity' ? 'active' : ''} onClick={() => setTab('activity')}>Activity</button>

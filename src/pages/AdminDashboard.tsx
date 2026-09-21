@@ -164,7 +164,6 @@ function AdminProviders() {
 
 export function AdminServices() {
   type CatalogService = DbService & { category: string; subcategory: string }
-  const softwareSubcategories = ['General', 'Mobile Development', 'Web Application', 'AI']
   const [catalog, setCatalog] = useState<CatalogService[]>([])
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All')

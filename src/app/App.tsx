@@ -44,6 +44,7 @@ function Application() {
   const { session, profile, loading, signOut } = useAuth()
   const [quoteOpen, setQuoteOpen] = useState(false)
   const [quoteService, setQuoteService] = useState('')
+  const [quoteCreatedCallback, setQuoteCreatedCallback] = useState<((requestId: string) => void) | null>(null)
 
   useEffect(() => {
     if (loading) return
@@ -69,8 +70,9 @@ function Application() {
     }
   }, [loading, path, profile, session, navigate])
 
-  const openQuote = (serviceId = '') => {
+  const openQuote = (serviceId = '', onCreated?: (requestId: string) => void) => {
     setQuoteService(serviceId)
+    setQuoteCreatedCallback(() => onCreated || null)
     setQuoteOpen(true)
   }
 
@@ -115,7 +117,13 @@ function Application() {
         />
         <div className="publicMain">{publicContent}</div>
         <PublicFooter onNavigate={navigate} onQuote={openQuote} />
-        {quoteOpen && <QuoteWizard initialService={quoteService} onClose={() => setQuoteOpen(false)} />}
+        {quoteOpen && (
+          <QuoteWizard
+            initialService={quoteService}
+            onClose={() => { setQuoteOpen(false); setQuoteCreatedCallback(null) }}
+            onCreated={(request) => quoteCreatedCallback?.(request.id)}
+          />
+        )}
       </>
     )
   }
@@ -129,7 +137,7 @@ function Application() {
     const content = section === 'requests' && requestId
       ? <RequestDetailPage requestId={requestId} onBack={() => navigate('/customer/requests')} onNavigate={navigate} />
       : section === 'requests'
-        ? <CustomerRequestsPage onNavigate={navigate} />
+        ? <CustomerRequestsPage onNavigate={navigate} onCreateRequest={() => openQuote('', (requestId) => navigate('/customer/requests/' + requestId))} />
         : section === 'messages'
           ? <CustomerMessagesPage onNavigate={navigate} requestId={requestId} />
           : section === 'profile'

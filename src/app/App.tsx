@@ -55,9 +55,13 @@ function Application() {
   const [quoteCreatedCallback, setQuoteCreatedCallback] = useState<((requestId: string) => void) | null>(null)
 
   useEffect(() => {
-    void listPublicServices()
-      .then((rows) => {
-        if (!rows.length) return
+    let mounted = true
+
+    const loadServices = async () => {
+      try {
+        const rows = await listPublicServices()
+        if (!mounted || !rows.length) return
+
         setServiceCatalog(rows.map((service) => ({
           id: service.id,
           title: service.title,
@@ -67,10 +71,15 @@ function Application() {
           items: Array.isArray(service.items) ? service.items : [],
           startingPrice: service.starting_price_label || (service.starting_price !== null ? '₱' + Number(service.starting_price).toLocaleString('en-PH') : 'Quote'),
         })))
-      })
-      .catch(() => undefined)
+      } catch {
+        // Keep the local catalog available when Supabase is unavailable.
+      }
+    }
+
+    void loadServices()
 
     if (loading) return
+
 
     if (path === '/signin' || path === '/admin/signin') {
       if (!session || !profile) return
@@ -90,6 +99,9 @@ function Application() {
 
     if (profile.role !== protectedRole) {
       navigate(profile.role === 'admin' ? '/admin' : '/' + profile.role)
+    }
+    return () => {
+      mounted = false
     }
   }, [loading, path, profile, session, navigate])
 

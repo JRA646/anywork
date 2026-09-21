@@ -34,6 +34,7 @@ import {
   type DbQuote,
   type DbRequest,
 } from '../lib/anyworkApi'
+import { showError, showSuccess, showToast } from '../lib/alerts'
 
 type RequestFilter = 'All' | 'Needs quote' | 'Quoted' | 'Scheduled' | 'In Progress' | 'Completed'
 
@@ -435,6 +436,10 @@ function ProviderServices() {
         leadTimeDays: current?.lead_time_days ?? 1,
       })
       setConfigured((items) => [...items.filter((item) => item.service_key !== serviceKey), saved])
+      await showToast(saved.enabled ? 'Service enabled' : 'Service disabled')
+    } catch (saveError) {
+      const message = saveError instanceof Error ? saveError.message : 'Unable to update this service.'
+      await showError('Unable to update service', message)
     } finally {
       setSaving('')
     }

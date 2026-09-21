@@ -624,3 +624,28 @@
 .providerAnalyticsCard{grid-column:span 2}
 
 @media (max-width: 760px){.providerAnalyticsCard{grid-column:span 1}.dashboardChart{min-width:620px}.dashboardChartWrap{overflow-x:auto;padding-bottom:4px}.dashboardChartLegend{font-size:9px}.chartLabel{font-size:9px}}
+
+/* Production marketplace modules */
+.productionWorkspace{max-width:1200px}
+.productionPanel{margin-bottom:15px}
+.productionFormGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:15px}
+.productionFormGrid label,.productionField{display:grid;gap:7px;font-size:11px;font-weight:800;color:#555}
+.productionFormGrid input,.productionFormGrid textarea,.productionFormGrid select,.productionField input,.productionPanel>select{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px 12px;outline:0}
+.productionFormGrid input:focus,.productionFormGrid textarea:focus,.productionFormGrid select:focus,.productionField input:focus,.productionPanel>select:focus{border-color:#999}
+.productionListRow{display:flex;justify-content:space-between;align-items:center;gap:15px;border-top:1px solid #eee;padding:14px 0}
+.productionListRow>div{display:grid;gap:5px;min-width:0}
+.productionListRow strong{font-size:13px}
+.productionListRow span{font-size:10px;color:#888;line-height:1.5}
+.productionReview{display:flex;justify-content:space-between;gap:20px;border-top:1px solid #eee;padding:15px 0}
+.productionReview div{display:grid;gap:6px}
+.productionReview strong{letter-spacing:2px}
+.productionReview span,.productionReview small{font-size:11px;color:#777}
+.verificationGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.verificationGrid>div{background:#f7f5ef;border-radius:12px;padding:16px;display:grid;gap:7px}
+.verificationGrid svg{width:19px;color:var(--brand)}
+.verificationGrid strong{font-size:12px}
+.verificationGrid span{font-size:10px;color:#888}
+.productionButtonGrid{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+.productionCheckbox{display:flex!important;align-items:center;gap:8px!important;padding:12px 0}
+.productionCheckbox input{width:auto!important}
+@media(max-width:760px){.productionFormGrid{grid-template-columns:1fr}.verificationGrid{grid-template-columns:1fr 1fr}.productionListRow{align-items:flex-start}.productionListRow .statusBadge{margin-left:auto}.productionWorkspace .metricRow{grid-template-columns:1fr 1fr}}

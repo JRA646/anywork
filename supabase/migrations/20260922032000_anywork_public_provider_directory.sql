@@ -54,7 +54,7 @@ as $$
     coalesce(nullif(trim(p.city),''),'Philippines') as location,
     '—'::text as response_time,
     '—'::text as response_rate,
-    coalesce(nullif(trim(p.company_name),''),'Verified service provider on ANYwork') as summary,
+    coalesce(nullif(trim(p.company_name),''),'Service provider on ANYwork') as summary,
     coalesce(
       exists(
         select 1

@@ -154,6 +154,35 @@ export async function listProfiles(userIds: string[]) {
   return (data || []) as DbProfile[]
 }
 
+export async function acceptQuote(requestId: string, quoteId: string, providerId: string) {
+  const client = requireSupabase()
+
+  const { error: quoteError } = await client
+    .from('anywork_quotes')
+    .update({ status: 'Declined' })
+    .eq('request_id', requestId)
+
+  if (quoteError) throw quoteError
+
+  const { error: acceptedError } = await client
+    .from('anywork_quotes')
+    .update({ status: 'Accepted' })
+    .eq('id', quoteId)
+    .eq('request_id', requestId)
+
+  if (acceptedError) throw acceptedError
+
+  const { error: requestError } = await client
+    .from('anywork_service_requests')
+    .update({
+      selected_provider_id: providerId,
+      status: 'Quoted',
+    })
+    .eq('id', requestId)
+
+  if (requestError) throw requestError
+}
+
 export async function sendMessage(input: {
   requestId?: string | null
   receiverId: string

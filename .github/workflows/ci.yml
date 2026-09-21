@@ -6,10 +6,10 @@ on:
       - main
       - feature/anywork-phases-1-5-production
       - feature/anywork-app-layout
-      - feature/anywork-phases-1-5-production
   pull_request:
     branches:
       - main
+      - feature/anywork-phases-1-5-production
 
 jobs:
   validate:

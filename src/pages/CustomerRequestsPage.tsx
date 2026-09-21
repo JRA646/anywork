@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { services } from '../data/mockData'
 import { StatusBadge } from '../components/StatusBadge'
-import { listCustomerRequests, listQuotesForRequests, type DbRequest, type DbQuote } from '../lib/anyworkApi'
+import { listCustomerRequests, listQuotesForRequests, subscribeToQuotes, subscribeToRequests, type DbRequest, type DbQuote } from '../lib/anyworkApi'
 
 type RequestFilter = 'All' | 'Requested' | 'Quoted' | 'Scheduled' | 'In Progress' | 'Completed'
 const filters: RequestFilter[] = ['All', 'Requested', 'Quoted', 'Scheduled', 'In Progress', 'Completed']
@@ -30,6 +30,7 @@ export function CustomerRequestsPage({
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [realtime, setRealtime] = useState<'connecting' | 'live' | 'offline'>('connecting')
 
   const load = async () => {
     setLoading(true)
@@ -47,6 +48,44 @@ export function CustomerRequestsPage({
 
   useEffect(() => {
     void load()
+  }, [])
+
+  useEffect(() => {
+    let requestCleanup: (() => void) | undefined
+    let quoteCleanup: (() => void) | undefined
+
+    void subscribeToRequests((change) => {
+      if (!change.record && change.oldRecord?.id) {
+        setRequests((current) => current.filter((item) => item.id !== change.oldRecord?.id))
+        return
+      }
+      if (change.record) {
+        setRequests((current) => {
+          const next = [...current.filter((item) => item.id !== change.record!.id), change.record!]
+          return next.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        })
+      }
+    }, (status) => {
+      setRealtime(status === 'SUBSCRIBED' ? 'live' : status === 'CLOSED' ? 'offline' : 'connecting')
+    }).then((dispose) => { requestCleanup = dispose }).catch(() => setRealtime('offline'))
+
+    void subscribeToQuotes((change) => {
+      if (!change.record && change.oldRecord?.id) {
+        setQuotes((current) => current.filter((item) => item.id !== change.oldRecord?.id))
+        return
+      }
+      if (change.record) {
+        setQuotes((current) => {
+          const next = [...current.filter((item) => item.id !== change.record!.id), change.record!]
+          return next.sort((a, b) => Number(a.amount) - Number(b.amount))
+        })
+      }
+    }).then((dispose) => { quoteCleanup = dispose }).catch(() => undefined)
+
+    return () => {
+      requestCleanup?.()
+      quoteCleanup?.()
+    }
   }, [])
 
   const filtered = useMemo(() => {
@@ -79,9 +118,12 @@ export function CustomerRequestsPage({
           <h1>My requests</h1>
           <p>Keep every service request, quote and scheduled job organized in one place.</p>
         </div>
-        <button className="buttonPrimary customerRequestsCta" onClick={onCreateRequest}>
-          <Plus size={17} /> New request
-        </button>
+        <div className="customerRequestsHeroActions">
+          <span className={'requestsRealtimeStatus ' + realtime}><span /> {realtime === 'live' ? 'Live updates' : realtime === 'connecting' ? 'Connecting…' : 'Reconnecting…'}</span>
+          <button className="buttonPrimary customerRequestsCta" onClick={onCreateRequest}>
+            <Plus size={17} /> New request
+          </button>
+        </div>
       </div>
 
       <div className="requestInsights">

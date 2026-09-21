@@ -16,6 +16,7 @@ import { ProviderRequestDetail } from '../pages/ProviderRequestDetail'
 import { AdminDashboard } from '../pages/AdminDashboard'
 import { AuthPage } from '../pages/AuthPage'
 import { ProfilePage } from '../pages/ProfilePage'
+import { HelpCenterPage } from '../pages/HelpCenterPage'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
 import '../styles/modern.css'
@@ -179,16 +180,29 @@ function Application() {
 
   if (path === '/admin' || path.startsWith('/admin/')) {
     const section = path.split('/')[2] || 'dashboard'
+    const adminContent = section === 'help'
+      ? <HelpCenterPage />
+      : section === 'profile'
+        ? <ProfilePage role="admin" />
+        : <AdminDashboard section={section} onNavigate={navigate} />
+    const adminTitle = section === 'dashboard'
+      ? 'Overview'
+      : section === 'help'
+        ? 'Help Center'
+        : section === 'profile'
+          ? 'Profile'
+          : section.charAt(0).toUpperCase() + section.slice(1)
+
     return (
       <WorkspaceLayout
         role="admin"
         profile={profile}
-        title={section === 'dashboard' ? 'Overview' : section.charAt(0).toUpperCase() + section.slice(1)}
+        title={adminTitle}
         current={section}
-        onNavigate={(item) => navigate('/admin/' + item)}
+        onNavigate={(item) => navigate('/admin/' + (item === 'dashboard' ? '' : item))}
         onPublicSite={handleSignOut}
       >
-        <AdminDashboard section={section} />
+        {adminContent}
       </WorkspaceLayout>
     )
   }

@@ -330,7 +330,7 @@ function Application() {
 
   if (path === '/admin' || path.startsWith('/admin/')) {
     const section = path.split('/')[2] || 'dashboard'
-    const adminContent = ['jobs','payments','reviews','disputes','support','audit','service-builder'].includes(section)
+    const adminContent = ['jobs','verification','payments','reviews','disputes','support','audit','service-builder'].includes(section)
       ? <ProductionWorkspacePage role="admin" section={section} profile={profile} onNavigate={navigate} />
       : section === 'help'
       ? <HelpCenterPage />

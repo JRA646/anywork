@@ -5,7 +5,7 @@ import {
   createSupportTicket, deleteAddress, getProviderVerification, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments,
   listInvoices, listPayments, listProviderAvailability, listProviderTimeOff, listReviews, listServiceFields, listSupportTickets,
   openDispute, saveAddress, saveProviderAvailability, saveProviderTimeOff, saveServiceField, submitProviderVerification, updateDispute,
-  type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets,
+  type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets, listAdminReviews,
 } from '../lib/productionApi'
 import { StatusBadge } from '../components/StatusBadge'
 
@@ -47,7 +47,7 @@ function FinancePage({ role }: { role:'customer'|'provider'|'admin' }) {
 
 function ReviewsPage({ role }: { role:'customer'|'provider'|'admin' }) {
   const [rows,setRows]=useState<any[]>([])
-  useEffect(()=>{void listReviews(role==='admin'?undefined:role).then(setRows).catch(()=>setRows([]))},[role])
+  useEffect(()=>{void (role==='admin'?listAdminReviews():listReviews(role)).then(setRows).catch(()=>setRows([]))},[role])
   const average=rows.length?rows.reduce((s,r)=>s+Number(r.rating),0)/rows.length:0
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="REPUTATION" title="Reviews" description="Track service quality and customer feedback."/><div className="metricRow"><Metric label="Reviews" value={String(rows.length)} note="Published reviews"/><Metric label="Average rating" value={average?average.toFixed(1)+' ★':'—'} note="Out of 5"/></div><Panel title="Review history" kicker="FEEDBACK">{rows.map(row=><div className="productionReview" key={row.id}><div><strong>{'★'.repeat(Number(row.rating))}{'☆'.repeat(5-Number(row.rating))}</strong><span>{row.comment||'No written comment'}</span></div><small>{new Date(row.created_at).toLocaleDateString()}</small></div>)}{!rows.length&&<Empty text="No reviews yet."/>}</Panel></div>
 }

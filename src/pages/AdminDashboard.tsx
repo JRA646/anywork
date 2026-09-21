@@ -15,9 +15,6 @@ import {
   Store,
   UserCheck,
   X,
-  Smartphone,
-  Globe,
-  Sparkles,
 } from 'lucide-react'
 import { requests, providers, services } from '../data/mockData'
 import type { Provider, ServiceRequest } from '../types/marketplace'

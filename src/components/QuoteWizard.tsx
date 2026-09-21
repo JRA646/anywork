@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, MapPin, Upload, X } from 'lucide-react'
-import { services } from '../data/mockData'
+import { services as mockServices } from '../data/mockData'
+import type { Service } from '../types/marketplace'
 import { useAuth } from '../auth/AuthContext'
 import { createServiceRequest, uploadRequestPhoto, type DbRequest } from '../lib/anyworkApi'
 import { showError, showSuccess } from '../lib/alerts'
@@ -13,15 +14,18 @@ const getLocalDateTimeMin = () => {
 
 export function QuoteWizard({
   initialService = '',
+  servicesOverride = mockServices,
   onClose,
   onCreated,
 }: {
   initialService?: string
+  servicesOverride?: Service[]
   onClose: () => void
   onCreated?: (request: DbRequest) => void
 }) {
   const { session, profile } = useAuth()
   const isGuest = !session
+  const services = servicesOverride
   const validInitialService = services.some((item) => item.id === initialService) ? initialService : ''
 
   const [step, setStep] = useState(validInitialService ? 2 : 1)

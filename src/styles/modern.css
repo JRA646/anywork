@@ -536,16 +536,16 @@
 }
 .brandHeaderMark{
   display:block;
-  width:29px;
-  height:29px;
+  width:42px;
+  height:42px;
   object-fit:contain;
   flex:none;
   filter:brightness(0) saturate(100%);
 }
 .brandHeaderWordmark{
   display:block;
-  width:112px;
-  height:40px;
+  width:98px;
+  height:34px;
   object-fit:contain;
   object-position:left center;
   filter:none;

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { services } from '../data/mockData'
 import { StatusBadge } from '../components/StatusBadge'
+import { RequestPhotos } from '../components/RequestPhotos'
 import {
   getRequest,
   getCurrentUserId,
@@ -150,6 +151,8 @@ export function ProviderJobDetail({
         ))}
       </div>
 
+      <RequestPhotos requestId={requestId} />
+      
       <div className="providerJobDetailGrid">
         <main>
           <section className="dashboardCard">

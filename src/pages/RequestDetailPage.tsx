@@ -9,6 +9,7 @@ import {
   MessageCircle,
   Pencil,
   MapPin,
+  Printer,
   ShieldCheck,
   Star,
   Tag,
@@ -246,6 +247,14 @@ export function RequestDetailPage({
             <p><MapPin size={14} /> {requestLocation} <span>·</span> <CalendarDays size={14} /> {requestDate}</p>
           </div>
           <div className="requestDetailActions">
+            {selectedQuote && dbRequest && (
+              <button
+                className="buttonSecondary"
+                onClick={() => onNavigate('/customer/invoices/' + dbRequest.id)}
+              >
+                <Printer size={15} /> Invoice
+              </button>
+            )}
             <button
               className="buttonSecondary"
               onClick={() => {

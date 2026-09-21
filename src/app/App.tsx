@@ -25,6 +25,7 @@ import { HelpCenterPage } from '../pages/HelpCenterPage'
 import { GuestRequestPage } from '../pages/GuestRequestPage'
 import { InvoicePage } from '../pages/InvoicePage'
 import { CustomerJobWorkspace } from '../pages/CustomerJobWorkspace'
+import { CustomerJobsPage } from '../pages/CustomerJobsPage'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
 import { BrandLogo } from '../components/BrandLogo'
@@ -223,6 +224,8 @@ function Application() {
       ? <RequestDetailPage requestId={requestId} onBack={() => navigate('/customer/requests')} onNavigate={navigate} />
       : section === 'requests'
         ? <CustomerRequestsPage onNavigate={navigate} onCreateRequest={() => openQuote('', (requestId) => navigate('/customer/requests/' + requestId))} />
+        : section === 'jobs'
+          ? <CustomerJobsPage onNavigate={navigate} />
         : section === 'messages'
           ? <CustomerMessagesPage
               onNavigate={navigate}

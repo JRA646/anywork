@@ -165,7 +165,7 @@ function AdminProviders() {
 function AdminServices() {
   type CatalogService = DbService & { category: string; subcategory: string }
   const categoryOptions = ['Software', 'Print & Marketing', 'Construction & Fabrication', 'Installation', 'Maintenance', 'Site Services', 'Special Projects']
-  const softwareSubcategories = ['Mobile Development', 'Web Application', 'AI']
+  const softwareSubcategories = ['General', 'Mobile Development', 'Web Application', 'AI']
   const [catalog, setCatalog] = useState<CatalogService[]>([])
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All')
@@ -175,7 +175,7 @@ function AdminServices() {
   const [error, setError] = useState('')
   const [form, setForm] = useState({
     category: 'Software',
-    subcategory: 'Mobile Development',
+    subcategory: 'General',
     label: '',
     description: '',
     items: '',
@@ -232,7 +232,7 @@ function AdminServices() {
       setCatalog((current) => [created, ...current])
       setActiveService((current) => ({ ...current, [created.id]: true }))
       setShowForm(false)
-      setForm({ category: 'Software', subcategory: 'Mobile Development', label: '', description: '', items: '', startingPrice: '' })
+      setForm({ category: 'Software', subcategory: 'General', label: '', description: '', items: '', startingPrice: '' })
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Unable to add service.')
     } finally {
@@ -281,6 +281,7 @@ function AdminServices() {
         </div>
         <div className="softwareSubcategoryList">
           {[
+            ['General', Store],
             ['Mobile Development', Smartphone],
             ['Web Application', Globe],
             ['AI', Sparkles],

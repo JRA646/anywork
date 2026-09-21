@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ImagePlus, Trash2, Upload } from 'lucide-react'
 import { deleteRequestPhoto, listRequestPhotos, uploadRequestPhoto, type DbRequestPhoto } from '../lib/anyworkApi'
+import { confirmAction, showError, showSuccess } from '../lib/alerts'
 
 export function RequestPhotos({
   requestId,
@@ -50,11 +51,23 @@ export function RequestPhotos({
   }
 
   const remove = async (photo: DbRequestPhoto) => {
+    const confirmed = await confirmAction({
+      title: 'Remove this photo?',
+      text: 'The photo will be removed from this request.',
+      confirmText: 'Remove photo',
+      cancelText: 'Keep photo',
+      danger: true,
+    })
+    if (!confirmed) return
+
     try {
       await deleteRequestPhoto(photo)
       setPhotos((current) => current.filter((item) => item.id !== photo.id))
+      await showSuccess('Photo removed')
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : 'Unable to remove the photo.')
+      const message = deleteError instanceof Error ? deleteError.message : 'Unable to remove the photo.'
+      setError(message)
+      await showError('Unable to remove photo', message)
     }
   }
 

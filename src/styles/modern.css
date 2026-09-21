@@ -778,3 +778,7 @@
   .providerWeekCalendar{min-width:0;overflow-x:auto}
   .providerWeekHeader,.providerWeekBody{min-width:760px}
 }
+
+
+.workspaceDateTime{display:block;font-size:9px;color:#9b968e;line-height:1.2;letter-spacing:.15px;white-space:nowrap}
+@media(max-width:600px){.workspaceDateTime{font-size:8px;overflow:hidden;text-overflow:ellipsis;max-width:42vw}}

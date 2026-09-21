@@ -418,25 +418,6 @@ function PublicFooter({ onNavigate, onQuote }: { onNavigate: (path: string) => v
   )
 }
 
-function SimpleMessages({ title }: { title: string }) {
-  return (
-    <div className="workspaceDashboard">
-      <div className="workspacePageTitle">
-        <span className="eyebrow">MESSAGES</span>
-        <h1>{title}</h1>
-        <p>Keep conversations attached to the work.</p>
-      </div>
-      <div className="chatModern">
-        <div className="chatModernHeader"><strong>Job #AW-1027</strong><Bell size={16} /></div>
-        <div className="chatBubble incoming">Hi! Your provider has sent an update on the job.</div>
-        <div className="chatBubble outgoing">Thanks. Can we move the appointment to 10 AM?</div>
-        <div className="chatBubble incoming">Yes, that works.</div>
-        <div className="chatComposer"><input placeholder="Write a message..." /><button className="buttonPrimary">Send</button></div>
-      </div>
-    </div>
-  )
-}
-
 function AppLoading() {
   return (
     <main className="appLoading" aria-live="polite" aria-busy="true">

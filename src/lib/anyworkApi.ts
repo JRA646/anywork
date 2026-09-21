@@ -54,6 +54,18 @@ export type DbProviderService = {
   updated_at: string
 }
 
+export type DbRequestPhoto = {
+  id: string
+  request_id: string
+  customer_id: string
+  storage_path: string
+  file_name: string
+  mime_type: string
+  size_bytes: number
+  created_at: string
+  signed_url?: string
+}
+
 export type DbMessage = {
   id: string
   request_id: string | null
@@ -71,6 +83,97 @@ export async function getCurrentUserId() {
   if (error) throw error
   if (!data.user) throw new Error('You must be signed in.')
   return data.user.id
+}
+
+export async function uploadRequestPhoto(requestId: string, file: File) {
+  const client = requireSupabase()
+  const customerId = await getCurrentUserId()
+
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    throw new Error('Only JPG, PNG, and WebP images are supported.')
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error('Each photo must be 5 MB or smaller.')
+  }
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '-').slice(-120)
+  const storagePath = `${requestId}/${customerId}/${crypto.randomUUID()}-${safeName}`
+
+  const { error: uploadError } = await client.storage
+    .from('anywork-request-photos')
+    .upload(storagePath, file, {
+      cacheControl: '3600',
+      contentType: file.type,
+      upsert: false,
+    })
+
+  if (uploadError) throw uploadError
+
+  const { data, error } = await client
+    .from('anywork_request_photos')
+    .insert({
+      request_id: requestId,
+      customer_id: customerId,
+      storage_path: storagePath,
+      file_name: file.name,
+      mime_type: file.type,
+      size_bytes: file.size,
+    })
+    .select('*')
+    .single()
+
+  if (error) {
+    await client.storage.from('anywork-request-photos').remove([storagePath])
+    throw error
+  }
+
+  return data as DbRequestPhoto
+}
+
+export async function listRequestPhotos(requestId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('anywork_request_photos')
+    .select('*')
+    .eq('request_id', requestId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  const photos = (data || []) as DbRequestPhoto[]
+  if (!photos.length) return photos
+
+  const { data: signed, error: signedError } = await client.storage
+    .from('anywork-request-photos')
+    .createSignedUrls(photos.map((photo) => photo.storage_path), 3600)
+
+  if (signedError) throw signedError
+
+  return photos.map((photo) => ({
+    ...photo,
+    signed_url: signed?.find((item) => item.path === photo.storage_path)?.signedUrl || undefined,
+  }))
+}
+
+export async function deleteRequestPhoto(photo: DbRequestPhoto) {
+  const client = requireSupabase()
+  const customerId = await getCurrentUserId()
+
+  if (photo.customer_id !== customerId) {
+    throw new Error('You can only remove photos from your own requests.')
+  }
+
+  const { error: storageError } = await client.storage
+    .from('anywork-request-photos')
+    .remove([photo.storage_path])
+  if (storageError) throw storageError
+
+  const { error } = await client
+    .from('anywork_request_photos')
+    .delete()
+    .eq('id', photo.id)
+    .eq('customer_id', customerId)
+
+  if (error) throw error
 }
 
 export async function createServiceRequest(input: {

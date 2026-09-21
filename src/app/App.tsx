@@ -25,7 +25,6 @@ import { WorkspaceLayout } from '../components/WorkspaceLayout'
 import '../styles/modern.css'
 import '../styles/polish.css'
 import '../styles/providers-public.css'
-import { showInfo } from '../lib/alerts'
 
 const roleRoute = (path: string): Role | null => {
   if (path.startsWith('/customer')) return 'customer'
@@ -74,16 +73,6 @@ function Application() {
   }, [loading, path, profile, session, navigate])
 
   const openQuote = (serviceId = '', onCreated?: (requestId: string) => void) => {
-    // Requests belong to a customer account. Never open a creation flow that
-    // will fail later because there is no authenticated Supabase session.
-    if (!session || !profile) {
-      void showInfo(
-        'Sign in to request a service',
-        'Create or sign in to your ANYwork account first so we can securely attach the request to you.',
-      ).then(() => navigate('/signin'))
-      return
-    }
-
     setQuoteService(serviceId)
     setQuoteCreatedCallback(() => onCreated || null)
     setQuoteOpen(true)

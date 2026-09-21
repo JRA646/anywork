@@ -3,7 +3,7 @@ import { ArrowRight, CheckCircle2, FileText, LifeBuoy, Plus, ShieldCheck, Trash2
 import { listAdminServices, listPublicServices, listCustomerRequests, listProviderRequests, type DbService, type DbRequest, submitJobReview, updateAdminRequestStatus } from '../lib/anyworkApi'
 import {
   createSupportTicket, deleteAddress, getProviderVerification, submitProviderReview, updateSupportTicket, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments, confirmManualPayment,
-  listInvoices, listPayments, listProviderAvailability, createInvoice, recordPayment, listProviderTimeOff, listProviderServiceAreas, saveProviderServiceArea, deleteProviderServiceArea, listReviews, listServiceFields, listSupportTickets,
+  listInvoices, listPayments, listProviderAvailability, createInvoice, recordPayment, listProviderTimeOff, listProviderServiceAreas, saveProviderServiceArea, deleteProviderServiceArea, listReviews, listServiceFields, deleteServiceField, listSupportTickets,
   openDispute, saveAddress, saveProviderAvailability, saveProviderTimeOff, saveServiceField, submitProviderVerification, updateDispute,
   type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets, listAdminReviews, listJobPhotos, getJobPhotoUrl, uploadJobPhoto, listAdminVerifications, updateProviderVerification, listFavorites, toggleFavorite,
 } from '../lib/productionApi'

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Bell, ChevronDown, HeartHandshake, LogIn, Menu, Search, UserRound, X } from 'lucide-react'
+import { Bell, ChevronDown, HeartHandshake, LogIn, Menu, UserRound, X } from 'lucide-react'
 import { usePath } from './router'
 import { services, providers } from '../data/mockData'
 import type { Role } from '../types/marketplace'

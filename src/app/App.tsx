@@ -393,10 +393,8 @@ function AppLoading() {
   return (
     <main className="appLoading" aria-live="polite" aria-busy="true">
       <div className="appLoadingCard">
-        <div className="appLoadingLogoWrap">
-          <img className="appLoadingLogo" src="/anywork.png" alt="ANYwork Services" loading="eager" decoding="async" />
-        </div>
         <div className="appLoadingSpinner" aria-hidden="true" />
+        <strong>ANYwork</strong>
         <p>Loading your workspace…</p>
       </div>
     </main>

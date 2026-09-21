@@ -482,3 +482,13 @@ export async function updateProviderVerification(id: string, status: string, not
   if (error) throw error
   return data
 }
+
+export async function updateSupportTicket(id: string, status: string, priority?: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_support_tickets').update({
+    status,
+    ...(priority ? { priority } : {}),
+  }).eq('id', id).select('*').single()
+  if (error) throw error
+  return data as SupportTicket
+}

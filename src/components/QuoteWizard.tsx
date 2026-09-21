@@ -47,7 +47,7 @@ export function QuoteWizard({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
-  const service = useMemo(() => services.find((item) => item.id === serviceId), [serviceId])
+  const service = useMemo(() => services.find((item) => item.id === serviceId), [serviceId, services])
   const detailsValid = Boolean(service && title.trim() && description.trim() && location.trim())
   const budgetValue = budget.trim() ? Number(budget) : null
   const budgetValid = budgetValue === null || (Number.isFinite(budgetValue) && budgetValue >= 0)

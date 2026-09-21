@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import moment from 'moment'
 import {
   Bell,
   BriefcaseBusiness,
@@ -119,6 +120,7 @@ export function WorkspaceLayout({
   children: ReactNode
 }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [currentDateTime, setCurrentDateTime] = useState(() => moment())
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -136,6 +138,11 @@ export function WorkspaceLayout({
     : role === 'admin'
       ? 'Operations'
       : 'Customer portal'
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setCurrentDateTime(moment()), 1000)
+    return () => window.clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     let cleanup: (() => void) | undefined
@@ -246,6 +253,9 @@ export function WorkspaceLayout({
             <div>
               <span className="workspaceKicker">{portalLabel}</span>
               <strong>{title}</strong>
+              <span className="workspaceDateTime" aria-label="Current date and time">
+                {currentDateTime.format('ddd, MMM D, YYYY')} · {currentDateTime.format('h:mm:ss A')}
+              </span>
             </div>
           </div>
 

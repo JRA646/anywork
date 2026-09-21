@@ -181,7 +181,7 @@ export async function createAdminService(input: AdminServiceInput) {
       items: input.items || [],
       tags: input.tags || [],
       starting_price: input.startingPrice ?? null,
-      starting_price_label: input.startingPriceLabel || (input.startingPrice != null ? '
+      starting_price_label: input.startingPriceLabel || (input.startingPrice != null ? '$' + Number(input.startingPrice).toLocaleString() : 'Quote'),
     })
     .select('*')
     .single()

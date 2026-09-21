@@ -248,12 +248,22 @@ export function RequestDetailPage({
           </div>
           <div className="requestDetailActions">
             {selectedQuote && dbRequest && (
-              <button
-                className="buttonSecondary"
-                onClick={() => onNavigate('/customer/invoices/' + dbRequest.id)}
-              >
-                <Printer size={15} /> Invoice
-              </button>
+              <>
+                <button
+                  className="buttonPrimary"
+                  onClick={() => onNavigate('/customer/jobs/' + dbRequest.id)}
+                >
+                  <CalendarDays size={15} /> Open job workspace
+                </button>
+                {requestStatus === 'Completed' && (
+                  <button
+                    className="buttonSecondary"
+                    onClick={() => onNavigate('/customer/invoices/' + dbRequest.id)}
+                  >
+                    <Printer size={15} /> Invoice
+                  </button>
+                )}
+              </>
             )}
             <button
               className="buttonSecondary"

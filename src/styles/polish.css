@@ -131,3 +131,61 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
 @keyframes footerBottomIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:700px){.headerBrandImage{width:112px;height:40px}.footerBrandImage{width:116px;height:40px}}
 @media(prefers-reduced-motion:reduce){.publicFooter:before{animation:none!important}.publicFooter:after,.publicFooter .footerGrid>div,.publicFooter .footerBottom{animation:none!important}.publicFooter *{transition:none!important}}
+
+/* Sign-in / authentication motion */
+.authPageAnimated{animation:authPageIn .7s cubic-bezier(.22,1,.36,1) both}
+.authPageAnimated .authPromo{animation:authPromoIn .8s cubic-bezier(.22,1,.36,1) both;transform-origin:left center}
+.authPageAnimated .authPromo:after{content:"";position:absolute;width:360px;height:360px;right:-150px;bottom:-190px;border-radius:50%;background:radial-gradient(circle,rgba(200,107,46,.2),transparent 68%);pointer-events:none;animation:authOrb 8s ease-in-out infinite}
+.authPageAnimated .authPromoBrand{animation:authBrandIn .65s .08s both}
+.authPageAnimated .authPromoContent{animation:authContentIn .75s .18s both}
+.authPageAnimated .authTrustList span{animation:authTrustIn .55s both}
+.authPageAnimated .authTrustList span:nth-child(1){animation-delay:.35s}.authPageAnimated .authTrustList span:nth-child(2){animation-delay:.44s}.authPageAnimated .authTrustList span:nth-child(3){animation-delay:.53s}
+.authPageAnimated .authPromoFooter{animation:authFooterIn .55s .62s both}
+.authPageAnimated .authFormPanel{animation:authPanelIn .75s .12s both}
+.authPageAnimated .authHeader{animation:authHeaderIn .65s .28s both}
+.authPageAnimated .authRoleTabs{animation:authTabsIn .55s .38s both}
+.authPageAnimated .authForm{animation:authFormIn .65s .44s both}
+.authPageAnimated .authField{animation:authFieldIn .55s both}
+.authPageAnimated .authForm .authField:nth-child(1){animation-delay:.48s}.authPageAnimated .authForm .authField:nth-child(2){animation-delay:.55s}
+.authPageAnimated .authForm .authFieldRow{animation:authFieldIn .55s both;animation-delay:.45s}
+.authPageAnimated .authInputWrap{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease,background .22s ease}
+.authPageAnimated .authInputWrap:hover{transform:translateY(-1px);box-shadow:0 9px 20px rgba(17,17,17,.05)}
+.authPageAnimated .authInputWrap:focus-within{transform:translateY(-2px);box-shadow:0 12px 28px rgba(200,107,46,.1),0 0 0 4px rgba(200,107,46,.07);border-color:#c86b2e}
+.authPageAnimated .authInputWrap svg{transition:transform .25s ease,color .25s ease}
+.authPageAnimated .authInputWrap:focus-within svg{color:#c86b2e;transform:scale(1.08) rotate(-4deg)}
+.authPageAnimated .authRoleTabs button{transition:transform .25s ease,background .25s ease,color .25s ease,box-shadow .25s ease}
+.authPageAnimated .authRoleTabs button:hover{transform:translateY(-2px)}
+.authPageAnimated .authRoleTabs button.active{animation:authRolePop .32s cubic-bezier(.22,1,.36,1) both}
+.authPageAnimated.isRegistering .authHeader h2{animation:authTitleSwap .45s both}
+.authPageAnimated.isSigningIn .authHeader h2{animation:authTitleSwap .45s both}
+.authPageAnimated .authSubmit{position:relative;overflow:hidden;transition:transform .25s ease,box-shadow .25s ease,background .25s ease}
+.authPageAnimated .authSubmit:hover:not(:disabled){transform:translateY(-3px);box-shadow:0 15px 30px rgba(17,17,17,.16)}
+.authPageAnimated .authSubmit:active:not(:disabled){transform:translateY(-1px) scale(.99)}
+.authPageAnimated .authSubmit:after{content:"";position:absolute;top:-120%;left:-75%;width:42%;height:320%;transform:rotate(18deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.23),transparent);transition:left .6s ease}
+.authPageAnimated .authSubmit:hover:after{left:140%}
+.authPageAnimated .authSubmit.isBusy{pointer-events:none}
+.authPageAnimated .authSubmit.isBusy:before{content:"";width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:authSpin .7s linear infinite}
+.authPageAnimated .authSwitch{animation:authFadeIn .55s .7s both}
+.authPageAnimated .authSwitch button{transition:color .2s ease,transform .2s ease}
+.authPageAnimated .authSwitch button:hover{color:#c86b2e;transform:translateY(-1px)}
+.authPageAnimated .formError,.authPageAnimated .formSuccess,.authPageAnimated .authConfigNotice,.authPageAnimated .adminAccessNote{animation:authMessageIn .42s cubic-bezier(.22,1,.36,1) both}
+.authPageAnimated .formError{animation:authShakeIn .45s both}
+@keyframes authPageIn{from{opacity:0}to{opacity:1}}
+@keyframes authPromoIn{from{opacity:0;transform:translateX(-24px) scale(.985)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes authPanelIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes authBrandIn{from{opacity:0;transform:translateY(-10px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes authContentIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes authTrustIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+@keyframes authFooterIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes authHeaderIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes authTabsIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes authFormIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes authFieldIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes authRolePop{from{transform:scale(.97)}60%{transform:scale(1.02)}to{transform:scale(1)}}
+@keyframes authTitleSwap{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes authMessageIn{from{opacity:0;transform:translateY(-5px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes authShakeIn{0%{opacity:0;transform:translateX(-7px)}35%{opacity:1;transform:translateX(5px)}65%{transform:translateX(-3px)}100%{transform:translateX(0)}}
+@keyframes authFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes authSpin{to{transform:rotate(360deg)}}
+@keyframes authOrb{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-15px,-12px,0) scale(1.06)}}
+@media(prefers-reduced-motion:reduce){.authPageAnimated *,.authPageAnimated:before,.authPageAnimated:after{animation:none!important;transition:none!important}}

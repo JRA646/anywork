@@ -90,7 +90,6 @@ export function ProviderJobDetail({
     return () => cleanup?.()
   }, [requestId])
 
-  const service = services.find((item) => item.id === request?.service_key)
   const customerName = customer
     ? customer.company_name || customer.display_name || [customer.first_name, customer.last_name].filter(Boolean).join(' ')
     : 'Customer'

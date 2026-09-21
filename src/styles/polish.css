@@ -696,3 +696,11 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
 .requestPhotoWarning{justify-content:center;max-width:560px;margin:0 auto 18px}
 @media(max-width:900px){.requestPhotosGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.requestPhotoPreviewGrid{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:600px){.requestPhotosHeader{align-items:flex-start;flex-direction:column}.requestPhotoAddButton{width:max-content}.requestPhotosGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.requestPhotoPreviewGrid{grid-template-columns:repeat(3,1fr)}.requestPhotoUpload .uploadDrop{align-items:flex-start;flex-wrap:wrap}.uploadBrowseButton{margin-left:43px}}
+
+/* Branded app loading state */
+.appLoadingCard{position:relative;overflow:hidden;padding:34px 28px 30px}
+.appLoadingLogoWrap{width:156px;height:72px;display:grid;place-items:center;margin-bottom:2px}
+.appLoadingLogo{display:block;width:100%;height:100%;object-fit:contain}
+.appLoadingSpinner{width:26px;height:26px;border:2px solid #e4e0d8;border-top-color:#111;border-radius:50%;animation:anyworkSpin .8s linear infinite}
+.appLoadingCard p{font-weight:600}
+@keyframes anyworkSpin{to{transform:rotate(360deg)}}

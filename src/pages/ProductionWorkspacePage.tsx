@@ -5,7 +5,7 @@ import {
   createSupportTicket, deleteAddress, getProviderVerification, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments,
   listInvoices, listPayments, listProviderAvailability, listProviderTimeOff, listReviews, listServiceFields, listSupportTickets,
   openDispute, saveAddress, saveProviderAvailability, saveProviderTimeOff, saveServiceField, submitProviderVerification, updateDispute,
-  type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets, listAdminReviews,
+  type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets, listAdminReviews, listJobPhotos, getJobPhotoUrl, uploadJobPhoto,
 } from '../lib/productionApi'
 
 export function ProductionWorkspacePage({ role, section, onNavigate }: { role: 'customer'|'provider'|'admin'; section: string; profile?: AnyWorkProfile; onNavigate: (path:string)=>void }) {
@@ -92,7 +92,13 @@ function ProviderVerificationPage() {
 function ProviderCheckinPage({onNavigate}:{onNavigate:(path:string)=>void}) {
   const [requestId,setRequestId]=useState('')
   const [type,setType]=useState('arrived')
-  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="JOB OPERATIONS" title="Job check-in" description="Record travel, arrival, start, pause and completion events."/><Panel title="Record job event" kicker="FIELD OPERATIONS"><label className="productionField">Request ID<input value={requestId} onChange={e=>setRequestId(e.target.value)} placeholder="Request UUID"/></label><div className="productionButtonGrid">{['on_way','arrived','started','paused','resumed','completed'].map(item=><button key={item} className={type===item?'buttonPrimary':'buttonSecondary'} onClick={()=>setType(item)}>{item.replace('_',' ')}</button>)}</div><button className="buttonPrimary" onClick={()=>void addCheckin(requestId,type).then(()=>onNavigate('/provider/jobs/'+requestId))}><CheckCircle2 size={15}/> Record event</button></Panel></div>
+  const [photoType,setPhotoType]=useState<'before'|'during'|'after'|'completion'|'invoice'|'other'>('during')
+  const [photos,setPhotos]=useState<any[]>([])
+  const [busy,setBusy]=useState(false)
+  const loadPhotos=()=>{if(requestId)void listJobPhotos(requestId).then(async rows=>setPhotos(await Promise.all(rows.map(async row=>({...row,url:await getJobPhotoUrl(row.storage_path)})))))}
+  const record=async()=>{await addCheckin(requestId,type);loadPhotos()}
+  const upload=async(file:File)=>{if(!requestId)return;setBusy(true);try{await uploadJobPhoto({requestId,file,photoType});loadPhotos()}finally{setBusy(false)}}
+  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="JOB OPERATIONS" title="Job check-in & evidence" description="Record field events and attach before, during and completion evidence."/><Panel title="Record job event" kicker="FIELD OPERATIONS"><label className="productionField">Request ID<input value={requestId} onChange={e=>{setRequestId(e.target.value);setPhotos([])}} onBlur={loadPhotos} placeholder="Request UUID"/></label><div className="productionButtonGrid">{['on_way','arrived','started','paused','resumed','completed'].map(item=><button key={item} className={type===item?'buttonPrimary':'buttonSecondary'} onClick={()=>setType(item)}>{item.replace('_',' ')}</button>)}</div><button className="buttonPrimary" onClick={()=>void record()} disabled={!requestId}><CheckCircle2 size={15}/> Record event</button></Panel><Panel title="Job evidence" kicker="PHOTO STORAGE"><div className="productionButtonGrid">{(['before','during','after','completion','invoice','other'] as const).map(item=><button key={item} className={photoType===item?'buttonPrimary':'buttonSecondary'} onClick={()=>setPhotoType(item)}>{item}</button>)}</div><input type="file" accept="image/jpeg,image/png,image/webp" disabled={!requestId||busy} onChange={e=>{const file=e.target.files?.[0];if(file)void upload(file);e.currentTarget.value=''}} />{photos.length>0&&<div className="requestPhotoPreviewGrid">{photos.map(photo=><div className="requestPhotoPreview" key={photo.id}><img src={photo.url} alt={photo.file_name}/></div>)}</div>}{!photos.length&&<Empty text={requestId?'No evidence uploaded yet.':'Enter a request ID to load evidence.'}/>}</Panel></div>
 }
 async function addCheckin(requestId:string,type:string){if(!requestId)throw new Error('Request ID is required');return import('../lib/productionApi').then(m=>m.addJobCheckin({requestId,type}))}
 

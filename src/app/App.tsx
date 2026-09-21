@@ -297,7 +297,7 @@ function PublicHeader({
     <header className="publicHeader">
       <div className="container publicHeaderInner">
         <button className="brandButton brandButtonLogo" onClick={() => onNavigate('/')} aria-label="ANYwork home">
-          <img className="headerBrandImage" src="/anywork-logo.webp" alt="ANYwork Services" />
+          <img className="headerBrandImage" src="/anywork.png" alt="ANYwork Services" />
         </button>
         <nav className="publicNav">
           <button className={active === 'services' ? 'active' : ''} onClick={() => onNavigate('/services')}>Services</button>
@@ -339,7 +339,7 @@ function PublicFooter({ onNavigate, onQuote }: { onNavigate: (path: string) => v
       <div className="container footerGrid">
         <div>
           <button className="footerBrandButton" onClick={() => onNavigate('/')} aria-label="ANYwork home">
-            <img className="footerBrandImage" src="/anywork-logo.webp" alt="ANYwork Services" />
+            <img className="footerBrandImage" src="/anywork.png" alt="ANYwork Services" />
           </button>
           <p>Find the right service. Request the work. Track it to done.</p>
         </div>
@@ -392,9 +392,13 @@ function SimpleMessages({ title }: { title: string }) {
 
 function AppLoading() {
   return (
-    <main className="appLoading">
+    <main className="appLoading" aria-live="polite" aria-busy="true">
       <div className="appLoadingCard">
-        <BrandLogo variant="header" /><p>Loading your workspace…</p>
+        <div className="appLoadingLogoWrap">
+          <img className="appLoadingLogo" src="/anywork.png" alt="ANYwork Services" loading="eager" decoding="async" />
+        </div>
+        <div className="appLoadingSpinner" aria-hidden="true" />
+        <p>Loading your workspace…</p>
       </div>
     </main>
   )

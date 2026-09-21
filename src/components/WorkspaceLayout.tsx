@@ -24,8 +24,7 @@ import {
   listNotifications,
   markNotificationsRead,
   subscribeToNotifications,
-  type DbNotification,
-  type RealtimeStatus,
+  type DbNotification ,
 } from '../lib/anyworkApi'
 import { confirmAction } from '../lib/alerts'
 

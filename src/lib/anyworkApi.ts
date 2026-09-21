@@ -85,13 +85,22 @@ export async function listPublicProviders(): Promise<DbPublicProvider[]> {
   const client = requireSupabase()
   const { data, error } = await client.rpc('anywork_list_public_providers')
   if (error) throw error
-  return (data || []).map((row) => ({
-    ...row,
-    service_ids: Array.isArray(row.service_ids) ? row.service_ids : [],
+
+  const rows = (data || []) as unknown as Array<Record<string, unknown>>
+  return rows.map((row) => ({
+    id: String(row.id || ''),
+    name: String(row.name || ''),
+    initials: String(row.initials || ''),
+    service_ids: Array.isArray(row.service_ids) ? row.service_ids.map((value) => String(value)) : [],
     rating: Number(row.rating || 0),
     review_count: Number(row.review_count || 0),
     completed_jobs: Number(row.completed_jobs || 0),
-  })) as DbPublicProvider[]
+    location: String(row.location || ''),
+    response_time: String(row.response_time || '—'),
+    response_rate: String(row.response_rate || '—'),
+    summary: String(row.summary || ''),
+    verified: Boolean(row.verified),
+  }))
 }
 
 export async function listPublicProviderReviews(providerId: string): Promise<DbPublicProviderReview[]> {
@@ -100,10 +109,14 @@ export async function listPublicProviderReviews(providerId: string): Promise<DbP
     p_provider_id: providerId,
   })
   if (error) throw error
-  return (data || []).map((row) => ({
-    ...row,
+
+  const rows = (data || []) as unknown as Array<Record<string, unknown>>
+  return rows.map((row) => ({
+    id: String(row.id || ''),
     rating: Number(row.rating || 0),
-  })) as DbPublicProviderReview[]
+    comment: row.comment == null ? null : String(row.comment),
+    created_at: String(row.created_at || ''),
+  }))
 }
 
 export async function listPublicServices() {

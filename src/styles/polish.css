@@ -658,3 +658,7 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
   .messagesSecurityStatus{display:none}
   .customerRequestsHeroActions{width:100%}
 }
+
+.providerRequestPageHeading{display:flex;align-items:flex-end;justify-content:space-between;gap:18px}
+.providerRequestPageHeading .workspacePageTitle{margin-bottom:0}
+@media(max-width:700px){.providerRequestPageHeading{align-items:flex-start;flex-direction:column;gap:10px}.providerRequestPageHeading .providerLiveStatus{align-self:flex-start}}

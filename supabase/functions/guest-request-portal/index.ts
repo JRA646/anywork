@@ -1,5 +1,34 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { verifyAccessToken } from '../_shared/accessToken.ts'
+const encoder = new TextEncoder()
+
+const verifyAccessToken = async (token: string) => {
+  const secret = Deno.env.get('ANYWORK_ACCESS_TOKEN_SECRET')
+  if (!secret) throw new Error('Guest request access is not configured.')
+
+  const [payload, signature] = token.split('.')
+  if (!payload || !signature) return null
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['verify'],
+  )
+
+  const normalized = signature.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4)
+  const signatureBytes = Uint8Array.from(atob(padded), (char) => char.charCodeAt(0))
+
+  const valid = await crypto.subtle.verify('HMAC', key, signatureBytes, encoder.encode(payload))
+  if (!valid) return null
+
+  const normalizedPayload = payload.replace(/-/g, '+').replace(/_/g, '/')
+  const paddedPayload = normalizedPayload + '='.repeat((4 - normalizedPayload.length % 4) % 4)
+  const parsed = JSON.parse(atob(paddedPayload)) as { sub?: string; exp?: number }
+  if (!parsed.sub || !parsed.exp || parsed.exp < Math.floor(Date.now() / 1000)) return null
+  return parsed
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

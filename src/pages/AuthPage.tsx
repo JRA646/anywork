@@ -140,7 +140,7 @@ export function AuthPage({
               {registering ? (
                 <>Already have an account? <button type="button" onClick={() => { setRegistering(false); setMessage(''); setError('') }}>Sign in</button></>
               ) : (
-                <>New to ANYwork? <button type="button" onClick={() => { setRegistering(true); setMessage(''); setError('') }}>Create an account</button>
+                <>New to ANYwork? <button type="button" onClick={() => { setRegistering(true); setMessage(''); setError('') }}>Create an account</button></>
               )}
             </div>
           )}

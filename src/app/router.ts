@@ -12,7 +12,7 @@ export function usePath() {
   const navigate = (next: string) => {
     if (next === window.location.pathname) return
     window.history.pushState({}, '', next)
-    setPath(next)
+    setPath(window.location.pathname)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 

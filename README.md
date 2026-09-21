@@ -44,7 +44,7 @@ Request -> Quote -> Schedule -> In Progress -> Completed
 - TypeScript
 - Vite
 - Lucide React
-- Tailwind CSS 4 with the Vite plugin
+- CSS-based design system with reusable marketplace components
 - Supabase JavaScript SDK
 - Custom browser-history router for deep-linkable routes
 - Responsive design system with reusable marketplace components
@@ -92,4 +92,4 @@ Request -> Quote -> Schedule -> In Progress -> Completed
 The marketplace pages still use mock data from src/data/mockData.ts; authentication and profiles now use Supabase.
 ## UI system
 
-ANYwork combines Tailwind CSS utilities with the existing marketplace design layer. Tailwind is enabled through `@tailwindcss/vite`, with shared motion utilities for page entrance, floating hero elements and image shine effects. After pulling the branch, run `npm install` once to refresh the lockfile before `npm run dev`.
+ANYwork uses the existing marketplace design layer with reusable CSS components, responsive layouts, and shared motion/effects for page entrance, hover states, floating visuals, and image shine effects. No Tailwind/PostCSS dependency is required for the current branch.

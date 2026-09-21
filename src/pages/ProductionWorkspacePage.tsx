@@ -206,34 +206,66 @@ function ProviderCalendarPage() {
         <div className="calendarAvailabilityPanel">
           <div className="calendarAvailabilityMeta">
             <span>{activeDays} of 7 days available</span>
-            <small>Tap a status to pause or resume bookings for that day.</small>
+            <small>Click an availability block to pause or resume bookings for that day.</small>
           </div>
 
-          <div className="calendarAvailabilityList">
-            {days.map((day, weekday) => {
-              const row = rows.find(item => item.weekday === weekday)
-              const enabled = row?.enabled !== false
-              const isSaving = savingWeekday === weekday
-
-              return (
-                <div className="calendarAvailabilityRow" key={day}>
-                  <div className="calendarDay">
+          <div className="providerWeekCalendar">
+            <div className="providerWeekHeader">
+              <div className="providerWeekTimeGutter">TIME</div>
+              {days.map((day, weekday) => {
+                const row = rows.find(item => item.weekday === weekday)
+                const enabled = row?.enabled !== false
+                return (
+                  <div className={'providerWeekDayHead ' + (enabled ? 'is-enabled' : 'is-disabled')} key={day}>
                     <strong>{day}</strong>
-                    <span>{row?.start_time?.slice(0, 5) || defaultStart} – {row?.end_time?.slice(0, 5) || defaultEnd}</span>
+                    <span>{enabled ? 'Available' : 'Unavailable'}</span>
                   </div>
-
-                  <button
-                    type="button"
-                    className={'calendarAvailabilityStatus ' + (enabled ? 'is-available' : 'is-unavailable')}
-                    disabled={isSaving || loading}
-                    aria-pressed={enabled}
-                    onClick={() => void toggleAvailability(weekday)}
-                  >
-                    {isSaving ? 'Saving…' : enabled ? 'Available' : 'Unavailable'}
-                  </button>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
+            <div className="providerWeekBody">
+              <div className="providerWeekTimeGutter providerWeekTimes">
+                <span>09:00</span>
+                <span>11:00</span>
+                <span>13:00</span>
+                <span>15:00</span>
+                <span>17:00</span>
+              </div>
+              {days.map((day, weekday) => {
+                const row = rows.find(item => item.weekday === weekday)
+                const enabled = row?.enabled !== false
+                const start = row?.start_time?.slice(0, 5) || defaultStart
+                const end = row?.end_time?.slice(0, 5) || defaultEnd
+                const isSaving = savingWeekday === weekday
+                const blocked = timeOff.filter(item => {
+                  const date = new Date(item.starts_at)
+                  return date.getDay() === weekday
+                })
+                return (
+                  <div className="providerWeekDayColumn" key={day}>
+                    <div className={'providerWeekCanvas ' + (enabled ? 'is-enabled' : 'is-disabled')}>
+                      <button
+                        type="button"
+                        className={'providerWeekEvent ' + (enabled ? 'available' : 'unavailable')}
+                        disabled={isSaving || loading}
+                        aria-pressed={enabled}
+                        onClick={() => void toggleAvailability(weekday)}
+                        title={'Toggle ' + day + ' availability'}
+                      >
+                        <strong>{isSaving ? 'Saving…' : enabled ? 'Available' : 'Unavailable'}</strong>
+                        <span>{start} – {end}</span>
+                      </button>
+                      {blocked.map(item => (
+                        <div className="providerWeekTimeOff" key={item.id} title={item.reason || 'Blocked time'}>
+                          <strong>{item.reason || 'Blocked time'}</strong>
+                          <span>{new Date(item.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
       </Panel>

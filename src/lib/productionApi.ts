@@ -266,10 +266,16 @@ export async function recordPayment(input: { invoiceId: string; providerId: stri
 export async function listReviews(role?: 'customer' | 'provider') {
   const client = requireSupabase()
   const userId = await getCurrentUserId()
-  const query = role === 'provider'
-    ? client.from('anywork_reviews').select('*').eq('provider_id', userId)
-    : client.from('anywork_reviews').select('*').eq('customer_id', userId)
-  const { data, error } = await query.order('created_at', { ascending: false })
+  if (role === 'provider') {
+    const [received, submitted] = await Promise.all([
+      client.from('anywork_reviews').select('*').eq('provider_id', userId),
+      client.from('anywork_provider_reviews').select('*').eq('provider_id', userId),
+    ])
+    if (received.error) throw received.error
+    if (submitted.error) throw submitted.error
+    return [...(received.data || []), ...(submitted.data || [])].sort((a,b) => String(b.created_at).localeCompare(String(a.created_at)))
+  }
+  const { data, error } = await client.from('anywork_reviews').select('*').eq('customer_id', userId).order('created_at', { ascending: false })
   if (error) throw error
   return data || []
 }

@@ -18,6 +18,7 @@ export type Service = {
   category?: string
   subcategory?: string
   startingPrice: string
+  imageUrl?: string | null
 }
 
 export type Provider = {

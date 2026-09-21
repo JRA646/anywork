@@ -367,26 +367,106 @@ export async function markMessagesRead(messageIds: string[]) {
   if (error) throw error
 }
 
-export async function subscribeToRequestMessages(
-  requestId: string,
-  onMessage: (message: DbMessage) => void,
+export type RealtimeStatus = 'SUBSCRIBED' | 'CHANNEL_ERROR' | 'TIMED_OUT' | 'CLOSED'
+
+export type DbRealtimeChange<T> = {
+  event: 'INSERT' | 'UPDATE' | 'DELETE'
+  record: T | null
+  oldRecord: Partial<T> | null
+}
+
+export async function subscribeToRequests(
+  onChange: (change: DbRealtimeChange<DbRequest>) => void,
+  onStatus?: (status: RealtimeStatus) => void,
 ) {
   const client = requireSupabase()
   const channel = client
-    .channel(`request:${requestId}:messages`)
+    .channel('anywork:requests')
     .on(
       'postgres_changes',
       {
-        event: 'INSERT',
+        event: '*',
         schema: 'public',
-        table: 'anywork_messages',
-        filter: `request_id=eq.${requestId}`,
+        table: 'anywork_service_requests',
       },
-      (payload) => onMessage(payload.new as DbMessage),
+      (payload) => {
+        onChange({
+          event: payload.eventType as DbRealtimeChange<DbRequest>['event'],
+          record: payload.eventType === 'DELETE' ? null : payload.new as DbRequest,
+          oldRecord: payload.old as Partial<DbRequest>,
+        })
+      },
     )
-    .subscribe()
+    .subscribe((status) => onStatus?.(status as RealtimeStatus))
 
   return () => {
     void client.removeChannel(channel)
   }
+}
+
+export async function subscribeToQuotes(
+  onChange: (change: DbRealtimeChange<DbQuote>) => void,
+  onStatus?: (status: RealtimeStatus) => void,
+) {
+  const client = requireSupabase()
+  const channel = client
+    .channel('anywork:quotes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'anywork_quotes',
+      },
+      (payload) => {
+        onChange({
+          event: payload.eventType as DbRealtimeChange<DbQuote>['event'],
+          record: payload.eventType === 'DELETE' ? null : payload.new as DbQuote,
+          oldRecord: payload.old as Partial<DbQuote>,
+        })
+      },
+    )
+    .subscribe((status) => onStatus?.(status as RealtimeStatus))
+
+  return () => {
+    void client.removeChannel(channel)
+  }
+}
+
+export async function subscribeToUserMessages(
+  onMessage: (message: DbMessage) => void,
+  onStatus?: (status: RealtimeStatus) => void,
+) {
+  const client = requireSupabase()
+  const userId = await getCurrentUserId()
+  const channel = client
+    .channel(`anywork:user-messages:${userId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'anywork_messages',
+      },
+      (payload) => {
+        const message = (payload.eventType === 'DELETE' ? payload.old : payload.new) as DbMessage
+        if (message.sender_id === userId || message.receiver_id === userId) {
+          onMessage(message)
+        }
+      },
+    )
+    .subscribe((status) => onStatus?.(status as RealtimeStatus))
+
+  return () => {
+    void client.removeChannel(channel)
+  }
+}
+
+export async function subscribeToRequestMessages(
+  requestId: string,
+  onMessage: (message: DbMessage) => void,
+) {
+  return subscribeToUserMessages((message) => {
+    if (message.request_id === requestId) onMessage(message)
+  })
 }

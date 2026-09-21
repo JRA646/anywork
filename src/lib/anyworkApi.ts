@@ -1118,3 +1118,10 @@ export async function deleteAdminService(id: string) {
   const { error } = await client.from('anywork_services').delete().eq('id', id)
   if (error) throw error
 }
+
+export async function updateAdminRequestStatus(requestId: string, status: DbRequest['status']) {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_service_requests').update({ status }).eq('id', requestId).select('*').single()
+  if (error) throw error
+  return data as DbRequest
+}

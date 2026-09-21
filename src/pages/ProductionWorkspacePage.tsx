@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { CheckCircle2, FileText, LifeBuoy, Plus, ShieldCheck, Trash2, WalletCards, Star } from 'lucide-react'
-import { listAdminServices, type DbService, type DbRequest, submitJobReview } from '../lib/anyworkApi'
+import { listAdminServices, listPublicServices, type DbService, type DbRequest, submitJobReview } from '../lib/anyworkApi'
 import {
   createSupportTicket, deleteAddress, getProviderVerification, submitProviderReview, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments,
   listInvoices, listPayments, listProviderAvailability, createInvoice, recordPayment, listProviderTimeOff, listReviews, listServiceFields, listSupportTickets,
@@ -10,6 +10,7 @@ import {
 
 export function ProductionWorkspacePage({ role, section, onNavigate }: { role: 'customer'|'provider'|'admin'; section: string; profile?: AnyWorkProfile; onNavigate: (path:string)=>void }) {
   if (section === 'addresses') return <AddressesPage />
+  if (section === 'favorites') return <FavoritesPage />
   if (section === 'invoices' || section === 'payments') return <FinancePage role={role} />
   if (section === 'reviews') return <ReviewsPage role={role} />
   if (section === 'support') return <SupportPage admin={role === 'admin'} />
@@ -35,6 +36,16 @@ function AddressesPage() {
   useEffect(()=>{void load()},[])
   const save=async()=>{if(!form.address_line1.trim())return;const row=await saveAddress(form);setRows(current=>[row,...current.filter(x=>x.id!==row.id)])}
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="PROFILE" title="Saved addresses" description="Reuse service locations and keep your job details consistent."/><Panel title="Add address" kicker="LOCATION"><div className="productionFormGrid">{Object.entries(form).map(([key,value])=><label key={key}>{key.replaceAll('_',' ')}<input value={value} onChange={e=>setForm({...form,[key]:e.target.value})}/></label>)}</div><button className="buttonPrimary" onClick={()=>void save()}><Plus size={15}/> Save address</button></Panel><Panel title="Your addresses" kicker="SAVED LOCATIONS">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.label}</strong><span>{row.address_line1}, {row.city} {row.postal_code}</span></div><button className="buttonGhost" onClick={()=>void deleteAddress(row.id).then(load)}><Trash2 size={14}/></button></div>)}{!rows.length&&<Empty text="No saved addresses yet."/>}</Panel></div>
+}
+
+function FavoritesPage() {
+  const [services,setServices]=useState<any[]>([])
+  const [favorites,setFavorites]=useState<any[]>([])
+  const load=()=>void Promise.all([listPublicServices(),listFavorites()]).then(([s,f])=>{setServices(s);setFavorites(f)}).catch(()=>undefined)
+  useEffect(load,[])
+  const serviceIds=new Set(favorites.filter(item=>item.service_id).map(item=>item.service_id))
+  const toggle=async(id:string)=>{await toggleFavorite({serviceId:id});load()}
+  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="SAVED" title="Favorites" description="Keep preferred services ready for your next request."/><Panel title="Saved services" kicker="FAVORITES">{services.filter(service=>serviceIds.has(service.id)).map(service=><div className="productionListRow" key={service.id}><div><strong>{service.label}</strong><span>{service.description}</span></div><button className="buttonSecondary" onClick={()=>void toggle(service.id)}>Remove</button></div>)}{!services.some(service=>serviceIds.has(service.id))&&<Empty text="No favorite services yet."/>}</Panel><Panel title="Service catalog" kicker="DISCOVER">{services.map(service=><div className="productionListRow" key={service.id}><div><strong>{service.label}</strong><span>{service.starting_price_label||'Quote'}</span></div><button className={serviceIds.has(service.id)?'buttonSecondary':'buttonPrimary'} onClick={()=>void toggle(service.id)}>{serviceIds.has(service.id)?'Saved':'Save'}</button></div>)}</Panel></div>
 }
 
 function FinancePage({ role }: { role:'customer'|'provider'|'admin' }) {

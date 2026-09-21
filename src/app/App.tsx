@@ -10,6 +10,7 @@ import { PublicServices } from '../pages/PublicServices'
 import { ProviderProfilePage } from '../pages/ProviderProfilePage'
 import { CustomerDashboard } from '../pages/CustomerDashboard'
 import { CustomerRequestsPage } from '../pages/CustomerRequestsPage'
+import { CustomerMessagesPage } from '../pages/CustomerMessagesPage'
 import { RequestDetailPage } from '../pages/RequestDetailPage'
 import { ProviderDashboard } from '../pages/ProviderDashboard'
 import { ProviderRequestDetail } from '../pages/ProviderRequestDetail'
@@ -130,7 +131,7 @@ function Application() {
       : section === 'requests'
         ? <CustomerRequestsPage onNavigate={navigate} />
         : section === 'messages'
-          ? <SimpleMessages title="ANYwork Support" />
+          ? <CustomerMessagesPage />
           : section === 'profile'
             ? <ProfilePage role="customer" />
             : section === 'help'

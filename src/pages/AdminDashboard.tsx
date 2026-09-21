@@ -237,34 +237,27 @@ export function AdminServices() {
       if (!form.label.trim()) throw new Error('Service name is required.')
       if (form.label.trim().length > 60) throw new Error('Service name must be 60 characters or fewer.')
       if (form.description.trim().length > 300) throw new Error('Description must be 300 characters or fewer.')
-      if (startingPrice !== null && Number.isNaN(startingPrice)) {
-        throw new Error('Starting price must be a valid number.')
+      if (startingPrice !== null && Number.isNaN(startingPrice)) throw new Error('Starting price must be a valid number.')
+
+      const payload = {
+        category: form.category.trim(),
+        subcategory: form.subcategory.trim(),
+        title: form.category.trim(),
+        label: form.label.trim(),
+        description: form.description.trim(),
+        icon: 'Store',
+        items,
+        tags: form.tags,
+        startingPrice,
+        startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
+        imageUrl: form.imageUrl || null,
       }
 
       if (editingId) {
-        const updated = await updateAdminService(editingId, {
-          category: form.category.trim(),
-          subcategory: form.subcategory.trim(),
-          title: form.category.trim(),
-          label: form.label.trim(),
-          description: form.description.trim(),
-          items,
-          tags: form.tags,
-          startingPrice,
-          startingPriceLabel: startingPrice !== null ? '
+        const updated = await updateAdminService(editingId, payload)
         setCatalog((current) => current.map((item) => item.id === editingId ? updated : item))
       } else {
-        const created = await createAdminService({
-          category: form.category.trim(),
-          subcategory: form.subcategory.trim(),
-          title: form.category.trim(),
-          label: form.label.trim(),
-          description: form.description.trim(),
-          icon: 'Store',
-          items,
-          tags: form.tags,
-          startingPrice,
-          startingPriceLabel: startingPrice !== null ? '
+        const created = await createAdminService(payload)
         setCatalog((current) => [created, ...current])
         setActiveService((current) => ({ ...current, [created.id]: true }))
       }

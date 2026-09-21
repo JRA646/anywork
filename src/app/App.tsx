@@ -96,6 +96,8 @@ function Application() {
     ? <PublicHome services={services} providers={providers} onNavigate={navigate} onQuote={openQuote} />
     : path === '/services'
       ? <PublicServices services={services} providers={providers} onQuote={openQuote} onProvider={(id) => navigate('/providers/' + id)} />
+      : path === '/help'
+        ? <HelpCenterPage />
       : path.startsWith('/providers/')
         ? <ProviderProfilePage provider={providers.find((item) => item.id === path.split('/')[2]) || providers[0]} services={services} onQuote={openQuote} />
         : null
@@ -111,7 +113,7 @@ function Application() {
           onSignIn={() => navigate('/signin')}
         />
         <div className="publicMain">{publicContent}</div>
-        <PublicFooter onNavigate={navigate} />
+        <PublicFooter onNavigate={navigate} onQuote={openQuote} />
         {quoteOpen && <QuoteWizard initialService={quoteService} onClose={() => setQuoteOpen(false)} />}
       </>
     )
@@ -286,7 +288,7 @@ function PublicHeader({
   )
 }
 
-function PublicFooter({ onNavigate }: { onNavigate: (path: string) => void }) {
+function PublicFooter({ onNavigate, onQuote }: { onNavigate: (path: string) => void; onQuote: (serviceId?: string) => void }) {
   return (
     <footer className="publicFooter">
       <div className="container footerGrid">
@@ -304,16 +306,16 @@ function PublicFooter({ onNavigate }: { onNavigate: (path: string) => void }) {
         </div>
         <div>
           <strong>How it works</strong>
-          <span>Request a service</span>
-          <span>Compare quotes</span>
-          <span>Schedule the work</span>
-          <span>Track completion</span>
+          <button onClick={() => onQuote()}>Request a service</button>
+          <button onClick={() => onNavigate('/signin')}>Compare quotes</button>
+          <button onClick={() => onNavigate('/signin')}>Schedule the work</button>
+          <button onClick={() => onNavigate('/signin')}>Track completion</button>
         </div>
         <div>
           <strong>Trust & support</strong>
-          <span>Verified providers</span>
-          <span>Clear request status</span>
-          <span>Support center</span>
+          <button onClick={() => onNavigate('/services')}>Verified providers</button>
+          <button onClick={() => onNavigate('/signin')}>Clear request status</button>
+          <button onClick={() => onNavigate('/help')}>Support center</button>
         </div>
       </div>
       <div className="container footerBottom">

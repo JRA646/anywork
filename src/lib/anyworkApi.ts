@@ -41,6 +41,19 @@ export type DbProfile = {
   is_active: boolean
 }
 
+export type DbProviderService = {
+  id: string
+  provider_id: string
+  service_key: string
+  enabled: boolean
+  starting_price: number | null
+  minimum_job_value: number | null
+  service_area: string | null
+  lead_time_days: number
+  created_at: string
+  updated_at: string
+}
+
 export type DbMessage = {
   id: string
   request_id: string | null
@@ -152,6 +165,75 @@ export async function listProfiles(userIds: string[]) {
 
   if (error) throw error
   return (data || []) as DbProfile[]
+}
+
+export async function listProviderRequests() {
+  const client = requireSupabase()
+
+  const { data, error } = await client
+    .from('anywork_service_requests')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return (data || []) as DbRequest[]
+}
+
+export async function listProviderQuotes() {
+  const client = requireSupabase()
+  const providerId = await getCurrentUserId()
+
+  const { data, error } = await client
+    .from('anywork_quotes')
+    .select('*')
+    .eq('provider_id', providerId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return (data || []) as DbQuote[]
+}
+
+export async function listProviderServices() {
+  const client = requireSupabase()
+  const providerId = await getCurrentUserId()
+
+  const { data, error } = await client
+    .from('anywork_provider_services')
+    .select('*')
+    .eq('provider_id', providerId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return (data || []) as DbProviderService[]
+}
+
+export async function saveProviderService(input: {
+  serviceKey: string
+  enabled?: boolean
+  startingPrice?: number | null
+  minimumJobValue?: number | null
+  serviceArea?: string | null
+  leadTimeDays?: number
+}) {
+  const client = requireSupabase()
+  const providerId = await getCurrentUserId()
+
+  const { data, error } = await client
+    .from('anywork_provider_services')
+    .upsert({
+      provider_id: providerId,
+      service_key: input.serviceKey,
+      enabled: input.enabled ?? true,
+      starting_price: input.startingPrice ?? null,
+      minimum_job_value: input.minimumJobValue ?? null,
+      service_area: input.serviceArea || null,
+      lead_time_days: input.leadTimeDays ?? 1,
+    }, { onConflict: 'provider_id,service_key' })
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as DbProviderService
 }
 
 export async function createQuote(input: {

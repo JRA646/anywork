@@ -1,7 +1,6 @@
 import {
   Bell,
   BriefcaseBusiness,
-  CalendarDays,
   ChevronDown,
   CircleHelp,
   CircleDollarSign,
@@ -10,7 +9,6 @@ import {
   LogOut,
   MessageCircle,
   Settings2,
-  ShieldCheck,
   Store,
   UserRound,
   UsersRound,
@@ -71,6 +69,7 @@ export function WorkspaceLayout({
 }) {
   const name = profile.display_name || profile.first_name || (role === 'admin' ? 'Operations' : 'ANYwork user')
   const initials = name.split(' ').slice(0, 2).map((part) => part[0]).join('').toUpperCase()
+  const profileTarget = role === 'admin' ? 'settings' : 'profile'
 
   return (
     <div className="workspace">
@@ -108,7 +107,7 @@ export function WorkspaceLayout({
           </div>
           <div className="workspaceActions">
             <button className="roundIcon" aria-label="Notifications"><Bell size={18} /></button>
-            <button className="profileMenu" onClick={() => onNavigate('profile')} aria-label="Open profile">
+            <button className="profileMenu" onClick={() => onNavigate(profileTarget)} aria-label="Open profile">
               <span>{profile.avatar_url ? <img src={profile.avatar_url} alt="" /> : initials}</span>
               <strong>{profile.first_name || name}</strong>
               <ChevronDown size={14} />

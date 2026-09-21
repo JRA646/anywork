@@ -28,6 +28,8 @@ import {
   listProviderRequests,
   listProviderServices,
   saveProviderService,
+  subscribeToQuotes,
+  subscribeToRequests,
   type DbProviderService,
   type DbQuote,
   type DbRequest,
@@ -61,6 +63,7 @@ function ProviderHome({ profile, onNavigate }: { profile: AnyWorkProfile; onNavi
   const [quotes, setQuotes] = useState<DbQuote[]>([])
   const [providerId, setProviderId] = useState('')
   const [loading, setLoading] = useState(true)
+  const [realtime, setRealtime] = useState<'connecting' | 'live' | 'offline'>('connecting')
 
   useEffect(() => {
     Promise.all([getCurrentUserId(), listProviderRequests(), listProviderQuotes()])
@@ -70,6 +73,29 @@ function ProviderHome({ profile, onNavigate }: { profile: AnyWorkProfile; onNavi
         setQuotes(quoteRows)
       })
       .finally(() => setLoading(false))
+  }, [])
+  
+  useEffect(() => {
+    let requestCleanup: (() => void) | undefined
+    let quoteCleanup: (() => void) | undefined
+    void subscribeToRequests((change) => {
+      if (!change.record && change.oldRecord?.id) {
+        setRequests((current) => current.filter((item) => item.id !== change.oldRecord?.id))
+        return
+      }
+      if (change.record) {
+        setRequests((current) => [...current.filter((item) => item.id !== change.record!.id), change.record!].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()))
+      }
+    }, (status) => setRealtime(status === 'SUBSCRIBED' ? 'live' : status === 'CLOSED' ? 'offline' : 'connecting'))
+      .then((dispose) => { requestCleanup = dispose }).catch(() => setRealtime('offline'))
+    void subscribeToQuotes((change) => {
+      if (!change.record && change.oldRecord?.id) {
+        setQuotes((current) => current.filter((item) => item.id !== change.oldRecord?.id))
+        return
+      }
+      if (change.record) setQuotes((current) => [...current.filter((item) => item.id !== change.record!.id), change.record!])
+    }).then((dispose) => { quoteCleanup = dispose }).catch(() => undefined)
+    return () => { requestCleanup?.(); quoteCleanup?.() }
   }, [])
 
   const incoming = requests.filter((request) => request.status === 'Requested')
@@ -92,6 +118,7 @@ function ProviderHome({ profile, onNavigate }: { profile: AnyWorkProfile; onNavi
           <p>{businessName} has {responseNeeded} request{responseNeeded === 1 ? '' : 's'} waiting for a quote.</p>
         </div>
         <div className="providerHeroActions">
+          <span className={'providerLiveStatus ' + realtime}><span /> {realtime === 'live' ? 'Live pipeline' : realtime === 'connecting' ? 'Connecting…' : 'Reconnecting…'}</span>
           <button className="buttonSecondary" onClick={() => onNavigate('/provider/jobs')}><CalendarDays size={16} /> Today's jobs</button>
           <button className="buttonPrimary" onClick={() => onNavigate('/provider/requests')}><BriefcaseBusiness size={16} /> Review requests</button>
         </div>
@@ -189,6 +216,26 @@ function ProviderRequests({ onNavigate }: { onNavigate: (path: string) => void }
 
   useEffect(() => { void load() }, [])
 
+  useEffect(() => {
+    let requestCleanup: (() => void) | undefined
+    let quoteCleanup: (() => void) | undefined
+    void subscribeToRequests((change) => {
+      if (!change.record && change.oldRecord?.id) {
+        setRequests((current) => current.filter((item) => item.id !== change.oldRecord?.id))
+      } else if (change.record) {
+        setRequests((current) => [...current.filter((item) => item.id !== change.record!.id), change.record!].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()))
+      }
+    }).then((dispose) => { requestCleanup = dispose }).catch(() => undefined)
+    void subscribeToQuotes((change) => {
+      if (!change.record && change.oldRecord?.id) {
+        setQuotes((current) => current.filter((item) => item.id !== change.oldRecord?.id))
+      } else if (change.record) {
+        setQuotes((current) => [...current.filter((item) => item.id !== change.record!.id), change.record!].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()))
+      }
+    }).then((dispose) => { quoteCleanup = dispose }).catch(() => undefined)
+    return () => { requestCleanup?.(); quoteCleanup?.() }
+  }, [])
+
   const quoteByRequest = useMemo(() => new Map(quotes.map((quote) => [quote.request_id, quote])), [quotes])
 
   const filtered = useMemo(() => requests.filter((request) => {
@@ -272,6 +319,28 @@ function ProviderJobs({ onNavigate }: { onNavigate: (path: string) => void }) {
       })
       .finally(() => setLoading(false))
   }, [])
+  
+  useEffect(() => {
+    if (!providerId) return
+    let requestCleanup: (() => void) | undefined
+    let quoteCleanup: (() => void) | undefined
+    void subscribeToRequests((change) => {
+      if (!change.record && change.oldRecord?.id) {
+        setRequests((current) => current.filter((item) => item.id !== change.oldRecord?.id))
+      } else if (change.record) {
+        setRequests((current) => {
+          const next = current.filter((item) => item.id !== change.record!.id)
+          if (change.record!.selected_provider_id === providerId) next.push(change.record!)
+          return next.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        })
+      }
+    }).then((dispose) => { requestCleanup = dispose }).catch(() => undefined)
+    void subscribeToQuotes((change) => {
+      if (!change.record && change.oldRecord?.id) setQuotes((current) => current.filter((item) => item.id !== change.oldRecord?.id))
+      else if (change.record) setQuotes((current) => [...current.filter((item) => item.id !== change.record!.id), change.record!])
+    }).then((dispose) => { quoteCleanup = dispose }).catch(() => undefined)
+    return () => { requestCleanup?.(); quoteCleanup?.() }
+  }, [providerId])
 
   const filters = ['All', 'Upcoming', 'Today', 'In Progress', 'Completed'] as const
   const acceptedQuoteByRequest = new Map(
@@ -443,6 +512,20 @@ function ProviderEarnings() {
         setRequests(requestRows)
       })
       .finally(() => setLoading(false))
+  }, [])
+  
+  useEffect(() => {
+    let requestCleanup: (() => void) | undefined
+    let quoteCleanup: (() => void) | undefined
+    void subscribeToRequests((change) => {
+      if (!change.record && change.oldRecord?.id) setRequests((current) => current.filter((item) => item.id !== change.oldRecord?.id))
+      else if (change.record) setRequests((current) => [...current.filter((item) => item.id !== change.record!.id), change.record!])
+    }).then((dispose) => { requestCleanup = dispose }).catch(() => undefined)
+    void subscribeToQuotes((change) => {
+      if (!change.record && change.oldRecord?.id) setQuotes((current) => current.filter((item) => item.id !== change.oldRecord?.id))
+      else if (change.record) setQuotes((current) => [...current.filter((item) => item.id !== change.record!.id), change.record!])
+    }).then((dispose) => { quoteCleanup = dispose }).catch(() => undefined)
+    return () => { requestCleanup?.(); quoteCleanup?.() }
   }, [])
 
   const accepted = quotes.filter((quote) => quote.status === 'Accepted')

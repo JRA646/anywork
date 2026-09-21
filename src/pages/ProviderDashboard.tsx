@@ -48,7 +48,7 @@ export function ProviderDashboard({
   if (section === 'jobs') return <ProviderJobs onNavigate={onNavigate} />
   if (section === 'services') return <ProviderServices />
   if (section === 'earnings') return <ProviderEarnings />
-  if (section === 'messages') return <ProviderMessages />
+  if (section === 'messages') return <ProviderMessages onNavigate={onNavigate} />
   return <ProviderHome profile={profile} onNavigate={onNavigate} />
 }
 
@@ -401,8 +401,8 @@ function ProviderEarnings() {
   )
 }
 
-function ProviderMessages() {
-  return <CustomerMessagesPage workspaceRole="provider" onNavigate={(path) => window.history.pushState({}, '', path)} />
+function ProviderMessages({ onNavigate }: { onNavigate: (path: string) => void }) {
+  return <CustomerMessagesPage workspaceRole="provider" onNavigate={onNavigate} />
 }
 
 function Metric({ label, value, note, icon }: { label: string; value: string; note: string; icon: ReactNode }) {

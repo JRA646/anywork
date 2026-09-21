@@ -1485,3 +1485,10 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
 .brandLockup .brandServices{
   background:transparent!important;
 }
+
+.brandLockup-sidebar .brandMark,
+.brandLockup-auth .brandMark,
+.brandLockup-sidebar .brandServices,
+.brandLockup-auth .brandServices{
+  filter:brightness(0) invert(1)!important;
+}

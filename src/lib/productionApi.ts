@@ -502,3 +502,70 @@ export async function updateSupportTicket(id: string, status: string, priority?:
   if (error) throw error
   return data as SupportTicket
 }
+
+
+export type DispatchQueueRow = {
+  id: string
+  request_number: string
+  title: string
+  service_key: string
+  location: string
+  preferred_date: string | null
+  priority: string
+  status: string
+  customer_id: string | null
+  selected_provider_id: string | null
+  suggested_provider_count: number
+  created_at: string
+  updated_at: string
+}
+
+export type ProviderMatch = {
+  provider_id: string
+  display_name: string
+  company_name: string | null
+  match_score: number
+  reasons: string[]
+  active_jobs: number
+}
+
+export async function listDispatchQueue() {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_dispatch_queue').select('*').order('priority', { ascending: false }).order('preferred_date', { ascending: true }).limit(300)
+  if (error) throw error
+  return (data || []) as DispatchQueueRow[]
+}
+
+export async function generateProviderMatches(requestId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_generate_provider_matches', { p_request_id: requestId })
+  if (error) throw error
+  return Number(data || 0)
+}
+
+export async function listProviderMatches(requestId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_match_request_providers', { p_request_id: requestId })
+  if (error) throw error
+  return (data || []) as ProviderMatch[]
+}
+
+export async function assignProvider(requestId: string, providerId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_assign_provider', {
+    p_request_id: requestId,
+    p_provider_id: providerId,
+  })
+  if (error) throw error
+  return data
+}
+
+export async function listProviderAssignments(requestId?: string) {
+  const client = requireSupabase()
+  let query = client.from('anywork_provider_assignments').select('*').order('match_score', { ascending: false })
+  if (requestId) query = query.eq('request_id', requestId)
+  const { data, error } = await query.limit(300)
+  if (error) throw error
+  return data || []
+}
+

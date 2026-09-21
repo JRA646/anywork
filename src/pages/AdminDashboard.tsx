@@ -22,7 +22,7 @@ import {
 import { requests, providers, services } from '../data/mockData'
 import type { Provider, ServiceRequest } from '../types/marketplace'
 import { StatusBadge } from '../components/StatusBadge'
-import { createAdminService, listAdminServices, updateAdminService, type DbService } from '../lib/anyworkApi'
+import { createAdminService, deleteAdminService, listAdminServices, updateAdminService, type DbService } from '../lib/anyworkApi'
 
 const customers = [
   { id: 'CUS-1001', name: 'John Doe', email: 'john@example.com', jobs: 2, spend: 2770, status: 'Active' },
@@ -162,15 +162,14 @@ function AdminProviders() {
   </div>
 }
 
-function AdminServices() {
+export function AdminServices() {
   type CatalogService = DbService & { category: string; subcategory: string }
-  const categoryOptions = ['Software', 'Print & Marketing', 'Construction & Fabrication', 'Installation', 'Maintenance', 'Site Services', 'Special Projects']
-  const softwareSubcategories = ['General', 'Mobile Development', 'Web Application', 'AI']
   const [catalog, setCatalog] = useState<CatalogService[]>([])
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All')
   const [activeService, setActiveService] = useState<Record<string, boolean>>({})
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
@@ -202,7 +201,7 @@ function AdminServices() {
       })
   }, [])
 
-  const categories = Array.from(new Set([...categoryOptions, ...catalog.map((service) => service.category)]))
+  const categories = Array.from(new Set(catalog.map((service) => service.category).filter(Boolean))).sort((a, b) => a.localeCompare(b))
   const filtered = catalog.filter((service) => {
     const matchesCategory = category === 'All' || service.category === category
     const haystack = [service.category, service.subcategory, service.title, service.label, service.description].join(' ').toLowerCase()
@@ -218,25 +217,52 @@ function AdminServices() {
       const items = form.items.split(',').map((item) => item.trim()).filter(Boolean)
       const startingPrice = form.startingPrice.trim() ? Number(form.startingPrice) : null
       if (startingPrice !== null && Number.isNaN(startingPrice)) throw new Error('Starting price must be a valid number.')
-      const created = await createAdminService({
-        category: form.category,
-        subcategory: form.subcategory,
-        title: form.category,
-        label: form.label,
-        description: form.description,
-        icon: form.subcategory === 'Mobile Development' ? 'Smartphone' : form.subcategory === 'Web Application' ? 'Globe' : form.subcategory === 'AI' ? 'Sparkles' : 'Store',
-        items,
-        startingPrice,
-        startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
-      })
-      setCatalog((current) => [created, ...current])
-      setActiveService((current) => ({ ...current, [created.id]: true }))
+
+      if (editingId) {
+        const updated = await updateAdminService(editingId, {
+          category: form.category.trim(),
+          subcategory: form.subcategory.trim(),
+          title: form.category.trim(),
+          label: form.label.trim(),
+          description: form.description.trim(),
+          items,
+          startingPrice,
+          startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
+        })
+        setCatalog((current) => current.map((item) => item.id === editingId ? updated : item))
+      } else {
+        const created = await createAdminService({
+          category: form.category.trim(),
+          subcategory: form.subcategory.trim(),
+          title: form.category.trim(),
+          label: form.label.trim(),
+          description: form.description.trim(),
+          icon: 'Store',
+          items,
+          startingPrice,
+          startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
+        })
+        setCatalog((current) => [created, ...current])
+        setActiveService((current) => ({ ...current, [created.id]: true }))
+      }
+
       setShowForm(false)
-      setForm({ category: 'Software', subcategory: 'General', label: '', description: '', items: '', startingPrice: '' })
+      setEditingId(null)
+      setForm({ category: categories[0] || 'General', subcategory: 'General', label: '', description: '', items: '', startingPrice: '' })
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Unable to add service.')
+      setError(submitError instanceof Error ? submitError.message : 'Unable to save service.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const deleteService = async (id: string) => {
+    try {
+      await deleteAdminService(id)
+      setCatalog((current) => current.filter((item) => item.id !== id))
+      setActiveService((current) => { const next = { ...current }; delete next[id]; return next })
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : 'Unable to delete service.')
     }
   }
 
@@ -272,24 +298,6 @@ function AdminServices() {
       <div className="adminSummaryPill"><Store size={15} /> {activeCount} active</div>
     </div>
 
-    {category === 'Software' && (
-      <section className="softwareCategoryCard">
-        <div>
-          <span className="eyebrow">SOFTWARE</span>
-          <h2>Software services</h2>
-          <p>Keep software offerings grouped under clear subcategories.</p>
-        </div>
-        <div className="softwareSubcategoryList">
-          {[
-            { label: 'General', Icon: Store },
-            { label: 'Mobile Development', Icon: Smartphone },
-            { label: 'Web Application', Icon: Globe },
-            { label: 'AI', Icon: Sparkles },
-          ].map(({ label, Icon }) => <button key={label} onClick={() => { setCategory('Software'); setQuery(label) }}><Icon size={17} /><span>{label}</span><ChevronRight size={15} /></button>)}
-        </div>
-      </section>
-    )}
-
     <div className="adminServiceGridModern">
       {filtered.map((service) => {
         const active = activeService[service.id] ?? service.enabled
@@ -299,7 +307,7 @@ function AdminServices() {
           <h3>{service.label}</h3>
           <p>{service.description}</p>
           <div className="adminServiceTags">{service.items.map((item) => <span key={item}>{item}</span>)}</div>
-          <div className="adminServiceFooter"><strong>{service.starting_price_label || 'Quote'}</strong><button className="buttonSecondary" onClick={() => { setForm({ category: service.category, subcategory: service.subcategory, label: service.label, description: service.description, items: service.items.join(', '), startingPrice: service.starting_price?.toString() || '' }); setShowForm(true) }}>Edit</button></div>
+          <div className="adminServiceFooter"><strong>{service.starting_price_label || 'Quote'}</strong><div className="adminServiceFooterActions"><button className="buttonSecondary" onClick={() => { setEditingId(service.id); setForm({ category: service.category, subcategory: service.subcategory, label: service.label, description: service.description, items: service.items.join(', '), startingPrice: service.starting_price?.toString() || '' }); setShowForm(true) }}>Edit</button><button className="buttonSecondary" onClick={() => { if (window.confirm('Delete this service?')) void deleteService(service.id) }}>Delete</button></div></div>
         </article>
       })}
     </div>
@@ -308,15 +316,15 @@ function AdminServices() {
 
     {showForm && <div className="adminDrawerOverlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowForm(false) }}>
       <form className="adminServiceForm" onSubmit={submitService}>
-        <div className="drawerHeader"><div><span className="eyebrow">SERVICE CATALOG</span><h2>Add service</h2></div><button type="button" className="roundIcon" onClick={() => setShowForm(false)}><X size={17} /></button></div>
+        <div className="drawerHeader"><div><span className="eyebrow">SERVICE CATALOG</span><h2>{editingId ? 'Edit service' : 'Add service'}</h2></div><button type="button" className="roundIcon" onClick={() => setShowForm(false)}><X size={17} /></button></div>
         {error && <div className="formError">{error}</div>}
-        <label><span>Category</span><select value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value, subcategory: event.target.value === 'Software' ? 'Mobile Development' : 'General' }))}>{categories.map((item) => <option key={item}>{item}</option>)}</select></label>
-        <label><span>Subcategory</span><select value={form.subcategory} onChange={(event) => setForm((current) => ({ ...current, subcategory: event.target.value }))}>{form.category === 'Software' ? softwareSubcategories.map((item) => <option key={item}>{item}</option>) : <option>General</option>}</select></label>
+        <label><span>Category</span><input list="anywork-service-categories" value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))} placeholder="e.g. Software" required /><datalist id="anywork-service-categories">{categories.map((item) => <option key={item} value={item} />)}</datalist></label>
+        <label><span>Subcategory</span><input list="anywork-service-subcategories" value={form.subcategory} onChange={(event) => setForm((current) => ({ ...current, subcategory: event.target.value }))} placeholder="e.g. Web Application" required /><datalist id="anywork-service-subcategories">{Array.from(new Set(catalog.filter((item) => item.category === form.category).map((item) => item.subcategory))).map((item) => <option key={item} value={item} />)}</datalist></label>
         <label><span>Service name</span><input value={form.label} onChange={(event) => setForm((current) => ({ ...current, label: event.target.value }))} placeholder="e.g. Mobile App Development" required /></label>
         <label><span>Description</span><textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="Describe what this service includes..." required /></label>
         <label><span>What's included</span><input value={form.items} onChange={(event) => setForm((current) => ({ ...current, items: event.target.value }))} placeholder="iOS apps, Android apps, API integration" /></label>
         <label><span>Starting price</span><input type="number" min="0" value={form.startingPrice} onChange={(event) => setForm((current) => ({ ...current, startingPrice: event.target.value }))} placeholder="Leave empty for Quote" /></label>
-        <div className="drawerActions"><button type="button" className="buttonSecondary" onClick={() => setShowForm(false)}>Cancel</button><button type="submit" className="buttonPrimary" disabled={saving}>{saving ? 'Saving…' : 'Save service'}</button></div>
+        <div className="drawerActions"><button type="button" className="buttonSecondary" onClick={() => setShowForm(false)}>Cancel</button><button type="submit" className="buttonPrimary" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update service' : 'Save service'}</button></div>
       </form>
     </div>}
   </div>

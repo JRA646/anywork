@@ -1,5 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
-import { ArrowRight, Building2, CheckCircle2, LockKeyhole, Mail, ShieldCheck, UserRound } from 'lucide-react'
+import { Apple, ArrowRight, Building2, CheckCircle2, Chrome, LockKeyhole, Mail, ShieldCheck, UserRound } from 'lucide-react'
 import type { AnyWorkProfile, AnyWorkRole } from '../types/auth'
 import { useAuth } from '../auth/AuthContext'
 
@@ -10,7 +10,7 @@ export function AuthPage({
   mode: 'workspace' | 'admin'
   onAuthenticated: (profile: AnyWorkProfile) => void
 }) {
-  const { signIn, signUp, configured } = useAuth()
+  const { signIn, signInWithProvider, signUp, configured } = useAuth()
   const [accountType, setAccountType] = useState<Exclude<AnyWorkRole, 'admin'>>('customer')
   const [registering, setRegistering] = useState(false)
   const [firstName, setFirstName] = useState('')
@@ -98,6 +98,28 @@ export function AuthPage({
                 <Building2 size={15} /> Provider
               </button>
             </div>
+          )}
+
+          {!admin && !registering && (
+            <>
+              <div className="authSocialDivider"><span>or continue with</span></div>
+              <div className="authSocialGrid">
+                <button type="button" className="authSocialButton" disabled={busy || !configured} onClick={() => {
+                  setBusy(true); setError('')
+                  void signInWithProvider('google').catch((oauthError) => {
+                    setError(oauthError instanceof Error ? oauthError.message : 'Unable to continue with Google.')
+                    setBusy(false)
+                  })
+                }}><Chrome size={17} /> Google</button>
+                <button type="button" className="authSocialButton" disabled={busy || !configured} onClick={() => {
+                  setBusy(true); setError('')
+                  void signInWithProvider('apple').catch((oauthError) => {
+                    setError(oauthError instanceof Error ? oauthError.message : 'Unable to continue with Apple.')
+                    setBusy(false)
+                  })
+                }}><Apple size={17} /> Apple</button>
+              </div>
+            </>
           )}
 
           <form className="authForm" onSubmit={submit}>

@@ -20,6 +20,7 @@ type AuthContextValue = {
   loading: boolean
   configured: boolean
   signIn: (email: string, password: string, expectedRole?: AnyWorkRole) => Promise<AnyWorkProfile>
+  signInWithProvider: (provider: 'google' | 'apple', expectedRole?: AnyWorkRole) => Promise<void>
   signUp: (input: SignUpInput) => Promise<{ profile: AnyWorkProfile | null; needsEmailConfirmation: boolean }>
   updateProfile: (changes: Partial<Omit<AnyWorkProfile, 'user_id' | 'role' | 'created_at' | 'updated_at'>>) => Promise<AnyWorkProfile>
   signOut: () => Promise<void>
@@ -143,6 +144,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return nextProfile
   }, [loadProfile])
 
+  const signInWithProvider = useCallback(async (provider: 'google' | 'apple', expectedRole?: AnyWorkRole) => {
+    if (!supabase) throw new Error('Supabase is not configured.')
+
+    const redirectTo = window.location.origin + (expectedRole === 'admin' ? '/admin/signin' : '/signin')
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo,
+        queryParams: provider === 'google' ? { access_type: 'offline', prompt: 'select_account' } : undefined,
+      },
+    })
+    if (error) throw error
+  }, [])
+
   const signUp = useCallback(async (input: SignUpInput) => {
     if (!supabase) throw new Error('Supabase is not configured.')
 
@@ -206,10 +221,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     configured: isSupabaseConfigured,
     signIn,
+    signInWithProvider,
     signUp,
     updateProfile,
     signOut,
-  }), [session, profile, loading, signIn, signUp, updateProfile, signOut])
+  }), [session, profile, loading, signIn, signInWithProvider, signUp, updateProfile, signOut])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

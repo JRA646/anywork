@@ -1041,3 +1041,87 @@ export async function submitJobReview(input: { requestId: string; providerId: st
   if (error) throw error
   return data
 }
+
+export type AdminOverviewStats = {
+  requests: number
+  openRequests: number
+  completedJobs: number
+  providers: number
+  activeProviders: number
+  customers: number
+  gmv: number
+}
+
+export async function getAdminOverviewStats(): Promise<AdminOverviewStats> {
+  const client = requireSupabase()
+  const [requests, providers, customers, quotes] = await Promise.all([
+    client.from('anywork_service_requests').select('status, budget'),
+    client.from('anywork_profiles').select('user_id, role, is_active').eq('role', 'provider'),
+    client.from('anywork_profiles').select('user_id').eq('role', 'customer'),
+    client.from('anywork_quotes').select('amount, status'),
+  ])
+  if (requests.error) throw requests.error
+  if (providers.error) throw providers.error
+  if (customers.error) throw customers.error
+  if (quotes.error) throw quotes.error
+
+  const requestRows = requests.data || []
+  const providerRows = providers.data || []
+  const customerRows = customers.data || []
+  const quoteRows = quotes.data || []
+  return {
+    requests: requestRows.length,
+    openRequests: requestRows.filter((row) => row.status !== 'Completed').length,
+    completedJobs: requestRows.filter((row) => row.status === 'Completed').length,
+    providers: providerRows.length,
+    activeProviders: providerRows.filter((row) => row.is_active).length,
+    customers: customerRows.length,
+    gmv: quoteRows.filter((row) => row.status === 'Accepted').reduce((sum, row) => sum + Number(row.amount || 0), 0),
+  }
+}
+
+export async function listAdminRequests(limit = 100) {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('anywork_service_requests')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) throw error
+  return (data || []) as DbRequest[]
+}
+
+export async function listAdminProfiles(role?: 'customer' | 'provider' | 'admin', limit = 200) {
+  const client = requireSupabase()
+  let query = client.from('anywork_profiles')
+    .select('user_id, role, first_name, last_name, display_name, company_name, avatar_url, city, is_active, created_at')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (role) query = query.eq('role', role)
+  const { data, error } = await query
+  if (error) throw error
+  return (data || []) as (DbProfile & { created_at: string })[]
+}
+
+export async function updateAdminProfile(userId: string, changes: { isActive?: boolean; role?: 'customer' | 'provider' | 'admin' }) {
+  const client = requireSupabase()
+  const payload: Record<string, unknown> = {}
+  if (changes.isActive !== undefined) payload.is_active = changes.isActive
+  if (changes.role !== undefined) payload.role = changes.role
+  const { data, error } = await client.from('anywork_profiles').update(payload).eq('user_id', userId).select('*').single()
+  if (error) throw error
+  return data as DbProfile
+}
+
+export async function deleteAdminService(id: string) {
+  const client = requireSupabase()
+  const { error } = await client.from('anywork_services').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function updateAdminRequestStatus(requestId: string, status: DbRequest['status']) {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_service_requests').update({ status }).eq('id', requestId).select('*').single()
+  if (error) throw error
+  return data as DbRequest
+}

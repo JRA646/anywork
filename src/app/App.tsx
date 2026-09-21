@@ -18,7 +18,7 @@ import { RequestDetailPage } from '../pages/RequestDetailPage'
 import { ProviderDashboard } from '../pages/ProviderDashboard'
 import { ProviderRequestDetail } from '../pages/ProviderRequestDetail'
 import { ProviderJobDetail } from '../pages/ProviderJobDetail'
-import { AdminDashboard } from '../pages/AdminDashboard'
+import { AdminOperationsPage } from '../pages/AdminOperationsPage'
 import { AuthPage } from '../pages/AuthPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import { HelpCenterPage } from '../pages/HelpCenterPage'
@@ -335,7 +335,7 @@ function Application() {
       ? <HelpCenterPage />
       : section === 'profile'
         ? <ProfilePage role="admin" />
-        : <AdminDashboard section={section} onNavigate={navigate} />
+        : <AdminOperationsPage section={section} onNavigate={navigate} />
     const adminTitle = section === 'dashboard'
       ? 'Overview'
       : section === 'help'

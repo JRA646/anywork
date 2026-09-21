@@ -372,6 +372,10 @@ export function QuoteWizard({
                     <div><span>Budget</span><strong>{budgetValue !== null ? '$' + budgetValue.toLocaleString() : 'Open to quotes'}</strong></div>
                     <div className="requestReviewDetails"><span>Details</span><p>{description}</p></div>
                     {accessNotes && <div className="requestReviewDetails"><span>Access notes</span><p>{accessNotes}</p></div>}
+                    <div className="requestReviewDetails">
+                      <span>Photos</span>
+                      <p>{selectedPhotos.length ? selectedPhotos.length + ' photo' + (selectedPhotos.length === 1 ? '' : 's') + ' will be uploaded with this request.' : 'No photos attached.'}</p>
+                    </div>
                   </div>
 
                   {error && <div className="formError" role="alert">{error}</div>}

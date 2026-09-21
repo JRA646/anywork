@@ -200,3 +200,59 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
 .workspaceTopbar{position:sticky;top:0;z-index:90}
 @media(max-width:1050px){.workspaceSidebar{position:static;width:auto;height:auto;max-height:none;overflow:visible}}
 @media(max-width:700px){.workspace{min-height:100vh}.workspaceSidebar{display:none}}
+
+/* Customer requests page */
+.customerRequestsPage{max-width:1280px}
+.customerRequestsHero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:24px}
+.customerRequestsHero h1{font-size:44px;letter-spacing:-2.3px;margin:8px 0 7px}
+.customerRequestsHero p{margin:0;max-width:650px;color:#777;line-height:1.6;font-size:13px}
+.customerRequestsCta{white-space:nowrap;box-shadow:0 12px 26px rgba(17,17,17,.12)}
+.requestInsights{display:grid;grid-template-columns:repeat(3,1fr) 1.45fr;gap:10px;margin-bottom:18px}
+.requestInsightCard{position:relative;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:15px;padding:17px;display:grid;gap:6px;min-height:128px;box-shadow:0 6px 22px rgba(20,20,20,.025);transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.requestInsightCard:hover{transform:translateY(-4px);box-shadow:0 17px 35px rgba(20,20,20,.07);border-color:#ddd5cb}
+.requestInsightCard:before{content:"";position:absolute;right:-24px;top:-28px;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(200,107,46,.09),transparent 70%)}
+.requestInsightIcon{position:relative;z-index:1;width:34px;height:34px;border-radius:10px;background:#f1efe9;color:var(--brand);display:grid;place-items:center}
+.requestInsightCard span{font-size:10px;color:#878178;font-weight:800}
+.requestInsightCard strong{font-size:26px;letter-spacing:-1px}
+.requestInsightCard small{font-size:9px;color:#9a948b}
+.requestInsightHighlight{display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(135deg,#161616,#252525);color:#fff;border-color:#252525}
+.requestInsightHighlight:before{background:radial-gradient(circle,rgba(200,107,46,.25),transparent 70%)}
+.requestInsightHighlight span,.requestInsightHighlight small{color:#aaa}
+.requestInsightHighlight strong{display:block;font-size:16px;letter-spacing:-.4px;max-width:290px;margin-top:3px}
+.requestInsightHighlight>svg{color:#d17a3f;flex:none}
+.requestToolbarModern{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.requestSearchModern{flex:1;display:flex;align-items:center;gap:8px;min-height:45px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:0 13px;color:#999;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.requestSearchModern:focus-within{transform:translateY(-2px);box-shadow:0 14px 28px rgba(20,20,20,.07);border-color:rgba(200,107,46,.35)}
+.requestSearchModern input{width:100%;border:0;outline:0;background:transparent;font-size:12px}
+.requestFilterButton{height:45px}
+.requestFilterTabs{display:flex;align-items:center;gap:3px;overflow:auto;padding:4px;background:#eeebe4;border:1px solid #e0dcd3;border-radius:12px;margin-bottom:14px}
+.requestFilterTabs button{flex:none;border:0;background:transparent;border-radius:9px;padding:9px 12px;display:flex;align-items:center;gap:6px;color:#777169;font-size:10px;font-weight:800;white-space:nowrap;transition:transform .2s ease,background .2s ease,color .2s ease,box-shadow .2s ease}
+.requestFilterTabs button:hover{transform:translateY(-1px);color:#222}
+.requestFilterTabs button.active{background:#111;color:#fff;box-shadow:0 7px 16px rgba(17,17,17,.12)}
+.requestFilterTabs button b{min-width:18px;height:18px;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.16);font-size:8px}
+.requestFilterTabs button:not(.active) b{background:#e2ded6;color:#766f66}
+.requestListEnhanced{gap:10px}
+.customerRequestCard{position:relative;overflow:hidden;grid-template-columns:minmax(0,1fr) 150px 20px;padding:0;min-height:118px;align-items:stretch;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.customerRequestCard:hover{transform:translateY(-4px);box-shadow:0 20px 42px rgba(20,20,20,.08);border-color:#d8d0c5}
+.requestCardAccent{width:4px;align-self:stretch;background:linear-gradient(180deg,#c86b2e,#e2a16e)}
+.customerRequestMain{padding:19px 0 17px 20px;min-width:0;display:grid;align-content:center;gap:0}
+.customerRequestTopline{display:flex;align-items:center;gap:8px}
+.customerRequestTopline .statusBadge{margin-left:auto;display:none}
+.customerRequestMain h3{font-size:16px;margin:8px 0 6px;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.customerRequestMeta{display:flex!important;gap:13px!important;flex-wrap:wrap;margin:0!important;font-size:10px!important;color:#777!important}
+.customerRequestMeta span{display:inline-flex;align-items:center;gap:4px}
+.customerRequestMeta svg{color:#a09a91}
+.customerRequestLocation{margin:7px 0 0!important;font-size:9px!important;color:#999!important;display:block!important}
+.customerRequestSide{display:grid;align-content:center;justify-items:end;gap:4px;padding:18px 12px 18px 8px;border-left:1px solid #eee9e2}
+.customerRequestSide span{font-size:9px;color:#999}
+.customerRequestSide strong{font-size:18px;letter-spacing:-.6px}
+.customerRequestSide small{display:flex;align-items:center;gap:4px;color:#9a948b;font-size:9px}
+.customerRequestSide small svg{color:var(--brand)}
+.customerRequestArrow{align-self:center;color:#aaa;margin-right:6px;transition:transform .25s ease,color .25s ease}
+.customerRequestCard:hover .customerRequestArrow{transform:translateX(4px);color:#333}
+.requestEmptyModern{text-align:center;background:#fff;border:1px dashed #d3cec4;border-radius:16px;padding:58px 25px;margin-top:8px;animation:cardReveal .5s both}
+.requestEmptyIcon{width:52px;height:52px;border-radius:15px;background:#eaf3eb;color:var(--green);display:grid;place-items:center;margin:0 auto 12px}
+.requestEmptyModern h2{font-size:26px;letter-spacing:-1px;margin:8px 0}
+.requestEmptyModern p{max-width:430px;margin:0 auto 18px;color:#888;line-height:1.6;font-size:11px}
+@media(max-width:1050px){.requestInsights{grid-template-columns:repeat(2,1fr)}.requestInsightHighlight{grid-column:span 2}}
+@media(max-width:700px){.customerRequestsHero{align-items:flex-start;flex-direction:column}.customerRequestsHero h1{font-size:35px}.customerRequestsCta{width:100%;justify-content:center}.requestInsights{grid-template-columns:1fr 1fr}.requestInsightHighlight{grid-column:1 / -1}.requestToolbarModern{align-items:stretch;flex-direction:column}.requestFilterButton{justify-content:center}.requestFilterTabs{margin-right:-4px;margin-left:-4px}.customerRequestCard{grid-template-columns:4px 1fr 18px}.customerRequestSide{grid-column:2;grid-row:2;border-left:0;border-top:1px solid #eee9e2;display:flex;align-items:center;justify-content:space-between;padding:10px 0 13px 20px;margin-top:-1px}.customerRequestMain{grid-column:2;grid-row:1;padding:17px 0 13px 16px}.customerRequestTopline .statusBadge{display:inline-flex}.customerRequestArrow{grid-column:3;grid-row:1;align-self:center;margin-right:4px}.customerRequestSide span{display:none}}

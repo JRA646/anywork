@@ -34,8 +34,8 @@ import { confirmAction } from '../lib/alerts'
 
 const nav = {
   customer: ['dashboard', 'requests', 'jobs', 'messages', 'profile'],
-  provider: ['dashboard', 'requests', 'jobs', 'calendar', 'services', 'earnings', 'verification', 'checkins', 'invoices', 'reviews', 'support', 'profile'],
-  admin: ['dashboard', 'requests', 'dispatch', 'jobs', 'providers', 'services', 'customers', 'payments', 'reviews', 'support', 'settings', 'profile'],
+  provider: ['dashboard', 'requests', 'jobs', 'calendar', 'messages', 'services', 'earnings', 'verification', 'checkins', 'invoices', 'reviews', 'support', 'profile'],
+  admin: ['dashboard', 'requests', 'dispatch', 'jobs', 'providers', 'verification', 'services', 'customers', 'payments', 'reviews', 'support', 'settings', 'profile'],
 } as const
 
 const labels: Record<string, string> = {
@@ -49,6 +49,7 @@ const labels: Record<string, string> = {
   profile: 'Profile',
   providers: 'Providers',
   customers: 'Customers',
+  verification: 'Verification',
   settings: 'Settings',
   addresses: 'Addresses',
   favorites: 'Favorites',

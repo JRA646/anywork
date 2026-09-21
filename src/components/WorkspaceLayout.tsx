@@ -131,7 +131,7 @@ export function WorkspaceLayout({
           if (!notification.read_at) {
             setUnreadCount((current) => current + 1)
           }
-        }, (_status: RealtimeStatus) => undefined)
+        }, () => undefined)
       } catch {
         cleanup = undefined
       }

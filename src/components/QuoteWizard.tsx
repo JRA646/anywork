@@ -29,6 +29,7 @@ export function QuoteWizard({
   const [accessNotes, setAccessNotes] = useState('')
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([])
   const [uploadingPhotoIndex, setUploadingPhotoIndex] = useState<number | null>(null)
+  const [uploadedPhotoCount, setUploadedPhotoCount] = useState(0)
   const [submitted, setSubmitted] = useState(false)
   const [createdRequest, setCreatedRequest] = useState<DbRequest | null>(null)
   const [busy, setBusy] = useState(false)
@@ -118,10 +119,13 @@ export function QuoteWizard({
       })
 
       let uploadWarning = ''
+      let uploadedCount = 0
       for (let index = 0; index < selectedPhotos.length; index += 1) {
         setUploadingPhotoIndex(index)
         try {
           await uploadRequestPhoto(created.id, selectedPhotos[index])
+          uploadedCount += 1
+          setUploadedPhotoCount(uploadedCount)
         } catch {
           uploadWarning = uploadWarning || 'Your request was created, but one or more photos could not be uploaded. You can add them from the request page.'
         }

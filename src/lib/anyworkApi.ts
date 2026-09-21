@@ -52,7 +52,7 @@ export type DbMessage = {
   created_at: string
 }
 
-async function currentUserId() {
+export async function getCurrentUserId() {
   const client = requireSupabase()
   const { data, error } = await client.auth.getUser()
   if (error) throw error
@@ -70,7 +70,7 @@ export async function createServiceRequest(input: {
   budget?: number | null
 }) {
   const client = requireSupabase()
-  const customerId = await currentUserId()
+  const customerId = await getCurrentUserId()
 
   const { data, error } = await client
     .from('anywork_service_requests')
@@ -93,7 +93,7 @@ export async function createServiceRequest(input: {
 
 export async function listCustomerRequests() {
   const client = requireSupabase()
-  const customerId = await currentUserId()
+  const customerId = await getCurrentUserId()
 
   const { data, error } = await client
     .from('anywork_service_requests')
@@ -160,7 +160,7 @@ export async function sendMessage(input: {
   body: string
 }) {
   const client = requireSupabase()
-  const senderId = await currentUserId()
+  const senderId = await getCurrentUserId()
 
   const { data, error } = await client
     .from('anywork_messages')
@@ -179,7 +179,7 @@ export async function sendMessage(input: {
 
 export async function listMessages(requestId?: string | null) {
   const client = requireSupabase()
-  const userId = await currentUserId()
+  const userId = await getCurrentUserId()
 
   let query = client
     .from('anywork_messages')
@@ -197,7 +197,7 @@ export async function listMessages(requestId?: string | null) {
 export async function markMessagesRead(messageIds: string[]) {
   if (!messageIds.length) return
   const client = requireSupabase()
-  const userId = await currentUserId()
+  const userId = await getCurrentUserId()
 
   const { error } = await client
     .from('anywork_messages')

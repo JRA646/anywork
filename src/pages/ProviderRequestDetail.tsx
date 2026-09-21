@@ -17,6 +17,7 @@ import { showError, showSuccess } from '../lib/alerts'
 import { RequestPhotos } from '../components/RequestPhotos'
 import {
   createQuote,
+  retryQuoteEmail,
   getCurrentUserId,
   getRequest,
   listProfiles,
@@ -50,6 +51,7 @@ export function ProviderRequestDetail({
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const [sent, setSent] = useState(false)
+  const [emailError, setEmailError] = useState('')
 
   useEffect(() => {
     if (!isUuid) {
@@ -141,6 +143,7 @@ export function ProviderRequestDetail({
       })
       setQuote(result.quote)
       setSent(true)
+      setEmailError(result.emailError || '')
 
       if (result.emailSent) {
         await showSuccess('Quote sent', 'The customer received your quote by email and can review it now.')
@@ -156,6 +159,23 @@ export function ProviderRequestDetail({
       const messageText = submitError instanceof Error ? submitError.message : 'Unable to send your quote.'
       setError(messageText)
       await showError('Unable to send quote', messageText)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const retryEmail = async () => {
+    if (!quote) return
+    setSending(true)
+    try {
+      const result = await retryQuoteEmail(quote.id)
+      if (!result.sent) throw new Error(result.error || 'The quote email could not be sent.')
+      setEmailError('')
+      await showSuccess('Quote email sent', 'The customer received the quote email.')
+    } catch (retryError) {
+      const messageText = retryError instanceof Error ? retryError.message : 'Unable to send the quote email.'
+      setEmailError(messageText)
+      await showError('Email delivery failed', messageText)
     } finally {
       setSending(false)
     }
@@ -217,7 +237,53 @@ export function ProviderRequestDetail({
           <h2>{sent ? 'Quote submitted.' : 'Send a clear quote.'}</h2>
           {sent ? (
             <>
-              <div className="quoteSubmittedState"><CheckCircle2 size={22} /><strong>{quote ? '$' + Number(quote.amount).toLocaleString() : '$' + numericAmount.toLocaleString()}</strong><span>Your response is attached to {requestLabel}. You can still message the customer while they review it.</span></div>
+              <div className="quoteSubmittedState"><CheckCircle2 size={22} /><strong>{quote ? '
+              <div className="quoteBuilderActions">
+                {request?.customer_id && <button className="buttonSecondary" onClick={() => onNavigate('/provider/messages?request=' + (request?.id || requestId))}><MessageCircle size={15} /> Message customer</button>}
+                <button className="buttonPrimary" onClick={onBack}>Back to opportunities <ArrowRight size={15} /></button>
+              </div>
+            </>
+          ) : (
+            <>
+              <label><span>Quote amount</span><input type="number" min="0" step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="e.g. 1850" /></label>
+              <label><span>Earliest availability</span><input type="datetime-local" value={availability} onChange={(event) => setAvailability(event.target.value)} /></label>
+              <label><span>Message to customer</span><textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Explain what is included, timing and any assumptions." /></label>
+              <div className="quoteComposerGuidance"><span><CheckCircle2 size={13} /> Be specific about what's included.</span><span><CheckCircle2 size={13} /> Confirm your earliest realistic availability.</span></div>
+              <div className="quoteBuilderActions"><button className="buttonSecondary" onClick={() => onNavigate('/provider/messages?request=' + (request?.id || requestId))}><MessageCircle size={15} /> Message first</button><button className="buttonPrimary" disabled={!validQuote || sending} onClick={() => void submitQuote()}><Send size={15} /> {sending ? 'Sending…' : 'Send quote'}</button></div>
+            </>
+          )}
+        </section>
+      </div>
+    </div>
+  )
+}
+ + Number(quote.amount).toLocaleString() : '
+              <div className="quoteBuilderActions">
+                {request?.customer_id && <button className="buttonSecondary" onClick={() => onNavigate('/provider/messages?request=' + (request?.id || requestId))}><MessageCircle size={15} /> Message customer</button>}
+                <button className="buttonPrimary" onClick={onBack}>Back to opportunities <ArrowRight size={15} /></button>
+              </div>
+            </>
+          ) : (
+            <>
+              <label><span>Quote amount</span><input type="number" min="0" step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="e.g. 1850" /></label>
+              <label><span>Earliest availability</span><input type="datetime-local" value={availability} onChange={(event) => setAvailability(event.target.value)} /></label>
+              <label><span>Message to customer</span><textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Explain what is included, timing and any assumptions." /></label>
+              <div className="quoteComposerGuidance"><span><CheckCircle2 size={13} /> Be specific about what's included.</span><span><CheckCircle2 size={13} /> Confirm your earliest realistic availability.</span></div>
+              <div className="quoteBuilderActions"><button className="buttonSecondary" onClick={() => onNavigate('/provider/messages?request=' + (request?.id || requestId))}><MessageCircle size={15} /> Message first</button><button className="buttonPrimary" disabled={!validQuote || sending} onClick={() => void submitQuote()}><Send size={15} /> {sending ? 'Sending…' : 'Send quote'}</button></div>
+            </>
+          )}
+        </section>
+      </div>
+    </div>
+  )
+}
+ + numericAmount.toLocaleString()}</strong><span>Your response is attached to {requestLabel}. You can still message the customer while they review it.</span></div>
+              {emailError && (
+                <div className="formError">
+                  <span>Quote saved, but email delivery needs attention.</span>
+                  <button className="buttonGhost" type="button" onClick={() => void retryEmail()} disabled={sending}>Retry email</button>
+                </div>
+              )}
               <div className="quoteBuilderActions">
                 {request?.customer_id && <button className="buttonSecondary" onClick={() => onNavigate('/provider/messages?request=' + (request?.id || requestId))}><MessageCircle size={15} /> Message customer</button>}
                 <button className="buttonPrimary" onClick={onBack}>Back to opportunities <ArrowRight size={15} /></button>

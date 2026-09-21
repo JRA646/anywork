@@ -460,3 +460,25 @@ export async function getJobPhotoUrl(path: string, expiresIn = 3600) {
   if (error) throw error
   return data.signedUrl
 }
+
+export async function listAdminVerifications() {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_provider_verifications').select('*').order('created_at', { ascending: false }).limit(300)
+  if (error) throw error
+  return data || []
+}
+
+export async function updateProviderVerification(id: string, status: string, notes?: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_provider_verifications').update({
+    status,
+    notes: notes || null,
+    identity_verified: status === 'Verified',
+    business_verified: status === 'Verified',
+    documents_verified: status === 'Verified',
+    payment_verified: status === 'Verified',
+    reviewed_at: ['Verified','Rejected'].includes(status) ? new Date().toISOString() : null,
+  }).eq('id', id).select('*').single()
+  if (error) throw error
+  return data
+}

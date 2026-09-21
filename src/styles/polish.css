@@ -1520,3 +1520,49 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
   .authPromoMarkButton{width:125px;height:84px}
   .authPromoMark{width:82px;height:76px}
 }
+
+/* Header logo: keep the mark and ANYwork wordmark strictly inline */
+.publicHeader .brandButtonLogo{
+  width:auto!important;
+  min-width:220px;
+  flex:none;
+}
+.publicHeader .brandButtonLogo > .brandLockup-header{
+  display:inline-flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:6px!important;
+  width:auto!important;
+  min-width:0!important;
+  height:46px!important;
+  white-space:nowrap!important;
+}
+.publicHeader .brandButtonLogo .brandHeaderMark{
+  display:block!important;
+  width:30px!important;
+  height:30px!important;
+  flex:0 0 30px!important;
+  object-fit:contain!important;
+  filter:brightness(0) saturate(100%)!important;
+}
+.publicHeader .brandButtonLogo .brandHeaderWordmark{
+  display:block!important;
+  width:116px!important;
+  height:42px!important;
+  flex:0 0 116px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  filter:none!important;
+}
+@media(max-width:700px){
+  .publicHeader .brandButtonLogo{min-width:150px!important}
+  .publicHeader .brandButtonLogo > .brandLockup-header{gap:5px!important;height:40px!important}
+  .publicHeader .brandButtonLogo .brandHeaderMark{
+    width:25px!important;height:25px!important;flex-basis:25px!important;
+  }
+  .publicHeader .brandButtonLogo .brandHeaderWordmark{
+    width:96px!important;height:36px!important;flex-basis:96px!important;
+  }
+}

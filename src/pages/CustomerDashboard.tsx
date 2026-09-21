@@ -1,16 +1,32 @@
-import { ArrowRight, CalendarDays, ChevronRight, CircleDollarSign } from 'lucide-react'
-import { quotes, requests, providers } from '../data/mockData'
+import { useEffect, useMemo, useState } from 'react'
+import { ArrowRight, CalendarDays, CircleDollarSign, Clock3, FileText, TrendingUp } from 'lucide-react'
 import { ProviderCard } from '../components/ProviderCard'
 import { StatusBadge } from '../components/StatusBadge'
+import { providers } from '../data/mockData'
 import type { AnyWorkProfile } from '../types/auth'
+import { listCustomerQuotes, listCustomerRequests, type DbQuote, type DbRequest } from '../lib/anyworkApi'
 
 export function CustomerDashboard({ profile, onNavigate }: { profile: AnyWorkProfile; onNavigate: (path: string) => void }) {
   const name = profile.first_name || profile.display_name.split(' ')[0] || 'there'
-  const mine = requests.filter((request) => request.customer === profile.display_name)
-  const demoMine = profile.display_name === 'John Doe' ? mine : []
-  const quoteRequest = demoMine.find((request) => request.status === 'Quoted')
-  const quoteCount = quoteRequest?.quotes.length || 0
-  const lowestQuote = quoteRequest ? Math.min(...quoteRequest.quotes.map((id) => quotes.find((q) => q.id === id)?.amount || 99999)) : 0
+  const [requests, setRequests] = useState<DbRequest[]>([])
+  const [quotes, setQuotes] = useState<DbQuote[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    void listCustomerRequests()
+      .then(async (rows) => {
+        setRequests(rows)
+        setQuotes(await listCustomerQuotes(rows.map((row) => row.id)))
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
+  const active = requests.filter((request) => request.status !== 'Completed')
+  const accepted = quotes.filter((quote) => quote.status === 'Accepted')
+  const spend = accepted.reduce((sum, quote) => sum + Number(quote.amount), 0)
+  const quoteCount = quotes.filter((quote) => quote.status === 'Pending').length
+  const monthly = useMemo(() => buildMonthlySeries(requests, accepted), [requests, accepted])
+  const maxMonthly = Math.max(...monthly.map((item) => item.value), 1)
 
   return (
     <div className="workspaceDashboard">
@@ -18,85 +34,98 @@ export function CustomerDashboard({ profile, onNavigate }: { profile: AnyWorkPro
         <div>
           <span className="eyebrow">CUSTOMER HOME</span>
           <h1>Welcome, {name}.</h1>
-          <p>Here is what is happening with your work.</p>
+          <p>Track your requests, compare quotes and keep every job moving.</p>
         </div>
         <button className="buttonPrimary" onClick={() => onNavigate('/services')}>Find a service <ArrowRight size={17} /></button>
       </div>
 
       <div className="metricRow">
-        <Metric label="Active requests" value={String(demoMine.filter((item) => item.status !== 'Completed').length)} note={demoMine.length ? 'Across ' + demoMine.length + ' total requests' : 'Start by requesting a service'} />
-        <Metric label="Quotes waiting" value={String(quoteCount)} note="Ready to compare" />
-        <Metric label="Next appointment" value={demoMine.length ? '27 Sep' : '—'} note={demoMine.length ? '9:00 AM · North Sydney' : 'No appointment yet'} />
-        <Metric label="Current spend" value={demoMine.length ? '$2,770' : '$0'} note="This month" />
+        <Metric icon={<FileText />} label="Active requests" value={loading ? '—' : String(active.length)} note={requests.length + ' total requests'} />
+        <Metric icon={<Clock3 />} label="Quotes waiting" value={loading ? '—' : String(quoteCount)} note="Ready to compare" />
+        <Metric icon={<CircleDollarSign />} label="Accepted spend" value={loading ? '—' : '$' + spend.toLocaleString()} note="From accepted quotes" />
+        <Metric icon={<CalendarDays />} label="Upcoming jobs" value={loading ? '—' : String(requests.filter((r) => r.status === 'Scheduled').length)} note="Scheduled work" />
       </div>
 
       <div className="dashboardGrid">
         <section className="dashboardCard wide">
-          <CardHeading eyebrow="YOUR REQUESTS" title="Recent work" action="View all" onClick={() => onNavigate('/customer/requests')} />
-          {demoMine.length ? demoMine.map((request) => (
+          <CardHeading eyebrow="ACTIVITY" title="Requests & spend" />
+          <div className="dashboardChartWrap">
+            <div className="dashboardChartLegend"><span><i className="chartDot chartDotPrimary" /> Requests</span><span><i className="chartDot chartDotSecondary" /> Spend</span></div>
+            <svg className="dashboardChart" viewBox="0 0 720 230" role="img" aria-label="Customer request activity and accepted spend for the last six months">
+              <line x1="45" y1="190" x2="700" y2="190" className="chartAxis" />
+              {monthly.map((item, index) => {
+                const x = 70 + index * 125
+                const height = (item.value / maxMonthly) * 135
+                return <g key={item.label}>
+                  <rect x={x - 24} y={190 - height} width="48" height={height} rx="7" className="chartBar" />
+                  <text x={x} y="212" textAnchor="middle" className="chartLabel">{item.label}</text>
+                  <text x={x} y={185 - height} textAnchor="middle" className="chartValue">{item.value}</text>
+                </g>
+              })}
+            </svg>
+          </div>
+        </section>
+
+        <section className="dashboardCard">
+          <CardHeading eyebrow="NEXT UP" title="Upcoming work" />
+          {requests.filter((r) => r.status === 'Scheduled' || r.status === 'In Progress').slice(0, 3).map((request) => (
             <button className="requestRowModern" key={request.id} onClick={() => onNavigate('/customer/requests/' + request.id)}>
-              <div>
-                <span className="requestId">{request.id}</span>
-                <strong>{request.title}</strong>
-                <small>{request.location} · {request.date}</small>
-              </div>
+              <div><span className="requestId">{request.request_number}</span><strong>{request.title}</strong><small>{request.location} · {formatDate(request.preferred_date)}</small></div>
               <StatusBadge status={request.status} />
-              <ChevronRight size={16} />
+              <ArrowRight size={15} />
             </button>
-          )) : (
-            <div className="emptyModern">
-              <p>No service requests yet.</p>
-              <button className="buttonSecondary" onClick={() => onNavigate('/services')}>Browse services</button>
-            </div>
-          )}
+          ))}
+          {!requests.some((r) => r.status === 'Scheduled' || r.status === 'In Progress') && <div className="emptyModern"><p>No upcoming work yet.</p><button className="buttonSecondary" onClick={() => onNavigate('/services')}>Browse services</button></div>}
         </section>
 
         <section className="dashboardCard">
-          <CardHeading eyebrow="NEXT UP" title="Appointment" />
-          {demoMine.length ? (
-            <div className="appointmentCard">
-              <CalendarDays size={21} />
-              <strong>Office furniture assembly</strong>
-              <span>27 Sep 2026 · 9:00 AM</span>
-              <small>North Sydney · Northside Fabrication</small>
-              <button className="buttonSecondary" onClick={() => onNavigate('/customer/requests/AW-1026')}>View job</button>
-            </div>
-          ) : (
-            <div className="emptyModern">
-              <p>Your next appointment will appear here.</p>
-            </div>
-          )}
-        </section>
-
-        <section className="dashboardCard">
-          <CardHeading eyebrow="QUOTES" title="Compare before you choose" />
-          <CircleDollarSign size={22} className="cardAccentIcon" />
-          {quoteRequest ? (
-            <>
-              <p className="cardMuted">{quoteCount} providers responded to your request.</p>
-              <button className="quoteHighlight" onClick={() => onNavigate('/customer/requests/AW-1027')}>
-                <div><strong>{quoteCount} quotes</strong><span>{'Lowest $' + lowestQuote.toLocaleString()}</span></div>
-                <ArrowRight size={17} />
-              </button>
-            </>
-          ) : (
-            <p className="cardMuted">No quotes waiting right now.</p>
-          )}
+          <CardHeading eyebrow="QUOTES" title="Compare before choosing" />
+          <TrendingUp size={22} className="cardAccentIcon" />
+          <p className="cardMuted">{quoteCount ? quoteCount + ' provider quotes are waiting for your review.' : 'No quotes are waiting right now.'}</p>
+          {quoteCount > 0 && <button className="quoteHighlight" onClick={() => {
+            const requestId = quotes.find((quote) => quote.status === 'Pending')?.request_id
+            if (requestId) onNavigate('/customer/requests/' + requestId)
+          }}><div><strong>{quoteCount} quotes</strong><span>Open your request to compare</span></div><ArrowRight size={17} /></button>}
         </section>
 
         <section className="dashboardCard wide">
-          <CardHeading eyebrow="RECOMMENDED" title="Providers for your next job" action="Browse" onClick={() => onNavigate('/services')} />
-          <div className="providerGridCompact">
-            {providers.slice(0, 3).map((provider) => <ProviderCard key={provider.id} provider={provider} compact onClick={() => onNavigate('/providers/' + provider.id)} />)}
-          </div>
+          <CardHeading eyebrow="RECENT REQUESTS" title="Your work history" action="View all" onClick={() => onNavigate('/customer/requests')} />
+          {requests.slice(0, 5).map((request) => (
+            <button className="requestRowModern" key={request.id} onClick={() => onNavigate('/customer/requests/' + request.id)}>
+              <div><span className="requestId">{request.request_number}</span><strong>{request.title}</strong><small>{request.location} · {formatDate(request.preferred_date)}</small></div>
+              <StatusBadge status={request.status} />
+              <ArrowRight size={15} />
+            </button>
+          ))}
+          {!requests.length && !loading && <div className="emptyModern"><p>No service requests yet.</p><button className="buttonSecondary" onClick={() => onNavigate('/services')}>Browse services</button></div>}
+        </section>
+
+        <section className="dashboardCard wide">
+          <CardHeading eyebrow="PROVIDERS" title="Recommended providers" action="Browse" onClick={() => onNavigate('/providers')} />
+          <div className="providerGridCompact">{providers.slice(0, 3).map((provider) => <ProviderCard key={provider.id} provider={provider} compact onClick={() => onNavigate('/providers/' + provider.id)} />)}</div>
         </section>
       </div>
     </div>
   )
 }
 
-function Metric({ label, value, note }: { label: string; value: string; note: string }) {
-  return <div className="metricCard"><span>{label}</span><strong>{value}</strong><small>{note}</small></div>
+function buildMonthlySeries(requests: DbRequest[], quotes: DbQuote[]) {
+  const now = new Date()
+  return Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1)
+    const key = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0')
+    const count = requests.filter((request) => request.created_at.startsWith(key)).length
+    const spend = quotes.filter((quote) => quote.created_at.startsWith(key)).reduce((sum, quote) => sum + Number(quote.amount), 0)
+    return { label: date.toLocaleDateString(undefined, { month: 'short' }), value: count, spend }
+  })
+}
+
+function formatDate(value: string | null) {
+  return value ? new Date(value).toLocaleDateString(undefined, { day: '2-digit', month: 'short' }) : 'Date not set'
+}
+
+function Metric({ icon, label, value, note }: { icon: React.ReactNode; label: string; value: string; note: string }) {
+  return <div className="metricCard"><div className="metricIcon">{icon}</div><span>{label}</span><strong>{value}</strong><small>{note}</small></div>
 }
 
 function CardHeading({ eyebrow, title, action, onClick }: { eyebrow: string; title: string; action?: string; onClick?: () => void }) {

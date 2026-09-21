@@ -1398,3 +1398,65 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
     box-shadow:none!important;
   }
 }
+
+
+/* ANYwork stacked brand lockup */
+.brandLockup{
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  flex:none;
+}
+.brandLockup .brandMark,
+.brandLockup .brandServices{
+  display:block;
+  object-fit:contain;
+  filter:brightness(0) invert(1) drop-shadow(0 8px 18px rgba(0,0,0,.16));
+}
+.brandLockup .brandMark{
+  width:54px;
+  height:48px;
+}
+.brandLockup .brandServices{
+  width:150px;
+  height:58px;
+}
+.brandLockup-sidebar{
+  width:100%;
+  gap:2px;
+  padding:4px 0 8px;
+}
+.brandLockup-auth{
+  align-items:flex-start;
+  gap:3px;
+}
+.brandLockup-auth .brandMark{
+  width:68px;
+  height:58px;
+}
+.brandLockup-auth .brandServices{
+  width:190px;
+  height:70px;
+}
+.workspaceBrandLogo .brandLockup-sidebar{
+  pointer-events:none;
+}
+@media(max-width:600px){
+  .brandLockup-sidebar .brandMark{
+    width:48px;
+    height:42px;
+  }
+  .brandLockup-sidebar .brandServices{
+    width:132px;
+    height:50px;
+  }
+  .brandLockup-auth .brandMark{
+    width:60px;
+    height:52px;
+  }
+  .brandLockup-auth .brandServices{
+    width:174px;
+    height:64px;
+  }
+}

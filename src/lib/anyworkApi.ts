@@ -117,6 +117,19 @@ export async function getRequest(requestId: string) {
   return data as DbRequest
 }
 
+export async function listQuotesForRequests(requestIds: string[]) {
+  if (!requestIds.length) return [] as DbQuote[]
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('anywork_quotes')
+    .select('*')
+    .in('request_id', requestIds)
+    .order('amount', { ascending: true })
+
+  if (error) throw error
+  return (data || []) as DbQuote[]
+}
+
 export async function listQuotesForRequest(requestId: string) {
   const client = requireSupabase()
   const { data, error } = await client

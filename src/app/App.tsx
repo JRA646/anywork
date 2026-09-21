@@ -246,7 +246,7 @@ function Application() {
         <WorkspaceLayout
           role="customer"
           profile={profile}
-          title={section === 'requests' ? 'Requests' : section === 'jobs' ? 'Jobs' : section === 'messages' ? 'Messages' : section === 'profile' ? 'Profile' : section === 'help' ? 'Help Center' : 'Overview'}
+          title={section === 'dashboard' ? 'Overview' : section === 'requests' ? 'Requests' : section === 'jobs' ? 'Jobs' : section === 'messages' ? 'Messages' : section === 'profile' ? 'Profile' : section === 'help' ? 'Help Center' : section.charAt(0).toUpperCase() + section.slice(1)}
           current={section}
           onNavigate={(item) => navigate('/customer/' + (item === 'dashboard' ? '' : item))}
           onPublicSite={handleSignOut}

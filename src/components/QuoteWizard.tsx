@@ -126,14 +126,21 @@ export function QuoteWizard({
               <p className="modalLead">Give providers the right context so their quotes and availability are useful to you.</p>
             </div>
 
-            <div className="wizardSteps" aria-label="Request creation steps">
+            <div className="wizardSteps professionalWizardSteps" aria-label="Request creation steps">
               <button type="button" className={step >= 1 ? 'active' : ''} onClick={() => step > 1 && setStep(1)} disabled={step === 1}>
-                <span>01</span> Service
+                <span className="wizardStepNumber">01</span>
+                <span className="wizardStepCopy"><b>Service</b><small>Choose category</small></span>
               </button>
+              <i aria-hidden="true" />
               <button type="button" className={step >= 2 ? 'active' : ''} onClick={() => step > 2 && setStep(2)} disabled={step <= 2}>
-                <span>02</span> Job details
+                <span className="wizardStepNumber">02</span>
+                <span className="wizardStepCopy"><b>Job details</b><small>Tell us what you need</small></span>
               </button>
-              <span className={step >= 3 ? 'active' : ''}><span>03</span> Review</span>
+              <i aria-hidden="true" />
+              <span className={step >= 3 ? 'active' : ''}>
+                <span className="wizardStepNumber">03</span>
+                <span className="wizardStepCopy"><b>Review</b><small>Check & submit</small></span>
+              </span>
             </div>
 
             <div className="requestWizardBody">
@@ -170,9 +177,10 @@ export function QuoteWizard({
                     <div>
                       <span className="eyebrow">SELECTED SERVICE</span>
                       <strong>{service?.title || 'Choose a service'}</strong>
+                      <small>Providers matching this category will be able to review your request.</small>
                     </div>
                     <button type="button" className="buttonGhost" onClick={() => setStep(1)}>
-                      <ArrowLeft size={15} /> Change
+                      <ArrowLeft size={15} /> Change service
                     </button>
                   </div>
 

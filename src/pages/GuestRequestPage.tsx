@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowRight, CheckCircle2, Clock3, Mail, MapPin, ShieldCheck } from 'lucide-react'
 import { acceptGuestQuote, getGuestRequestPortal, type DbQuote, type GuestPortalProvider, type GuestPortalResponse } from '../lib/anyworkApi'
 import { confirmAction, showError, showSuccess } from '../lib/alerts'
@@ -18,7 +18,7 @@ export function GuestRequestPage({ token }: { token: string }) {
     void load()
   }, [token])
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
@@ -29,6 +29,10 @@ export function GuestRequestPage({ token }: { token: string }) {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    void load()
+  }, [load])
 
   const handleAccept = async (quote: DbQuote) => {
     const confirmed = await confirmAction({

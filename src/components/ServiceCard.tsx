@@ -4,7 +4,7 @@ import { icons } from './Icons'
 import { serviceImageById } from '../data/media'
 
 export function ServiceCard({ service, onClick }: { service: Service; onClick?: () => void }) {
-  const Icon = icons[service.icon as keyof typeof icons]
+  const Icon = icons[service.icon as keyof typeof icons] ?? icons.Store
   const image = serviceImageById[service.id]
   return (
     <button className="serviceCardModern serviceCardImage tw-image-shine group" style={{ '--service-image': 'url("' + image + '")' } as Record<string, string>} onClick={onClick}>

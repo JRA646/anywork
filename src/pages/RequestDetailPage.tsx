@@ -77,7 +77,8 @@ export function RequestDetailPage({
   }, [requestId, isUuid])
 
   const request = dbRequest || mockRequest
-  const service = services.find((item) => item.id === request?.service_key || item.id === request?.serviceId)
+  const serviceKey = request && 'service_key' in request ? request.service_key : request?.serviceId
+  const service = services.find((item) => item.id === serviceKey)
 
   const quoteViews = useMemo<QuoteView[]>(() => {
     if (dbRequest) {
@@ -292,7 +293,7 @@ export function RequestDetailPage({
             <span className="eyebrow">YOUR REQUEST</span>
             <h3>What you asked for</h3>
             <p>{requestDescription}</p>
-            <div className="sideDetail"><span><Tag size={13} /> Service</span><strong>{service?.title || request.service_key}</strong></div>
+            <div className="sideDetail"><span><Tag size={13} /> Service</span><strong>{service?.title || serviceKey}</strong></div>
             <div className="sideDetail"><span><MapPin size={13} /> Location</span><strong>{requestLocation}</strong></div>
             <div className="sideDetail"><span><CalendarDays size={13} /> Date</span><strong>{requestDate}</strong></div>
             <div className="sideDetail"><span>Budget</span><strong>{requestBudget ? '$' + requestBudget.toLocaleString() : 'Open'}</strong></div>

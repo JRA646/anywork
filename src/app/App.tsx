@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Bell, LogIn, Menu, UserRound, X } from 'lucide-react'
 import { usePath } from './router'
-import { services, providers } from '../data/mockData'
+import { services as mockServices, providers } from '../data/mockData'
+import type { Service } from '../types/marketplace'
+import { listPublicServices } from '../lib/anyworkApi'
 import type { Role } from '../types/marketplace'
 import type { AnyWorkProfile } from '../types/auth'
 import { AuthProvider, useAuth } from '../auth/AuthContext'
@@ -45,11 +47,27 @@ export default function App() {
 function Application() {
   const { path, navigate } = usePath()
   const { session, profile, loading, signOut } = useAuth()
+  const [serviceCatalog, setServiceCatalog] = useState<Service[]>(mockServices)
   const [quoteOpen, setQuoteOpen] = useState(false)
   const [quoteService, setQuoteService] = useState('')
   const [quoteCreatedCallback, setQuoteCreatedCallback] = useState<((requestId: string) => void) | null>(null)
 
   useEffect(() => {
+    void listPublicServices()
+      .then((rows) => {
+        if (!rows.length) return
+        setServiceCatalog(rows.map((service) => ({
+          id: service.id,
+          title: service.title,
+          label: service.label,
+          description: service.description,
+          icon: service.icon,
+          items: Array.isArray(service.items) ? service.items : [],
+          startingPrice: service.starting_price_label || (service.starting_price !== null ? '₱' + Number(service.starting_price).toLocaleString('en-PH') : 'Quote'),
+        })))
+      })
+      .catch(() => undefined)
+
     if (loading) return
 
     if (path === '/signin' || path === '/admin/signin') {
@@ -108,15 +126,15 @@ function Application() {
   if (loading) return <AppLoading />
 
   const publicContent = path === '/'
-    ? <PublicHome services={services} providers={providers} onNavigate={navigate} onQuote={openQuote} />
+    ? <PublicHome services={serviceCatalog} providers={providers} onNavigate={navigate} onQuote={openQuote} />
     : path === '/services'
-      ? <PublicServices services={services} providers={providers} onQuote={openQuote} onProvider={(id) => navigate('/providers/' + id)} />
+      ? <PublicServices services={serviceCatalog} providers={providers} onQuote={openQuote} onProvider={(id) => navigate('/providers/' + id)} />
       : path === '/providers'
         ? <PublicProviders services={services} providers={providers} onProvider={(id) => navigate('/providers/' + id)} />
         : path === '/help'
         ? <HelpCenterPage />
       : path.startsWith('/providers/')
-        ? <ProviderProfilePage provider={providers.find((item) => item.id === path.split('/')[2]) || providers[0]} services={services} onQuote={openQuote} />
+        ? <ProviderProfilePage provider={providers.find((item) => item.id === path.split('/')[2]) || providers[0]} services={serviceCatalog} onQuote={openQuote} />
         : null
 
   if (publicContent) {
@@ -133,6 +151,7 @@ function Application() {
         <PublicFooter onNavigate={navigate} onQuote={openQuote} />
         {quoteOpen && (
           <QuoteWizard
+            servicesOverride={serviceCatalog}
             initialService={quoteService}
             onClose={() => { setQuoteOpen(false); setQuoteCreatedCallback(null) }}
             onCreated={(request) => quoteCreatedCallback?.(request.id)}
@@ -178,6 +197,7 @@ function Application() {
         </WorkspaceLayout>
         {quoteOpen && (
           <QuoteWizard
+            servicesOverride={serviceCatalog}
             initialService={quoteService}
             onClose={() => { setQuoteOpen(false); setQuoteCreatedCallback(null) }}
             onCreated={(request) => quoteCreatedCallback?.(request.id)}

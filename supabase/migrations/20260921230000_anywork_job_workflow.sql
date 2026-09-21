@@ -166,12 +166,16 @@ security definer
 set search_path = public, private
 as $$
 begin
-  if new.status is distinct from old.status then
+  if new.selected_provider_id is distinct from old.selected_provider_id
+     and new.selected_provider_id is not null then
+    perform private.anywork_job_activity(new.id, 'provider.selected', 'Provider selected',
+      'A provider quote was accepted for this request.', jsonb_build_object('provider_id', new.selected_provider_id));
+  elsif new.status is distinct from old.status then
     perform private.anywork_job_activity(
       new.id,
       'status.changed',
       case new.status
-        when 'Quoted' then 'Quote accepted'
+        when 'Quoted' then 'Quotes received'
         when 'Scheduled' then 'Schedule confirmed'
         when 'In Progress' then 'Job started'
         when 'Completed' then 'Job completed'
@@ -187,7 +191,7 @@ $$;
 
 drop trigger if exists anywork_request_activity_trigger on public.anywork_service_requests;
 create trigger anywork_request_activity_trigger
-after update of status on public.anywork_service_requests
+after update of status, selected_provider_id on public.anywork_service_requests
 for each row execute function private.anywork_request_activity_trigger();
 
 create or replace function private.anywork_change_activity_trigger()

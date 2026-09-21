@@ -84,7 +84,7 @@ export function CustomerMessagesPage({
     } finally {
       setLoading(false)
     }
-  }
+  }, [requestId, providerId])
 
   useEffect(() => { void load().then(() => { lastLoadedAtRef.current = Date.now() }).catch(() => undefined) }, [load])
 

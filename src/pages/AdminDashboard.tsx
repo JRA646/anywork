@@ -15,7 +15,6 @@ import {
   Store,
   UserCheck,
   X,
-  ChevronDown,
   Smartphone,
   Globe,
   Sparkles,

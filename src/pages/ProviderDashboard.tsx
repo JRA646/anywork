@@ -34,7 +34,7 @@ import {
   type DbQuote,
   type DbRequest,
 } from '../lib/anyworkApi'
-import { showError, showSuccess, showToast } from '../lib/alerts'
+import { confirmAction, showError, showSuccess, showToast } from '../lib/alerts'
 
 type RequestFilter = 'All' | 'Needs quote' | 'Quoted' | 'Scheduled' | 'In Progress' | 'Completed'
 
@@ -425,6 +425,20 @@ function ProviderServices() {
 
   const toggle = async (serviceKey: string) => {
     const current = configuredByKey.get(serviceKey)
+    const nextEnabled = !(current?.enabled ?? false)
+
+    if (!nextEnabled) {
+      const service = services.find((item) => item.id === serviceKey)
+      const confirmed = await confirmAction({
+        title: 'Disable this service?',
+        text: service ? service.label + ' will no longer appear as available to customers.' : 'Customers will no longer be able to request this service.',
+        confirmText: 'Disable service',
+        cancelText: 'Keep enabled',
+        danger: true,
+      })
+      if (!confirmed) return
+    }
+
     setSaving(serviceKey)
     try {
       const saved = await saveProviderService({

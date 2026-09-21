@@ -162,7 +162,7 @@ function AdminProviders() {
   </div>
 }
 
-function AdminServices() {
+export function AdminServices() {
   type CatalogService = DbService & { category: string; subcategory: string }
   const softwareSubcategories = ['General', 'Mobile Development', 'Web Application', 'AI']
   const [catalog, setCatalog] = useState<CatalogService[]>([])

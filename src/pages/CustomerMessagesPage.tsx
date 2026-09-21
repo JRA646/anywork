@@ -80,7 +80,7 @@ const seedConversations: Conversation[] = [
   },
 ]
 
-export function CustomerMessagesPage() {
+export function CustomerMessagesPage({ onNavigate }: { onNavigate: (path: string) => void }) {
   const [conversations, setConversations] = useState(seedConversations)
   const [selectedId, setSelectedId] = useState(seedConversations[0].id)
   const [query, setQuery] = useState('')
@@ -180,7 +180,7 @@ export function CustomerMessagesPage() {
               <span>CONNECTED REQUEST</span>
               <strong>{selected.requestId === 'HELP' ? 'ANYwork Support' : selected.requestId + ' · ' + selected.name}</strong>
             </div>
-            {selected.requestId !== 'HELP' && <button onClick={() => window.history.pushState({}, '', '/customer/requests/' + selected.requestId)} type="button">View request</button>}
+            {selected.requestId !== 'HELP' && <button onClick={() => onNavigate('/customer/requests/' + selected.requestId)} type="button">View request</button>}
           </div>
 
           <div className="messageThreadBody">

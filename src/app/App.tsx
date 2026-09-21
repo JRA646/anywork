@@ -250,7 +250,7 @@ function PublicHeader({
     <header className="publicHeader">
       <div className="container publicHeaderInner">
         <button className="brandButton brandButtonLogo" onClick={() => onNavigate('/')}>
-          {/* <BrandLogo variant="header" /> */}
+          <BrandLogo variant="header" />
         </button>
         <nav className="publicNav">
           <button className={active === 'services' ? 'active' : ''} onClick={() => onNavigate('/services')}>Services</button>

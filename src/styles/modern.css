@@ -704,3 +704,12 @@
 .customerQuickLinks svg{grid-row:1 / span 2;grid-column:2;align-self:center}
 @media(max-width:760px){.customerActionCenter{align-items:flex-start;flex-direction:column}.customerActionCenter .buttonPrimary{width:100%;justify-content:center}.customerQuickLinks{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.customerQuickLinks{grid-template-columns:1fr}}
+
+
+.accountModuleGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.accountModuleCard{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px;border:1px solid #e7e3db;border-radius:14px;background:#fff;text-align:left;cursor:pointer}
+.accountModuleCard:hover{border-color:#c9c3b8;box-shadow:0 6px 18px rgba(20,20,20,.04)}
+.accountModuleCard>div{display:grid;gap:5px}
+.accountModuleCard strong{font-size:13px}
+.accountModuleCard span{font-size:10px;color:#888;line-height:1.5}
+@media(max-width:650px){.accountModuleGrid{grid-template-columns:1fr}}

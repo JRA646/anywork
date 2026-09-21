@@ -21,7 +21,6 @@ import { ProfilePage } from '../pages/ProfilePage'
 import { HelpCenterPage } from '../pages/HelpCenterPage'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
-import { BrandLogo } from '../components/BrandLogo'
 import '../styles/modern.css'
 import '../styles/polish.css'
 

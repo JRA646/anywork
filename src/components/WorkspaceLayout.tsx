@@ -17,6 +17,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import type { Role } from '../types/marketplace'
 import type { AnyWorkProfile } from '../types/auth'
+import { BrandLogo } from './BrandLogo'
 
 const nav = {
   customer: ['dashboard', 'requests', 'messages', 'profile'],
@@ -86,9 +87,8 @@ export function WorkspaceLayout({
   return (
     <div className="workspace">
       <aside className="workspaceSidebar">
-        <button className="workspaceBrand" onClick={onPublicSite}>
-          <span className="marketLogo">AW</span>
-          <span>ANYwork</span>
+        <button className="workspaceBrand workspaceBrandLogo" onClick={onPublicSite}>
+          <BrandLogo variant="sidebar" />
         </button>
 
         <div className="workspaceLabel">{workspaceLabel}</div>

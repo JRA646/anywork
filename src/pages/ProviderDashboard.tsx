@@ -34,7 +34,7 @@ import {
   type DbRequest,
 } from '../lib/anyworkApi'
 import { confirmAction, showError, showToast } from '../lib/alerts'
-import { listProviderAssignments, respondProviderAssignment } from '../lib/productionApi'
+import { listProviderAssignments, respondProviderAssignment, type DbProviderAssignment } from '../lib/productionApi'
 
 type RequestFilter = 'All' | 'Needs quote' | 'Quoted' | 'Scheduled' | 'In Progress' | 'Completed'
 
@@ -65,12 +65,12 @@ function ProviderHome({ profile, onNavigate }: { profile: AnyWorkProfile; onNavi
   const [providerId, setProviderId] = useState('')
   const [loading, setLoading] = useState(true)
   const [realtime, setRealtime] = useState<'connecting' | 'live' | 'offline'>('connecting')
-  const [assignments, setAssignments] = useState<any[]>([])
+  const [assignments, setAssignments] = useState<DbProviderAssignment[]>([])
   const [assignmentBusy, setAssignmentBusy] = useState<string | null>(null)
 
   useEffect(() => {
     void listProviderAssignments()
-      .then((rows) => setAssignments(rows.filter((row: any) => ['Suggested','Invited'].includes(row.status))))
+      .then((rows) => setAssignments(rows.filter((row) => ['Suggested','Invited'].includes(row.status))))
       .catch(() => setAssignments([]))
   }, [])
 

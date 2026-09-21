@@ -242,7 +242,13 @@ export function WorkspaceLayout({
                       type="button"
                       onClick={() => {
                         setNotificationsOpen(false)
-                        if (notification.href) onNavigate(notification.href)
+                        if (notification.type === 'message.received') {
+                          onNavigate('/' + role + '/messages' + (notification.request_id ? '?request=' + notification.request_id : ''))
+                        } else if (notification.request_id) {
+                          onNavigate(role === 'admin'
+                            ? '/admin/requests'
+                            : '/' + role + '/requests/' + notification.request_id)
+                        }
                       }}
                     >
                       <span className="notificationIndicator" />

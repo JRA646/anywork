@@ -14,6 +14,9 @@ export type Service = {
   description: string
   icon: string
   items: string[]
+  tags?: string[]
+  category?: string
+  subcategory?: string
   startingPrice: string
 }
 

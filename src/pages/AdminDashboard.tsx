@@ -351,11 +351,16 @@ export function AdminServices() {
       <form className="adminServiceForm" onSubmit={submitService}>
         <div className="drawerHeader"><div><span className="eyebrow">SERVICE CATALOG</span><h2>{editingId ? 'Edit service' : 'Add service'}</h2></div><button type="button" className="roundIcon" onClick={() => setShowForm(false)}><X size={17} /></button></div>
         {error && <div className="formError">{error}</div>}
-        <label><span>Category</span><select value={form.category} onChange={(event) => {
-          const nextCategory = event.target.value
-          const nextSubcategories = Array.from(new Set(catalog.filter((item) => item.category === nextCategory).map((item) => item.subcategory).filter(Boolean)))
-          setForm((current) => ({ ...current, category: nextCategoryValue, subcategory: nextSubcategories[0] || 'General' }))
-        }} />
+        <SearchableSelect
+          label="Category"
+          value={form.category}
+          options={categories.length ? categories : ['General']}
+          placeholder="Choose a category"
+          onChange={(nextCategory) => {
+            const nextSubcategories = Array.from(new Set(catalog.filter((item) => item.category === nextCategory).map((item) => item.subcategory).filter(Boolean)))
+            setForm((current) => ({ ...current, category: nextCategory, subcategory: nextSubcategories[0] || 'General' }))
+          }}
+        />
         <SearchableSelect label="Subcategory" value={form.subcategory} options={Array.from(new Set(catalog.filter((item) => item.category === form.category).map((item) => item.subcategory).filter(Boolean))).concat(
           Array.from(new Set(catalog.filter((item) => item.category === form.category).map((item) => item.subcategory).filter(Boolean))).length ? [] : ['General']
         )} placeholder="Choose a subcategory" onChange={(value) => setForm((current) => ({ ...current, subcategory: value }))} />

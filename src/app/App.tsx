@@ -20,6 +20,7 @@ import { AdminDashboard } from '../pages/AdminDashboard'
 import { AuthPage } from '../pages/AuthPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import { HelpCenterPage } from '../pages/HelpCenterPage'
+import { GuestRequestPage } from '../pages/GuestRequestPage'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
 import '../styles/modern.css'
@@ -85,6 +86,15 @@ function Application() {
   const handleSignOut = async () => {
     await signOut()
     navigate('/')
+  }
+
+  if (path === '/request/') {
+    return <GuestRequestPage token="" />
+  }
+
+  if (path.startsWith('/request/')) {
+    const token = path.slice('/request/'.length)
+    return <GuestRequestPage token={token} />
   }
 
   if (path === '/signin') {

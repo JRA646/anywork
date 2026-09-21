@@ -9,6 +9,7 @@ import {
 } from '../lib/productionApi'
 
 export function ProductionWorkspacePage({ role, section, onNavigate }: { role: 'customer'|'provider'|'admin'; section: string; profile?: AnyWorkProfile; onNavigate: (path:string)=>void }) {
+  if (section === 'account') return <AccountPage onNavigate={onNavigate} />
   if (section === 'addresses') return <AddressesPage />
   if (section === 'favorites') return <FavoritesPage />
   if (section === 'invoices' || section === 'payments') return <FinancePage role={role} />
@@ -27,6 +28,17 @@ export function ProductionWorkspacePage({ role, section, onNavigate }: { role: '
 
 function Panel({ title, kicker, children }: { title:string; kicker:string; children:React.ReactNode }) {
   return <section className="dashboardCard productionPanel"><div className="cardHeading"><div><span className="eyebrow">{kicker}</span><h2>{title}</h2></div></div>{children}</section>
+}
+
+function AccountPage({ onNavigate }: { onNavigate:(path:string)=>void }) {
+  const links=[
+    ['addresses','Saved addresses','Keep service locations ready for your next request.'],
+    ['favorites','Saved services','Quickly request services you use often.'],
+    ['invoices','Invoices & payments','View invoices and payment history.'],
+    ['reviews','Reviews','See feedback you have given and received.'],
+    ['support','Support','Get help with a request or completed job.'],
+  ]
+  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="ACCOUNT" title="Account" description="Manage the details you use across your service jobs."/><div className="accountModuleGrid">{links.map(([path,title,description])=><button className="accountModuleCard" key={path} onClick={()=>onNavigate('/customer/'+path)}><div><strong>{title}</strong><span>{description}</span></div><ArrowRight size={16}/></button>)}</div></div>
 }
 
 function AddressesPage() {

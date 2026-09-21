@@ -297,7 +297,7 @@ function PublicHeader({
     <header className="publicHeader">
       <div className="container publicHeaderInner">
         <button className="brandButton brandButtonLogo" onClick={() => onNavigate('/')} aria-label="ANYwork home">
-          <img className="headerBrandImage" src="/anywork.png" alt="ANYwork Services" />
+          <img className="headerBrandImage" src="/anywork-logo.webp" alt="ANYwork Services" />
         </button>
         <nav className="publicNav">
           <button className={active === 'services' ? 'active' : ''} onClick={() => onNavigate('/services')}>Services</button>
@@ -339,7 +339,7 @@ function PublicFooter({ onNavigate, onQuote }: { onNavigate: (path: string) => v
       <div className="container footerGrid">
         <div>
           <button className="footerBrandButton" onClick={() => onNavigate('/')} aria-label="ANYwork home">
-            <img className="footerBrandImage" src="/anywork.png" alt="ANYwork Services" />
+            <img className="footerBrandImage" src="/anywork-logo.webp" alt="ANYwork Services" />
           </button>
           <p>Find the right service. Request the work. Track it to done.</p>
         </div>

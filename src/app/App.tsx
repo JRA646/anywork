@@ -24,6 +24,7 @@ import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
 import '../styles/modern.css'
 import '../styles/polish.css'
+import '../styles/providers-public.css'
 import { showInfo } from '../lib/alerts'
 
 const roleRoute = (path: string): Role | null => {

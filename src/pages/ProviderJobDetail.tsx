@@ -19,6 +19,8 @@ import {
   listProfiles,
   listQuotesForRequest,
   updateProviderJobStatus,
+  subscribeToRequests,
+  subscribeToQuotes,
   type DbProfile,
   type DbRequest,
   type DbQuote,
@@ -64,6 +66,27 @@ export function ProviderJobDetail({
     }
 
     void load()
+  }, [requestId])
+
+  useEffect(() => {
+    let cleanup: (() => void) | undefined
+    void subscribeToRequests((change) => {
+      if (change.record?.id === requestId) {
+        if (change.record.selected_provider_id) setRequest(change.record)
+      }
+      if (!change.record && change.oldRecord?.id === requestId) setRequest(null)
+    }).then((dispose) => { cleanup = dispose }).catch(() => undefined)
+    return () => cleanup?.()
+  }, [requestId])
+
+  useEffect(() => {
+    let cleanup: (() => void) | undefined
+    void subscribeToQuotes((change) => {
+      if (change.record?.request_id === requestId && change.record.status === 'Accepted') {
+        setQuote(change.record)
+      }
+    }).then((dispose) => { cleanup = dispose }).catch(() => undefined)
+    return () => cleanup?.()
   }, [requestId])
 
   const service = services.find((item) => item.id === request?.service_key)

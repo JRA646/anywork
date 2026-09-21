@@ -190,7 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const nextProfile = data as AnyWorkProfile
     setProfile(nextProfile)
     return nextProfile
-  }, [session?.user])
+  }, [session])
 
   const signOut = useCallback(async () => {
     if (supabase) await supabase.auth.signOut()

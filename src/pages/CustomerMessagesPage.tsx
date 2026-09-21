@@ -61,14 +61,15 @@ export function CustomerMessagesPage({
   const [selectedKey, setSelectedKey] = useState('')
   const [query, setQuery] = useState('')
   const [draft, setDraft] = useState('')
+  const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [realtime, setRealtime] = useState<'connecting' | 'live' | 'offline'>('connecting')
   const threadEndRef = useRef<HTMLDivElement | null>(null)
   const lastLoadedAtRef = useRef(0)
 
-  const load = async () => {
-    setLoading(true)
+  const load = async (showLoading = true) => {
+    if (showLoading) setLoading(true)
     setError('')
     try {
       const [userId, rows] = await Promise.all([getCurrentUserId(), listMessages(requestId)])
@@ -91,7 +92,7 @@ export function CustomerMessagesPage({
     const handleVisibility = () => {
       if (document.visibilityState !== 'visible') return
       if (Date.now() - lastLoadedAtRef.current < 1500) return
-      void load().then(() => { lastLoadedAtRef.current = Date.now() }).catch(() => undefined)
+      void load(false).then(() => { lastLoadedAtRef.current = Date.now() }).catch(() => undefined)
     }
 
     document.addEventListener('visibilitychange', handleVisibility)
@@ -181,13 +182,17 @@ export function CustomerMessagesPage({
 
   const send = async () => {
     const text = draft.trim()
-    if (!text || !selected) return
+    if (!text || !selected || sending) return
+    setSending(true)
+    setError('')
     try {
       const message = await sendMessage({ requestId: requestId || selected.requestId, receiverId: selected.counterpartId, body: text })
       setMessages((current) => [...current, message])
       setDraft('')
     } catch (sendError) {
       setError(sendError instanceof Error ? sendError.message : 'Unable to send the message.')
+    } finally {
+      setSending(false)
     }
   }
 
@@ -289,7 +294,7 @@ export function CustomerMessagesPage({
               rows={1}
               disabled={!selected}
             />
-            <button className="messageSendButton" onClick={() => void send()} disabled={!selected || !draft.trim()} aria-label="Send message"><Send size={17} /></button>
+            <button className="messageSendButton" onClick={() => void send()} disabled={!selected || !draft.trim() || sending} aria-label="Send message"><Send size={17} /></button>
           </div>
           <small className="messageComposerNote">Press Enter to send · Shift + Enter for a new line</small>
         </section>

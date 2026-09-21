@@ -10,7 +10,7 @@ import {
 import type { AnyWorkProfile } from '../types/auth'
 import { StatusBadge } from '../components/StatusBadge'
 
-export function ProductionWorkspacePage({ role, section, profile, onNavigate }: { role: 'customer'|'provider'|'admin'; section: string; profile: AnyWorkProfile; onNavigate: (path:string)=>void }) {
+export function ProductionWorkspacePage({ role, section, onNavigate }: { role: 'customer'|'provider'|'admin'; section: string; profile?: AnyWorkProfile; onNavigate: (path:string)=>void }) {
   if (section === 'addresses') return <AddressesPage />
   if (section === 'invoices' || section === 'payments') return <FinancePage role={role} />
   if (section === 'reviews') return <ReviewsPage role={role} />

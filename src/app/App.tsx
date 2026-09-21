@@ -195,7 +195,13 @@ function Application() {
       ? <ProfilePage role="provider" />
       : section === 'help'
         ? <HelpCenterPage />
-        : <ProviderDashboard section={section} profile={profile} onNavigate={navigate} />
+        : <ProviderDashboard
+            section={section}
+            profile={profile}
+            onNavigate={navigate}
+            messageRequestId={new URLSearchParams(window.location.search).get('request') || undefined}
+            messageProviderId={new URLSearchParams(window.location.search).get('provider') || undefined}
+          />
     const providerTitle = section === 'dashboard'
       ? 'Overview'
       : section === 'help'

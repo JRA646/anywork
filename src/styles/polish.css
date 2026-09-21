@@ -1492,3 +1492,31 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
 .brandLockup-auth .brandServices{
   filter:brightness(0) invert(1)!important;
 }
+
+/* Sign-in uses the standalone ANYwork mark */
+.authPromoMarkButton{
+  width:176px;
+  height:118px;
+  justify-content:flex-start;
+  align-items:flex-start;
+  padding:0;
+}
+.authPromoMark{
+  display:block;
+  width:112px;
+  height:102px;
+  object-fit:contain;
+  object-position:left top;
+  filter:none;
+}
+.authPromoMarkButton:hover{
+  background:transparent;
+}
+@media(max-width:900px){
+  .authPromoMarkButton{width:145px;height:96px}
+  .authPromoMark{width:94px;height:88px}
+}
+@media(max-width:560px){
+  .authPromoMarkButton{width:125px;height:84px}
+  .authPromoMark{width:82px;height:76px}
+}

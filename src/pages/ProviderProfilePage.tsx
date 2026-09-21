@@ -5,7 +5,7 @@ export function ProviderProfilePage({ provider, services, onQuote }: { provider:
   const offered = services.filter((service) => provider.serviceIds.includes(service.id))
 
   return (
-    <main className="pageModern">
+    <main className="pageModern animate-anywork-rise">
       <div className="container">
         <button className="backLinkModern" onClick={() => window.history.back()}>← Back to marketplace</button>
 

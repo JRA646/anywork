@@ -92,7 +92,7 @@ export function CustomerMessagesPage({
       }
     }).then((dispose) => { cleanup = dispose }).catch(() => undefined)
     return () => cleanup?.()
-  }, [requestId, currentUserId, profiles])
+  }, [requestId, currentUserId])
 
   const conversationMap = useMemo(() => {
     const map = new Map<string, Conversation>()

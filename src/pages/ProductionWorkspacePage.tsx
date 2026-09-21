@@ -214,7 +214,7 @@ function ProviderCalendarPage() {
               <div className="providerWeekTimeGutter">TIME</div>
               {days.map((day, weekday) => {
                 const row = rows.find(item => item.weekday === weekday)
-                const enabled = row?.enabled !== false
+                const enabled = row ? row.enabled !== false : false
                 return (
                   <div className={'providerWeekDayHead ' + (enabled ? 'is-enabled' : 'is-disabled')} key={day}>
                     <strong>{day}</strong>
@@ -233,7 +233,7 @@ function ProviderCalendarPage() {
               </div>
               {days.map((day, weekday) => {
                 const row = rows.find(item => item.weekday === weekday)
-                const enabled = row?.enabled !== false
+                const enabled = row ? row.enabled !== false : false
                 const start = row?.start_time?.slice(0, 5) || defaultStart
                 const end = row?.end_time?.slice(0, 5) || defaultEnd
                 const isSaving = savingWeekday === weekday

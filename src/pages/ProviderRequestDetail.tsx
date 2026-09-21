@@ -181,7 +181,11 @@ export function ProviderRequestDetail({
           <h1>{detail.title}</h1>
           <p>{customerName} · {detail.location} · {requestDate}</p>
         </div>
-        <button className="buttonSecondary" onClick={() => onNavigate('/provider/messages' + (request ? '?request=' + request.id + (customer?.user_id ? '&provider=' + customer.user_id : '') : ''))}><MessageCircle size={15} /> Message customer</button>
+        {request?.customer_id && (
+          <button className="buttonSecondary" onClick={() => onNavigate('/provider/messages' + (request ? '?request=' + request.id + (customer?.user_id ? '&provider=' + customer.user_id : '') : ''))}>
+            <MessageCircle size={15} /> Message customer
+          </button>
+        )}
       </div>
 
       {isUuid && <RequestPhotos requestId={requestId} />}
@@ -201,6 +205,7 @@ export function ProviderRequestDetail({
           {request?.access_notes && <div className="providerAccessNote"><strong>Access notes</strong><span>{request.access_notes}</span></div>}
           <div className="requestInfoList">
             <span><Users /> {customerName}</span>
+            {request?.requester_email && <span>✉ {request.requester_email}</span>}
             <span><MapPin /> {detail.location}</span>
             <span><CalendarDays /> {requestDate}</span>
             <span><CircleDollarSign /> {requestBudget !== null ? '$' + Number(requestBudget).toLocaleString() + ' customer budget' : 'Budget is open to quotes'}</span>
@@ -213,7 +218,10 @@ export function ProviderRequestDetail({
           {sent ? (
             <>
               <div className="quoteSubmittedState"><CheckCircle2 size={22} /><strong>{quote ? '$' + Number(quote.amount).toLocaleString() : '$' + numericAmount.toLocaleString()}</strong><span>Your response is attached to {requestLabel}. You can still message the customer while they review it.</span></div>
-              <div className="quoteBuilderActions"><button className="buttonSecondary" onClick={() => onNavigate('/provider/messages?request=' + (request?.id || requestId))}><MessageCircle size={15} /> Message customer</button><button className="buttonPrimary" onClick={onBack}>Back to opportunities <ArrowRight size={15} /></button></div>
+              <div className="quoteBuilderActions">
+                {request?.customer_id && <button className="buttonSecondary" onClick={() => onNavigate('/provider/messages?request=' + (request?.id || requestId))}><MessageCircle size={15} /> Message customer</button>}
+                <button className="buttonPrimary" onClick={onBack}>Back to opportunities <ArrowRight size={15} /></button>
+              </div>
             </>
           ) : (
             <>

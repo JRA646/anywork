@@ -312,13 +312,7 @@ function Application() {
             messageRequestId={new URLSearchParams(window.location.search).get('request') || undefined}
             messageProviderId={new URLSearchParams(window.location.search).get('provider') || undefined}
           />
-    const providerTitle = section === 'dashboard'
-      ? 'Overview'
-      : section === 'help'
-        ? 'Help Center'
-        : section === 'profile'
-          ? 'Profile'
-          : section.charAt(0).toUpperCase() + section.slice(1)
+    const providerTitle = section === 'dashboard' ? 'Overview' : section === 'help' ? 'Help Center' : section === 'profile' ? 'Profile' : section === 'service-builder' ? 'Service Builder' : section.charAt(0).toUpperCase() + section.slice(1)
 
     return (
       <WorkspaceLayout
@@ -343,13 +337,7 @@ function Application() {
       : section === 'profile'
         ? <ProfilePage role="admin" />
         : <AdminOperationsPage section={section} onNavigate={navigate} />
-    const adminTitle = section === 'dashboard'
-      ? 'Overview'
-      : section === 'help'
-        ? 'Help Center'
-        : section === 'profile'
-          ? 'Profile'
-          : section.charAt(0).toUpperCase() + section.slice(1)
+    const adminTitle = section === 'dashboard' ? 'Overview' : section === 'help' ? 'Help Center' : section === 'profile' ? 'Profile' : section === 'service-builder' ? 'Service Builder' : section === 'audit' ? 'Audit Log' : section.charAt(0).toUpperCase() + section.slice(1)
 
     return (
       <WorkspaceLayout

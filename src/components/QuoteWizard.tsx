@@ -59,7 +59,7 @@ export function QuoteWizard({
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(requesterEmail.trim()),
   )
 
-  const requiredFieldsValid = serviceFields.filter((field) => field.enabled && field.required).every((field) => { const value = fieldAnswers[field.id]; return Array.isArray(value) ? value.length > 0 : value !== undefined && value !== null && String(value).trim() !== '' })
+  const requiredFieldsValid = serviceFields.filter((field) => field.enabled && field.required).every((field) => { const value = fieldAnswers[field.id]; if (field.field_type === 'boolean' || field.field_type === 'checkbox') return value === true; return Array.isArray(value) ? value.length > 0 : value !== undefined && value !== null && String(value).trim() !== '' })
 
   useEffect(() => { if (!serviceId) { setServiceFields([]); setFieldAnswers({}); return }; void listServiceFields(serviceId).then((fields) => { setServiceFields(fields.filter((field) => field.enabled)); setFieldAnswers({}) }).catch(() => setServiceFields([])) }, [serviceId])
 

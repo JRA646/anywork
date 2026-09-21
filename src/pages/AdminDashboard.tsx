@@ -15,10 +15,15 @@ import {
   Store,
   UserCheck,
   X,
+  ChevronDown,
+  Smartphone,
+  Globe,
+  Sparkles,
 } from 'lucide-react'
 import { requests, providers, services } from '../data/mockData'
 import type { Provider, ServiceRequest } from '../types/marketplace'
 import { StatusBadge } from '../components/StatusBadge'
+import { createAdminService, listAdminServices, updateAdminService, type DbService } from '../lib/anyworkApi'
 
 const customers = [
   { id: 'CUS-1001', name: 'John Doe', email: 'john@example.com', jobs: 2, spend: 2770, status: 'Active' },
@@ -159,14 +164,161 @@ function AdminProviders() {
 }
 
 function AdminServices() {
+  type CatalogService = DbService & { category: string; subcategory: string }
+  const categoryOptions = ['Software', 'Print & Marketing', 'Construction & Fabrication', 'Installation', 'Maintenance', 'Site Services', 'Special Projects']
+  const softwareSubcategories = ['Mobile Development', 'Web Application', 'AI']
+  const [catalog, setCatalog] = useState<CatalogService[]>([])
   const [query, setQuery] = useState('')
-  const [activeService, setActiveService] = useState<Record<string, boolean>>(Object.fromEntries(services.map((service) => [service.id, true])))
-  const filtered = services.filter((service) => [service.title, service.label, service.description].join(' ').toLowerCase().includes(query.toLowerCase()))
+  const [category, setCategory] = useState('All')
+  const [activeService, setActiveService] = useState<Record<string, boolean>>({})
+  const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [form, setForm] = useState({
+    category: 'Software',
+    subcategory: 'Mobile Development',
+    label: '',
+    description: '',
+    items: '',
+    startingPrice: '',
+  })
+
+  useEffect(() => {
+    void listAdminServices()
+      .then((rows) => {
+        setCatalog(rows)
+        setActiveService(Object.fromEntries(rows.map((service) => [service.id, service.enabled])))
+      })
+      .catch(() => {
+        const fallback = services.map((service) => ({
+          ...service,
+          starting_price: null,
+          starting_price_label: service.startingPrice,
+          enabled: true,
+          category: service.title,
+          subcategory: service.label,
+        })) as CatalogService[]
+        setCatalog(fallback)
+        setActiveService(Object.fromEntries(fallback.map((service) => [service.id, true])))
+      })
+  }, [])
+
+  const categories = Array.from(new Set([...categoryOptions, ...catalog.map((service) => service.category)]))
+  const filtered = catalog.filter((service) => {
+    const matchesCategory = category === 'All' || service.category === category
+    const haystack = [service.category, service.subcategory, service.title, service.label, service.description].join(' ').toLowerCase()
+    return matchesCategory && haystack.includes(query.toLowerCase())
+  })
   const activeCount = Object.values(activeService).filter(Boolean).length
+
+  const submitService = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setSaving(true)
+    setError('')
+    try {
+      const items = form.items.split(',').map((item) => item.trim()).filter(Boolean)
+      const startingPrice = form.startingPrice.trim() ? Number(form.startingPrice) : null
+      if (startingPrice !== null && Number.isNaN(startingPrice)) throw new Error('Starting price must be a valid number.')
+      const created = await createAdminService({
+        category: form.category,
+        subcategory: form.subcategory,
+        title: form.category,
+        label: form.label,
+        description: form.description,
+        icon: form.subcategory === 'Mobile Development' ? 'Smartphone' : form.subcategory === 'Web Application' ? 'Globe' : form.subcategory === 'AI' ? 'Sparkles' : 'Store',
+        items,
+        startingPrice,
+        startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
+      })
+      setCatalog((current) => [created, ...current])
+      setActiveService((current) => ({ ...current, [created.id]: true }))
+      setShowForm(false)
+      setForm({ category: 'Software', subcategory: 'Mobile Development', label: '', description: '', items: '', startingPrice: '' })
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Unable to add service.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const toggleService = async (service: CatalogService) => {
+    const next = !activeService[service.id]
+    setActiveService((current) => ({ ...current, [service.id]: next }))
+    try {
+      await updateAdminService(service.id, { enabled: next })
+      setCatalog((current) => current.map((item) => item.id === service.id ? { ...item, enabled: next } : item))
+    } catch {
+      setActiveService((current) => ({ ...current, [service.id]: !next }))
+    }
+  }
+
   return <div className="workspaceDashboard adminModern">
-    <PageTitle kicker="CATALOG" title="Services" description="Manage the categories customers see and keep pricing guidance consistent." action={<button className="buttonPrimary"><Plus size={16} /> Add service</button>} />
-    <div className="adminToolbar"><div className="searchField adminSearch"><Search size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search services..." /></div><div className="adminSummaryPill"><Store size={15} /> {activeCount} active</div></div>
-    <div className="adminServiceGridModern">{filtered.map((service) => { const active = activeService[service.id]; return <article className={active ? 'adminServiceCard adminServiceCardModern' : 'adminServiceCard adminServiceCardModern isDisabled'} key={service.id}><div className="adminServiceHeader"><div className="serviceCardIcon"><Store size={19} /></div><button className={active ? 'adminToggle active' : 'adminToggle'} onClick={() => setActiveService((current) => ({ ...current, [service.id]: !current[service.id] }))} aria-label={'Toggle ' + service.label}><span /></button></div><span className="eyebrow">{service.title}</span><h3>{service.label}</h3><p>{service.description}</p><div className="adminServiceTags">{service.items.map((item) => <span key={item}>{item}</span>)}</div><div className="adminServiceFooter"><strong>From {service.startingPrice}</strong><button className="buttonSecondary">Edit</button></div></article> })}</div>
+    <PageTitle
+      kicker="CATALOG"
+      title="Services"
+      description="Organize the marketplace by category and subcategory so customers can find the exact service they need."
+      action={<button className="buttonPrimary" onClick={() => setShowForm(true)}><Plus size={16} /> Add service</button>}
+    />
+
+    <div className="adminServiceCategoryBar">
+      <div className="adminCategoryHeading"><Store size={16} /><strong>Service categories</strong><span>{categories.length} categories · {catalog.length} services</span></div>
+      <div className="adminCategoryTabs">
+        <button className={category === 'All' ? 'active' : ''} onClick={() => setCategory('All')}>All</button>
+        {categories.map((item) => <button key={item} className={category === item ? 'active' : ''} onClick={() => setCategory(item)}>{item}</button>)}
+      </div>
+    </div>
+
+    <div className="adminToolbar">
+      <div className="searchField adminSearch"><Search size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search category, subcategory or service..." /></div>
+      <div className="adminSummaryPill"><Store size={15} /> {activeCount} active</div>
+    </div>
+
+    {category === 'Software' && (
+      <section className="softwareCategoryCard">
+        <div>
+          <span className="eyebrow">SOFTWARE</span>
+          <h2>Software services</h2>
+          <p>Keep software offerings grouped under clear subcategories.</p>
+        </div>
+        <div className="softwareSubcategoryList">
+          {[
+            ['Mobile Development', Smartphone],
+            ['Web Application', Globe],
+            ['AI', Sparkles],
+          ].map(([label, Icon]) => <button key={String(label)} onClick={() => { setCategory('Software'); setQuery(String(label)) }}><Icon size={17} /><span>{label}</span><ChevronRight size={15} /></button>)}
+        </div>
+      </section>
+    )}
+
+    <div className="adminServiceGridModern">
+      {filtered.map((service) => {
+        const active = activeService[service.id] ?? service.enabled
+        return <article className={active ? 'adminServiceCard adminServiceCardModern' : 'adminServiceCard adminServiceCardModern isDisabled'} key={service.id}>
+          <div className="adminServiceHeader"><div className="serviceCardIcon"><Store size={19} /></div><button className={active ? 'adminToggle active' : 'adminToggle'} onClick={() => void toggleService(service)} aria-label={'Toggle ' + service.label}><span /></button></div>
+          <div className="adminServiceBreadcrumb"><span>{service.category}</span><ChevronRight size={11} /><strong>{service.subcategory}</strong></div>
+          <h3>{service.label}</h3>
+          <p>{service.description}</p>
+          <div className="adminServiceTags">{service.items.map((item) => <span key={item}>{item}</span>)}</div>
+          <div className="adminServiceFooter"><strong>{service.starting_price_label || 'Quote'}</strong><button className="buttonSecondary" onClick={() => { setForm({ category: service.category, subcategory: service.subcategory, label: service.label, description: service.description, items: service.items.join(', '), startingPrice: service.starting_price?.toString() || '' }); setShowForm(true) }}>Edit</button></div>
+        </article>
+      })}
+    </div>
+
+    {!filtered.length && <div className="emptyModern adminEmpty"><Search size={20} /><strong>No services found</strong><p>Try another category or search term.</p></div>}
+
+    {showForm && <div className="adminDrawerOverlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowForm(false) }}>
+      <form className="adminServiceForm" onSubmit={submitService}>
+        <div className="drawerHeader"><div><span className="eyebrow">SERVICE CATALOG</span><h2>Add service</h2></div><button type="button" className="roundIcon" onClick={() => setShowForm(false)}><X size={17} /></button></div>
+        {error && <div className="formError">{error}</div>}
+        <label><span>Category</span><select value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value, subcategory: event.target.value === 'Software' ? 'Mobile Development' : 'General' }))}>{categories.map((item) => <option key={item}>{item}</option>)}</select></label>
+        <label><span>Subcategory</span><select value={form.subcategory} onChange={(event) => setForm((current) => ({ ...current, subcategory: event.target.value }))}>{form.category === 'Software' ? softwareSubcategories.map((item) => <option key={item}>{item}</option>) : <option>General</option>}</select></label>
+        <label><span>Service name</span><input value={form.label} onChange={(event) => setForm((current) => ({ ...current, label: event.target.value }))} placeholder="e.g. Mobile App Development" required /></label>
+        <label><span>Description</span><textarea value={form.description} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} placeholder="Describe what this service includes..." required /></label>
+        <label><span>What's included</span><input value={form.items} onChange={(event) => setForm((current) => ({ ...current, items: event.target.value }))} placeholder="iOS apps, Android apps, API integration" /></label>
+        <label><span>Starting price</span><input type="number" min="0" value={form.startingPrice} onChange={(event) => setForm((current) => ({ ...current, startingPrice: event.target.value }))} placeholder="Leave empty for Quote" /></label>
+        <div className="drawerActions"><button type="button" className="buttonSecondary" onClick={() => setShowForm(false)}>Cancel</button><button type="submit" className="buttonPrimary" disabled={saving}>{saving ? 'Saving…' : 'Save service'}</button></div>
+      </form>
+    </div>}
   </div>
 }
 

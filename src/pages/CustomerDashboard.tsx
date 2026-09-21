@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { ArrowRight, CalendarDays, CircleDollarSign, Clock3, FileText, TrendingUp } from 'lucide-react'
 import { ProviderCard } from '../components/ProviderCard'
 import { StatusBadge } from '../components/StatusBadge'
@@ -25,7 +25,7 @@ export function CustomerDashboard({ profile, onNavigate }: { profile: AnyWorkPro
   const accepted = quotes.filter((quote) => quote.status === 'Accepted')
   const spend = accepted.reduce((sum, quote) => sum + Number(quote.amount), 0)
   const quoteCount = quotes.filter((quote) => quote.status === 'Pending').length
-  const monthly = useMemo(() => buildMonthlySeries(requests, accepted), [requests, accepted])
+  const monthly = buildMonthlySeries(requests, accepted)
   const maxMonthly = Math.max(...monthly.map((item) => item.value), 1)
 
   return (

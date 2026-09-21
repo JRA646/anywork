@@ -27,6 +27,7 @@ import { InvoicePage } from '../pages/InvoicePage'
 import { CustomerJobWorkspace } from '../pages/CustomerJobWorkspace'
 import { CustomerJobsPage } from '../pages/CustomerJobsPage'
 import { ProductionWorkspacePage } from '../pages/ProductionWorkspacePage'
+import { DispatchCenterPage } from '../pages/DispatchCenterPage'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
 import { BrandLogo } from '../components/BrandLogo'
@@ -330,7 +331,9 @@ function Application() {
 
   if (path === '/admin' || path.startsWith('/admin/')) {
     const section = path.split('/')[2] || 'dashboard'
-    const adminContent = ['jobs','verification','payments','reviews','disputes','support','audit','service-builder'].includes(section)
+    const adminContent = section === 'dispatch'
+      ? <DispatchCenterPage />
+      : ['jobs','verification','payments','reviews','disputes','support','audit','service-builder'].includes(section)
       ? <ProductionWorkspacePage role="admin" section={section} profile={profile} onNavigate={navigate} />
       : section === 'help'
       ? <HelpCenterPage />

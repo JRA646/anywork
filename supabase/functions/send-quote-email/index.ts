@@ -20,6 +20,21 @@ const getAdminKey = () => {
   return Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 }
 
+const encoder = new TextEncoder()
+const base64UrlEncode = (value: string) => btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+const createAccessToken = async (requestId: string, ttlSeconds = 60 * 60 * 24 * 30) => {
+  const secret = Deno.env.get('ANYWORK_ACCESS_TOKEN_SECRET')
+  if (!secret) return null
+  const payload = base64UrlEncode(JSON.stringify({
+    sub: requestId,
+    exp: Math.floor(Date.now() / 1000) + ttlSeconds,
+    iat: Math.floor(Date.now() / 1000),
+  }))
+  const key = await crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(payload))
+  return payload + '.' + btoa(String.fromCharCode(...new Uint8Array(signature))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+}
+
 const escapeHtml = (value: unknown) => String(value ?? '')
   .replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')
@@ -102,6 +117,29 @@ Deno.serve(async (req) => {
 
     if (!recipientEmail) throw new Error('This request does not have a customer email address.')
 
+    const { data: emailJob } = await admin
+      .from('anywork_email_jobs')
+      .select('*')
+      .eq('idempotency_key', 'quote:' + quote.id)
+      .maybeSingle()
+
+    if (emailJob?.status === 'sent' && quote.email_sent_at) {
+      return new Response(JSON.stringify({ sent: true, messageId: quote.email_message_id, recipientEmail }), {
+        status: 200,
+        headers: corsHeaders,
+      })
+    }
+
+    await admin
+      .from('anywork_email_jobs')
+      .update({
+        status: 'processing',
+        attempt_count: (emailJob?.attempt_count || 0) + 1,
+        last_error: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('idempotency_key', 'quote:' + quote.id)
+
     const { data: provider } = await admin
       .from('anywork_profiles')
       .select('display_name, first_name, last_name, company_name')
@@ -116,6 +154,12 @@ Deno.serve(async (req) => {
     const availability = quote.availability
       ? new Date(quote.availability).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })
       : 'Flexible availability'
+
+    const accessToken = await createAccessToken(request.id)
+    const publicUrl = Deno.env.get('ANYWORK_PUBLIC_URL')?.replace(/\/$/, '') || ''
+    const accessLink = accessToken && publicUrl
+      ? publicUrl + '/request/' + accessToken
+      : ''
 
     const html = `<!doctype html>
 <html>
@@ -141,6 +185,8 @@ Deno.serve(async (req) => {
           Service: ${escapeHtml(request.service_key)}<br/>
           Location: ${escapeHtml(request.location)}
         </div>
+        ${accessLink ? `<div style="margin-top:24px"><a href="${escapeHtml(accessLink)}" style="display:inline-block;background:#111;color:#fff;text-decoration:none;border-radius:10px;padding:12px 16px;font-weight:700;font-size:13px">View request & compare quotes</a><p style="color:#8a837a;font-size:10px;line-height:1.5;margin-top:9px">This secure link expires in 30 days.</p></div>` : ''}
+
       </div>
     </div>
   </body>
@@ -162,10 +208,16 @@ Deno.serve(async (req) => {
 
     const result = await response.json()
     if (!response.ok) {
+      const message = result?.message || 'Resend rejected the email.'
       await admin.from('anywork_quotes').update({
-        email_error: result?.message || 'Resend rejected the email.',
+        email_error: message,
       }).eq('id', quote.id)
-      throw new Error(result?.message || 'Unable to send quote email.')
+      await admin.from('anywork_email_jobs').update({
+        status: 'failed',
+        last_error: message,
+        updated_at: new Date().toISOString(),
+      }).eq('idempotency_key', 'quote:' + quote.id)
+      throw new Error(message)
     }
 
     const messageId = result?.id || null
@@ -174,6 +226,14 @@ Deno.serve(async (req) => {
       email_message_id: messageId,
       email_error: null,
     }).eq('id', quote.id)
+
+    await admin.from('anywork_email_jobs').update({
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+      provider_message_id: messageId,
+      last_error: null,
+      updated_at: new Date().toISOString(),
+    }).eq('idempotency_key', 'quote:' + quote.id)
 
     return new Response(JSON.stringify({ sent: true, messageId, recipientEmail }), {
       status: 200,

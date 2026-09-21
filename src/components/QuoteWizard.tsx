@@ -1,7 +1,13 @@
-import { useState } from 'react'
-import { ArrowRight, CalendarDays, CheckCircle2, MapPin, Upload, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, MapPin, Upload, X } from 'lucide-react'
 import { services } from '../data/mockData'
 import { createServiceRequest, type DbRequest } from '../lib/anyworkApi'
+
+const getLocalDateTimeMin = () => {
+  const now = new Date()
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
+  return now.toISOString().slice(0, 16)
+}
 
 export function QuoteWizard({
   initialService = '',
@@ -12,8 +18,9 @@ export function QuoteWizard({
   onClose: () => void
   onCreated?: (request: DbRequest) => void
 }) {
-  const [step, setStep] = useState(initialService ? 2 : 1)
-  const [serviceId, setServiceId] = useState(initialService)
+  const validInitialService = services.some((item) => item.id === initialService) ? initialService : ''
+  const [step, setStep] = useState(validInitialService ? 2 : 1)
+  const [serviceId, setServiceId] = useState(validInitialService)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [preferredDate, setPreferredDate] = useState('')
@@ -24,16 +31,43 @@ export function QuoteWizard({
   const [createdRequest, setCreatedRequest] = useState<DbRequest | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const service = services.find((item) => item.id === serviceId)
+
+  const service = useMemo(() => services.find((item) => item.id === serviceId), [serviceId])
+  const detailsValid = Boolean(service && title.trim() && description.trim() && location.trim())
+  const budgetValue = budget.trim() ? Number(budget) : null
+  const budgetValid = budgetValue === null || (Number.isFinite(budgetValue) && budgetValue >= 0)
+
+  const goToDetails = () => {
+    if (!serviceId) {
+      setError('Choose a service before continuing.')
+      return
+    }
+    setError('')
+    setStep(2)
+  }
+
+  const goToReview = () => {
+    if (!detailsValid) {
+      setError('Complete the request title, service location and job details before reviewing.')
+      return
+    }
+    if (!budgetValid) {
+      setError('Enter a valid budget amount or leave the budget blank.')
+      return
+    }
+    setError('')
+    setStep(3)
+  }
 
   const handleSubmit = async () => {
-    if (!serviceId || !title.trim() || !description.trim() || !location.trim()) {
-      setError('Please complete the required request details.')
+    if (!serviceId || !detailsValid || !budgetValid) {
+      setError('Please complete the required request details before creating the request.')
       return
     }
 
     setBusy(true)
     setError('')
+
     try {
       const created = await createServiceRequest({
         serviceKey: serviceId,
@@ -42,7 +76,7 @@ export function QuoteWizard({
         location: location.trim(),
         preferredDate: preferredDate ? new Date(preferredDate).toISOString() : null,
         accessNotes: accessNotes.trim() || null,
-        budget: budget ? Number(budget) : null,
+        budget: budgetValue,
       })
       setCreatedRequest(created)
       setSubmitted(true)
@@ -53,98 +87,238 @@ export function QuoteWizard({
     }
   }
 
-  return <div className="overlay"><section className="modal requestWizardModal">
-    <button className="modalClose" onClick={onClose} aria-label="Close request form"><X size={19} /></button>
-    {submitted ? <div className="successState">
-      <div className="successIcon"><CheckCircle2 size={34} /></div>
-      <span className="eyebrow">REQUEST CREATED</span>
-      <h2>Your request is ready.</h2>
-      <p>Request <strong>{onCreated ? 'created successfully' : 'received successfully'}</strong>. Matching providers can now respond with pricing and availability.</p>
-      <div className="successMeta">
-        <span><CalendarDays size={15} /> Providers can now review the request</span>
-        <span><MapPin size={15} /> {location || 'Your service area'}</span>
-      </div>
-      <button className="buttonPrimary" onClick={() => { if (createdRequest) onCreated?.(createdRequest); onClose() }}>Done <ArrowRight size={17} /></button>
-    </div> : <>
-      <span className="eyebrow">REQUEST A SERVICE</span>
-      <h2>Create a new service request.</h2>
-      <p className="modalLead">Add enough detail for providers to give you useful quotes and availability.</p>
-      <div className="wizardSteps">
-        <span className={step >= 1 ? 'active' : ''}>01 Service</span>
-        <span className={step >= 2 ? 'active' : ''}>02 Job details</span>
-        <span className={step >= 3 ? 'active' : ''}>03 Review</span>
-      </div>
+  const closeAndCreate = () => {
+    if (createdRequest) onCreated?.(createdRequest)
+    onClose()
+  }
 
-      {step === 1 && <>
-        <div className="wizardGrid">
-          {services.map((item) => (
-            <button key={item.id} type="button" className={'wizardChoice ' + (serviceId === item.id ? 'selected' : '')} onClick={() => setServiceId(item.id)}>
-              <strong>{item.title}</strong>
-              <small>{item.label}</small>
-              <span>From {item.startingPrice}</span>
+  return (
+    <div className="overlay" role="presentation">
+      <section
+        className="modal requestWizardModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="request-wizard-title"
+      >
+        <button className="modalClose" type="button" onClick={onClose} aria-label="Close request form">
+          <X size={19} />
+        </button>
+
+        {submitted ? (
+          <div className="successState">
+            <div className="successIcon"><CheckCircle2 size={34} /></div>
+            <span className="eyebrow">REQUEST CREATED</span>
+            <h2 id="request-wizard-title">Your request is ready.</h2>
+            <p>Matching providers can now review your requirements and respond with pricing and availability.</p>
+            <div className="successMeta">
+              <span><CalendarDays size={15} /> {createdRequest?.request_number || 'Request submitted'}</span>
+              <span><MapPin size={15} /> {location || 'Your service area'}</span>
+            </div>
+            <button className="buttonPrimary" type="button" onClick={closeAndCreate}>
+              View request <ArrowRight size={17} />
             </button>
-          ))}
-        </div>
-        <div className="modalActions">
-          <button className="buttonPrimary" disabled={!serviceId} onClick={() => setStep(2)}>Continue <ArrowRight size={16} /></button>
-        </div>
-      </>}
+          </div>
+        ) : (
+          <>
+            <div className="requestWizardHeader">
+              <span className="eyebrow">REQUEST A SERVICE</span>
+              <h2 id="request-wizard-title">Create a new service request.</h2>
+              <p className="modalLead">Give providers the right context so their quotes and availability are useful to you.</p>
+            </div>
 
-      {step === 2 && <>
-        <div className="fieldGrid">
-          <label>
-            <span>Request title</span>
-            <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="e.g. Commercial banner installation" required />
-          </label>
-          <label>
-            <span>Service location</span>
-            <input value={location} onChange={(event) => setLocation(event.target.value)} placeholder="Suburb or service address" required />
-          </label>
-        </div>
-        <label className="requestWizardFullField">
-          <span>What needs to be done?</span>
-          <textarea value={description} onChange={(event) => setDescription(event.target.value)} className="fieldLarge" placeholder="Include measurements, access details, preferred timing, materials or anything else providers should know." />
-        </label>
-        <div className="fieldGrid">
-          <label>
-            <span>Preferred date</span>
-            <input type="datetime-local" value={preferredDate} onChange={(event) => setPreferredDate(event.target.value)} />
-          </label>
-          <label>
-            <span>Budget</span>
-            <input type="number" min="0" step="0.01" value={budget} onChange={(event) => setBudget(event.target.value)} placeholder="Optional" />
-          </label>
-        </div>
-        <label className="requestWizardFullField">
-          <span>Access notes</span>
-          <input value={accessNotes} onChange={(event) => setAccessNotes(event.target.value)} placeholder="Parking, building access, operating hours..." />
-        </label>
-        <div className="uploadDrop">
-          <Upload size={20} />
-          <div><strong>Add job photos</strong><span>Optional. Photo uploads can be connected next.</span></div>
-        </div>
-        {error && <div className="formError">{error}</div>}
-        <div className="modalActions">
-          <button className="buttonGhost" onClick={() => setStep(1)}>Back</button>
-          <button className="buttonPrimary" disabled={!title.trim() || !description.trim() || !location.trim()} onClick={() => setStep(3)}>Review <ArrowRight size={16} /></button>
-        </div>
-      </>}
+            <div className="wizardSteps" aria-label="Request creation steps">
+              <button type="button" className={step >= 1 ? 'active' : ''} onClick={() => step > 1 && setStep(1)} disabled={step === 1}>
+                <span>01</span> Service
+              </button>
+              <button type="button" className={step >= 2 ? 'active' : ''} onClick={() => step > 2 && setStep(2)} disabled={step <= 2}>
+                <span>02</span> Job details
+              </button>
+              <span className={step >= 3 ? 'active' : ''}><span>03</span> Review</span>
+            </div>
 
-      {step === 3 && <>
-        <div className="requestReviewCard">
-          <div><span>Service</span><strong>{service?.title}</strong></div>
-          <div><span>Request</span><strong>{title}</strong></div>
-          <div><span>Location</span><strong>{location}</strong></div>
-          <div><span>Preferred date</span><strong>{preferredDate ? new Date(preferredDate).toLocaleString() : 'Flexible'}</strong></div>
-          <div><span>Budget</span><strong>{budget ? '$' + Number(budget).toLocaleString() : 'Open to quotes'}</strong></div>
-          <div><span>Details</span><p>{description}</p></div>
-        </div>
-        {error && <div className="formError">{error}</div>}
-        <div className="modalActions">
-          <button className="buttonGhost" onClick={() => setStep(2)}>Back</button>
-          <button className="buttonPrimary" disabled={busy} onClick={handleSubmit}>{busy ? 'Creating…' : 'Create request'} <ArrowRight size={16} /></button>
-        </div>
-      </>}
-    </>}
-  </section></div>
+            <div className="requestWizardBody">
+              {step === 1 && (
+                <div className="requestWizardStep">
+                  <div className="wizardSectionIntro">
+                    <div>
+                      <span className="eyebrow">WHAT DO YOU NEED?</span>
+                      <h3>Select the service category.</h3>
+                    </div>
+                    <small>Choose the closest match. You can add specific requirements in the next step.</small>
+                  </div>
+
+                  <div className="wizardGrid">
+                    {services.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={'wizardChoice ' + (serviceId === item.id ? 'selected' : '')}
+                        onClick={() => { setServiceId(item.id); setError('') }}
+                      >
+                        <strong>{item.title}</strong>
+                        <small>{item.label}</small>
+                        <span>From {item.startingPrice}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="requestWizardStep">
+                  <div className="selectedServiceBanner">
+                    <div>
+                      <span className="eyebrow">SELECTED SERVICE</span>
+                      <strong>{service?.title || 'Choose a service'}</strong>
+                    </div>
+                    <button type="button" className="buttonGhost" onClick={() => setStep(1)}>
+                      <ArrowLeft size={15} /> Change
+                    </button>
+                  </div>
+
+                  <div className="wizardSectionIntro">
+                    <div>
+                      <span className="eyebrow">JOB DETAILS</span>
+                      <h3>Tell providers what they are quoting.</h3>
+                    </div>
+                    <small>Fields marked with * are required.</small>
+                  </div>
+
+                  <div className="fieldGrid">
+                    <label>
+                      <span>Request title <b>*</b></span>
+                      <input
+                        value={title}
+                        onChange={(event) => setTitle(event.target.value)}
+                        maxLength={120}
+                        placeholder="e.g. Commercial banner installation"
+                        required
+                      />
+                    </label>
+                    <label>
+                      <span>Service location <b>*</b></span>
+                      <input
+                        value={location}
+                        onChange={(event) => setLocation(event.target.value)}
+                        maxLength={200}
+                        placeholder="Suburb, building or service address"
+                        required
+                      />
+                    </label>
+                  </div>
+
+                  <label className="requestWizardFullField">
+                    <span>What needs to be done? <b>*</b></span>
+                    <textarea
+                      value={description}
+                      onChange={(event) => setDescription(event.target.value)}
+                      className="fieldLarge"
+                      maxLength={2000}
+                      placeholder="Include measurements, materials, access details, preferred timing or anything else providers should know."
+                      required
+                    />
+                    <small className="fieldCounter">{description.length}/2000</small>
+                  </label>
+
+                  <div className="fieldGrid">
+                    <label>
+                      <span>Preferred date</span>
+                      <input
+                        type="datetime-local"
+                        value={preferredDate}
+                        min={getLocalDateTimeMin()}
+                        onChange={(event) => setPreferredDate(event.target.value)}
+                      />
+                    </label>
+                    <label>
+                      <span>Budget <small>(optional)</small></span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={budget}
+                        onChange={(event) => setBudget(event.target.value)}
+                        placeholder="Leave blank for open quotes"
+                        inputMode="decimal"
+                      />
+                    </label>
+                  </div>
+
+                  <label className="requestWizardFullField">
+                    <span>Access notes <small>(optional)</small></span>
+                    <input
+                      value={accessNotes}
+                      onChange={(event) => setAccessNotes(event.target.value)}
+                      maxLength={500}
+                      placeholder="Parking, building access, operating hours..."
+                    />
+                  </label>
+
+                  <div className="uploadDrop uploadDropDisabled" aria-label="Photo attachments">
+                    <Upload size={20} />
+                    <div>
+                      <strong>Photos can be added after the request is created</strong>
+                      <span>Use the request detail page to keep the creation flow focused.</span>
+                    </div>
+                  </div>
+
+                  {error && <div className="formError" role="alert">{error}</div>}
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="requestWizardStep">
+                  <div className="wizardSectionIntro">
+                    <div>
+                      <span className="eyebrow">FINAL REVIEW</span>
+                      <h3>Check the request before sending it.</h3>
+                    </div>
+                    <small>You can still go back and change any detail.</small>
+                  </div>
+
+                  <div className="requestReviewCard">
+                    <div><span>Service</span><strong>{service?.title || '—'}</strong></div>
+                    <div><span>Request</span><strong>{title}</strong></div>
+                    <div><span>Location</span><strong>{location}</strong></div>
+                    <div><span>Preferred date</span><strong>{preferredDate ? new Date(preferredDate).toLocaleString() : 'Flexible'}</strong></div>
+                    <div><span>Budget</span><strong>{budgetValue !== null ? '$' + budgetValue.toLocaleString() : 'Open to quotes'}</strong></div>
+                    <div className="requestReviewDetails"><span>Details</span><p>{description}</p></div>
+                    {accessNotes && <div className="requestReviewDetails"><span>Access notes</span><p>{accessNotes}</p></div>}
+                  </div>
+
+                  {error && <div className="formError" role="alert">{error}</div>}
+                </div>
+              )}
+            </div>
+
+            <div className="requestWizardFooter">
+              <div className="requestWizardFooterHint">
+                {step === 1 ? 'You can edit all job details on the next step.' : 'Providers will receive this request after you submit it.'}
+              </div>
+              <div className="modalActions">
+                {step > 1 && (
+                  <button className="buttonGhost" type="button" onClick={() => { setError(''); setStep(step - 1) }}>
+                    <ArrowLeft size={15} /> Back
+                  </button>
+                )}
+                {step === 1 ? (
+                  <button className="buttonPrimary" type="button" disabled={!serviceId} onClick={goToDetails}>
+                    Continue <ArrowRight size={16} />
+                  </button>
+                ) : step === 2 ? (
+                  <button className="buttonPrimary" type="button" disabled={!detailsValid || !budgetValid} onClick={goToReview}>
+                    Review request <ArrowRight size={16} />
+                  </button>
+                ) : (
+                  <button className="buttonPrimary" type="button" disabled={busy} onClick={handleSubmit}>
+                    {busy ? 'Creating request…' : 'Create request'} <ArrowRight size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </section>
+    </div>
+  )
 }

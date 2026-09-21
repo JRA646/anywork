@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { ArrowRight, BriefcaseBusiness, CheckCircle2, ChevronRight, Clock3, DollarSign, MessageCircle, PackageCheck, Plus, Star, Users } from 'lucide-react'
 import { providers, requests, services } from '../data/mockData'
 import { StatusBadge } from '../components/StatusBadge'

@@ -279,11 +279,6 @@ $$;
 
 -- Verification decisions belong to operations, not providers.
 drop policy if exists "Providers update verification request" on public.anywork_provider_verifications;
-create policy "Providers update verification request" on public.anywork_provider_verifications
-  for update to authenticated
-  using(private.anywork_current_role()='admin')
-  with check(private.anywork_current_role()='admin');
-
 drop policy if exists "Admins update provider verification" on public.anywork_provider_verifications;
 create policy "Admins update provider verification" on public.anywork_provider_verifications
   for update to authenticated

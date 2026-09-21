@@ -14,10 +14,6 @@ export function GuestRequestPage({ token }: { token: string }) {
     [data?.providers],
   )
 
-  useEffect(() => {
-    void load()
-  }, [token])
-
   const load = useCallback(async () => {
     setLoading(true)
     setError('')
@@ -28,7 +24,7 @@ export function GuestRequestPage({ token }: { token: string }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [token])
 
   useEffect(() => {
     void load()

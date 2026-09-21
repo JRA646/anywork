@@ -63,7 +63,7 @@ export async function listPublicServices() {
   const client = requireSupabase()
   const { data, error } = await client
     .from('anywork_services')
-    .select('id, title, label, description, icon, items, tags, starting_price, starting_price_label, enabled')
+    .select('id, title, label, description, icon, items, tags, category, subcategory, starting_price, starting_price_label, enabled')
     .eq('enabled', true)
     .order('title', { ascending: true })
 

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { requests as mockRequests, services } from '../data/mockData'
 import { StatusBadge } from '../components/StatusBadge'
+import { showError, showSuccess } from '../lib/alerts'
 import { RequestPhotos } from '../components/RequestPhotos'
 import {
   createQuote,
@@ -141,7 +142,9 @@ export function ProviderRequestDetail({
       setQuote(created)
       setSent(true)
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Unable to send your quote.')
+      const messageText = submitError instanceof Error ? submitError.message : 'Unable to send your quote.'
+      setError(messageText)
+      await showError('Unable to send quote', messageText)
     } finally {
       setSending(false)
     }

@@ -1,7 +1,8 @@
 import { ArrowRight, Building2, ShieldCheck, UserRound } from 'lucide-react'
+import type { ReactNode } from 'react'
 import type { Role } from '../types/marketplace'
 
 export function AuthPage({ onContinue }: { onContinue: (role: Role) => void }) {
   return <main className="authPage"><section className="authCard"><div className="authBrand"><span className="marketLogo">AW</span><strong>ANYwork</strong></div><span className="eyebrow">WELCOME BACK</span><h1>Sign in to get things done.</h1><p>Use the demo roles below to explore the customer, provider and operations experiences.</p><div className="authOptions"><AuthOption icon={<UserRound />} title="Customer" text="Find providers, compare quotes and manage jobs." onClick={() => onContinue('customer')} /><AuthOption icon={<Building2 />} title="Provider" text="Respond to requests, manage jobs and grow your work." onClick={() => onContinue('provider')} /><AuthOption icon={<ShieldCheck />} title="Admin" text="Monitor the marketplace and manage operations." onClick={() => onContinue('admin')} /></div><small className="authNote">Demo access only. Connect your authentication provider before production launch.</small></section></main>
 }
-function AuthOption({ icon, title, text, onClick }: { icon: React.ReactNode; title: string; text: string; onClick: () => void }) { return <button className="authOption" onClick={onClick}><div className="authOptionIcon">{icon}</div><div><strong>{title}</strong><span>{text}</span></div><ArrowRight size={17} /></button> }
+function AuthOption({ icon, title, text, onClick }: { icon: ReactNode; title: string; text: string; onClick: () => void }) { return <button className="authOption" onClick={onClick}><div className="authOptionIcon">{icon}</div><div><strong>{title}</strong><span>{text}</span></div><ArrowRight size={17} /></button> }

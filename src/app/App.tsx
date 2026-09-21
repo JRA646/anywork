@@ -139,7 +139,11 @@ function Application() {
       : section === 'requests'
         ? <CustomerRequestsPage onNavigate={navigate} onCreateRequest={() => openQuote('', (requestId) => navigate('/customer/requests/' + requestId))} />
         : section === 'messages'
-          ? <CustomerMessagesPage onNavigate={navigate} requestId={requestId} />
+          ? <CustomerMessagesPage
+              onNavigate={navigate}
+              requestId={new URLSearchParams(window.location.search).get('request') || requestId}
+              providerId={new URLSearchParams(window.location.search).get('provider') || undefined}
+            />
           : section === 'profile'
             ? <ProfilePage role="customer" />
             : section === 'help'

@@ -101,6 +101,7 @@ function Application() {
           category: service.category || service.title,
           subcategory: service.subcategory || service.label,
           startingPrice: service.starting_price_label || (service.starting_price !== null ? '₱' + Number(service.starting_price).toLocaleString('en-PH') : 'Quote'),
+          imageUrl: service.image_url || null,
         })))
       } catch {
         // Keep the local catalog available when Supabase is unavailable.

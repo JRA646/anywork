@@ -64,7 +64,7 @@ export function AuthPage({
   }
 
   return (
-    <main className="authShell animate-anywork-rise">
+    <main className={'authShell authPageAnimated ' + (registering ? 'isRegistering' : 'isSigningIn') + (admin ? ' isAdminAuth' : '')}>
       <section className="authPromo">
         <button className="authPromoBrand authPromoBrandLogo" type="button" onClick={() => window.history.back()}><BrandLogo variant="auth" /></button>
         <div className="authPromoContent">
@@ -125,7 +125,7 @@ export function AuthPage({
             {error && <div className="formError">{error}</div>}
             {message && <div className="formSuccess"><CheckCircle2 size={16} /> {message}</div>}
 
-            <button className="authSubmit" type="submit" disabled={busy || !configured}>
+            <button className={'authSubmit' + (busy ? ' isBusy' : '')} type="submit" disabled={busy || !configured}>
               {busy ? 'Please wait…' : admin ? 'Sign in to operations' : registering ? 'Create account' : 'Sign in'}
               <ArrowRight size={17} />
             </button>

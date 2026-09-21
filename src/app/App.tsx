@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Bell, LogIn, Menu, UserRound, X } from 'lucide-react'
+import { ArrowRight, LogIn, Menu, UserRound, X } from 'lucide-react'
 import { usePath } from './router'
 import { services as mockServices, providers } from '../data/mockData'
 import type { Service } from '../types/marketplace'

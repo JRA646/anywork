@@ -64,7 +64,7 @@ export function AuthPage({
   }
 
   return (
-    <main className="authShell">
+    <main className="authShell animate-anywork-rise">
       <section className="authPromo">
         <button className="authPromoBrand authPromoBrandLogo" type="button" onClick={() => window.history.back()}><BrandLogo variant="auth" /></button>
         <div className="authPromoContent">

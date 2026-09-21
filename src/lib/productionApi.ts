@@ -379,3 +379,84 @@ export async function listAdminReviews() {
   if (error) throw error
   return data || []
 }
+
+export async function saveRequestAnswers(requestId: string, answers: Record<string, unknown>) {
+  const client = requireSupabase()
+  const rows = Object.entries(answers).map(([fieldId, value]) => ({
+    request_id: requestId,
+    field_id: fieldId,
+    value,
+    updated_at: new Date().toISOString(),
+  }))
+  if (!rows.length) return []
+  const { data, error } = await client.from('anywork_request_answers').upsert(rows, { onConflict: 'request_id,field_id' }).select('*')
+  if (error) throw error
+  return data || []
+}
+
+export async function listRequestAnswers(requestId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_request_answers').select('*').eq('request_id', requestId)
+  if (error) throw error
+  return data || []
+}
+
+export async function listFavorites() {
+  const client = requireSupabase()
+  const userId = await getCurrentUserId()
+  const { data, error } = await client.from('anywork_favorites').select('*').eq('user_id', userId)
+  if (error) throw error
+  return data || []
+}
+
+export async function toggleFavorite(input: { providerId?: string; serviceId?: string }) {
+  const client = requireSupabase()
+  const userId = await getCurrentUserId()
+  const column = input.providerId ? 'provider_id' : 'service_id'
+  const value = input.providerId || input.serviceId
+  if (!value) throw new Error('A provider or service is required.')
+  const { data: existing, error: existingError } = await client.from('anywork_favorites').select('id').eq('user_id', userId).eq(column, value).maybeSingle()
+  if (existingError) throw existingError
+  if (existing) {
+    const { error } = await client.from('anywork_favorites').delete().eq('id', existing.id)
+    if (error) throw error
+    return false
+  }
+  const { error } = await client.from('anywork_favorites').insert({ user_id: userId, [column]: value })
+  if (error) throw error
+  return true
+}
+
+export async function uploadJobPhoto(input: { requestId: string; file: File; photoType: 'before'|'during'|'after'|'completion'|'invoice'|'other' }) {
+  const client = requireSupabase()
+  const userId = await getCurrentUserId()
+  const safeName = input.file.name.replace(/[^a-zA-Z0-9._-]+/g, '-')
+  const path = userId + '/' + input.requestId + '/' + input.photoType + '/' + crypto.randomUUID() + '-' + safeName
+  const { error: uploadError } = await client.storage.from('anywork-job-files').upload(path, input.file, { contentType: input.file.type, upsert: false })
+  if (uploadError) throw uploadError
+  const { data, error } = await client.from('anywork_job_photos').insert({
+    request_id: input.requestId,
+    uploaded_by: userId,
+    photo_type: input.photoType,
+    storage_path: path,
+    file_name: input.file.name,
+    mime_type: input.file.type,
+    size_bytes: input.file.size,
+  }).select('*').single()
+  if (error) throw error
+  return data
+}
+
+export async function listJobPhotos(requestId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_job_photos').select('*').eq('request_id', requestId).order('created_at', { ascending: true })
+  if (error) throw error
+  return data || []
+}
+
+export async function getJobPhotoUrl(path: string, expiresIn = 3600) {
+  const client = requireSupabase()
+  const { data, error } = await client.storage.from('anywork-job-files').createSignedUrl(path, expiresIn)
+  if (error) throw error
+  return data.signedUrl
+}

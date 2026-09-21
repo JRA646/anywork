@@ -222,7 +222,7 @@ export function AdminServices() {
   const categories = Array.from(new Set(catalog.map((service) => service.category).filter(Boolean))).sort((a, b) => a.localeCompare(b))
   const filtered = catalog.filter((service) => {
     const matchesCategory = category === 'All' || service.category === category
-    const haystack = [service.category, service.subcategory, service.title, service.label, service.description].join(' ').toLowerCase()
+    const haystack = [service.category, service.subcategory, service.title, service.label, service.description, ...(service.tags || [])].join(' ').toLowerCase()
     return matchesCategory && haystack.includes(query.toLowerCase())
   })
   const activeCount = Object.values(activeService).filter(Boolean).length

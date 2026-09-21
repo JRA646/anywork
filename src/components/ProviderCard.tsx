@@ -6,7 +6,7 @@ export function ProviderCard({ provider, compact = false, onClick }: { provider:
   return (
     <button
       className={'providerCardModern providerCardImage ' + (compact ? 'compact' : '')}
-      style={{ '--provider-image': 'url("' + providerImageById[provider.id] + '")' } as React.CSSProperties}
+      style={{ '--provider-image': 'url("' + providerImageById[provider.id] + '")' } as Record<string, string>}
       onClick={onClick}
     >
       <div className="providerCardPhoto" />

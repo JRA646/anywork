@@ -43,7 +43,9 @@ const getAdminKey = () => {
     try {
       const keys = JSON.parse(raw)
       if (keys.default) return keys.default
-    } catch {}
+    } catch {
+      // Ignore malformed secret configuration and fall back to the legacy key.
+    }
   }
   return Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 }

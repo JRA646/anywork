@@ -1460,3 +1460,28 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
     height:64px;
   }
 }
+
+
+/* ANYwork mark rendering fix */
+.brandLockup .brandMark{
+  display:block!important;
+  flex:none!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  filter:none!important;
+}
+.brandLockup-sidebar .brandMark{
+  width:54px!important;
+  height:48px!important;
+}
+.brandLockup-auth .brandMark{
+  width:68px!important;
+  height:58px!important;
+  filter:brightness(0)!important;
+}
+.brandLockup .brandServices{
+  background:transparent!important;
+}

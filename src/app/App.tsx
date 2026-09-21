@@ -208,6 +208,10 @@ function Application() {
 
   if (loading) return <AppLoading />
 
+  const publicProvider = path.startsWith('/providers/')
+    ? providerCatalog.find((item) => item.id === path.split('/')[2])
+    : undefined
+
   const publicContent = path === '/'
     ? <PublicHome services={serviceCatalog} providers={providerCatalog} onNavigate={navigate} onQuote={openQuote} />
     : path === '/services'
@@ -217,7 +221,9 @@ function Application() {
         : path === '/help'
         ? <HelpCenterPage />
       : path.startsWith('/providers/')
-        ? <ProviderProfilePage provider={providerCatalog.find((item) => item.id === path.split('/')[2]) || providerCatalog[0]} services={serviceCatalog} onQuote={openQuote} />
+        ? publicProvider
+          ? <ProviderProfilePage provider={publicProvider} services={serviceCatalog} onQuote={openQuote} />
+          : <main className="pageModern"><div className="container"><div className="providerEmptyPanel"><strong>Provider not found</strong><span>This provider is no longer listed in the public directory.</span></div></div></main>
         : null
 
   if (publicContent) {

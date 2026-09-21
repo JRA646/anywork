@@ -581,31 +581,12 @@ export async function retryQuoteEmail(quoteId: string) {
 
 export async function acceptQuote(requestId: string, quoteId: string, providerId: string) {
   const client = requireSupabase()
-
-  const { error: quoteError } = await client
-    .from('anywork_quotes')
-    .update({ status: 'Declined' })
-    .eq('request_id', requestId)
-
-  if (quoteError) throw quoteError
-
-  const { error: acceptedError } = await client
-    .from('anywork_quotes')
-    .update({ status: 'Accepted' })
-    .eq('id', quoteId)
-    .eq('request_id', requestId)
-
-  if (acceptedError) throw acceptedError
-
-  const { error: requestError } = await client
-    .from('anywork_service_requests')
-    .update({
-      selected_provider_id: providerId,
-      status: 'Quoted',
-    })
-    .eq('id', requestId)
-
-  if (requestError) throw requestError
+  const { data, error } = await client.rpc('anywork_accept_quote', {
+    p_request_id: requestId,
+    p_quote_id: quoteId,
+  })
+  if (error) throw error
+  if (data?.provider_id && data.provider_id !== providerId) throw new Error('The selected quote provider no longer matches the request.')
 }
 
 export async function updateProviderJobStatus(requestId: string, status: 'In Progress' | 'Completed') {

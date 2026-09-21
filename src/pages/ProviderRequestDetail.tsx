@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { requests as mockRequests, services } from '../data/mockData'
 import { StatusBadge } from '../components/StatusBadge'
+import { RequestPhotos } from '../components/RequestPhotos'
 import {
   createQuote,
   getCurrentUserId,
@@ -169,6 +170,8 @@ export function ProviderRequestDetail({
         <button className="buttonSecondary" onClick={() => onNavigate('/provider/messages' + (request ? '?request=' + request.id + (customer?.user_id ? '&provider=' + customer.user_id : '') : ''))}><MessageCircle size={15} /> Message customer</button>
       </div>
 
+      {isUuid && <RequestPhotos requestId={requestId} />}
+      
       <div className="providerRequestSummary">
         <div><MapPin size={16} /><span><small>Location</small><strong>{detail.location}</strong></span></div>
         <div><CalendarDays size={16} /><span><small>Preferred schedule</small><strong>{requestDate}</strong></span></div>

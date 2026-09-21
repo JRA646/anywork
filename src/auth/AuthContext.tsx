@@ -58,9 +58,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     let mounted = true
+    const client = supabase
 
     const bootstrap = async () => {
-      const { data, error } = await supabase.auth.getSession()
+      const { data, error } = await client.auth.getSession()
       if (error) {
         if (mounted) setLoading(false)
         return

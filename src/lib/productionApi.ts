@@ -569,3 +569,36 @@ export async function listProviderAssignments(requestId?: string) {
   return data || []
 }
 
+
+
+export async function listProviderServiceAreas() {
+  const client = requireSupabase()
+  const userId = await getCurrentUserId()
+  const { data, error } = await client.from('anywork_provider_service_areas').select('*').eq('provider_id', userId).order('area_name')
+  if (error) throw error
+  return data || []
+}
+
+export async function saveProviderServiceArea(input: { id?: string; areaName: string; city?: string; latitude?: number | null; longitude?: number | null; radiusKm?: number }) {
+  const client = requireSupabase()
+  const userId = await getCurrentUserId()
+  const { data, error } = await client.from('anywork_provider_service_areas').upsert({
+    id: input.id,
+    provider_id: userId,
+    area_name: input.areaName,
+    city: input.city || null,
+    latitude: input.latitude ?? null,
+    longitude: input.longitude ?? null,
+    radius_km: input.radiusKm || 15,
+    enabled: true,
+  }).select('*').single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteProviderServiceArea(id: string) {
+  const client = requireSupabase()
+  const userId = await getCurrentUserId()
+  const { error } = await client.from('anywork_provider_service_areas').delete().eq('id', id).eq('provider_id', userId)
+  if (error) throw error
+}

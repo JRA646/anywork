@@ -54,7 +54,7 @@ export function ProviderJobDetail({
         }
         const [quotes, profiles] = await Promise.all([
           listQuotesForRequest(dbRequest.id),
-          listProfiles([dbRequest.customer_id]),
+          dbRequest.customer_id ? listProfiles([dbRequest.customer_id]) : Promise.resolve([] as DbProfile[]),
         ])
         setRequest(dbRequest)
         setQuote(quotes.find((item) => item.status === 'Accepted' && item.provider_id === providerId) || null)

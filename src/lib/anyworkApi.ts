@@ -473,6 +473,15 @@ export async function createQuote(input: {
   }
 }
 
+export async function retryQuoteEmail(quoteId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.functions.invoke('send-quote-email', {
+    body: { quoteId },
+  })
+  if (error) throw error
+  return data as { sent?: boolean; messageId?: string; recipientEmail?: string; error?: string }
+}
+
 export async function acceptQuote(requestId: string, quoteId: string, providerId: string) {
   const client = requireSupabase()
 

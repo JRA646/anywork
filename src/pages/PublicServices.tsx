@@ -12,7 +12,7 @@ export function PublicServices({ services, providers, onQuote, onProvider }: { s
     .filter((service) => (service.title + ' ' + service.label).toLowerCase().includes(query.toLowerCase()))
 
   return (
-    <main className="pageModern">
+    <main className="pageModern animate-anywork-rise">
       <div className="container">
         <div className="pageHero">
           <span className="eyebrow">SERVICES</span>

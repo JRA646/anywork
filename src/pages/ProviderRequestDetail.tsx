@@ -74,7 +74,7 @@ export function ProviderRequestDetail({
         setQuote(existingQuote)
         setAmount(existingQuote ? String(existingQuote.amount) : dbRequest.budget !== null ? String(dbRequest.budget) : '')
         setAvailability(existingQuote?.availability ? new Date(existingQuote.availability).toISOString().slice(0, 16) : dbRequest.preferred_date ? new Date(dbRequest.preferred_date).toISOString().slice(0, 16) : '')
-        setMessage(existingQuote?.message || message)
+        setMessage(existingQuote?.message || 'We can complete the requested work based on the details provided. Final measurements and access will be confirmed before the appointment.')
         setSent(Boolean(existingQuote))
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Unable to load this request.')
@@ -84,7 +84,7 @@ export function ProviderRequestDetail({
     }
 
     void load()
-  }, [requestId, isUuid])
+  }, [requestId, isUuid, mockRequest?.budget, mockRequest?.date])
 
   useEffect(() => {
     if (!isUuid) return

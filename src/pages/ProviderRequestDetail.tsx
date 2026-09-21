@@ -133,14 +133,25 @@ export function ProviderRequestDetail({
     setSending(true)
     setError('')
     try {
-      const created = await createQuote({
+      const result = await createQuote({
         requestId: request.id,
         amount: numericAmount,
         availability: availability ? new Date(availability).toISOString() : null,
         message: message.trim(),
       })
-      setQuote(created)
+      setQuote(result.quote)
       setSent(true)
+
+      if (result.emailSent) {
+        await showSuccess('Quote sent', 'The customer received your quote by email and can review it now.')
+      } else {
+        await showSuccess(
+          'Quote submitted',
+          result.emailError
+            ? 'The quote was saved, but the email could not be delivered yet. Check the email configuration in Supabase.'
+            : 'The quote was submitted successfully.',
+        )
+      }
     } catch (submitError) {
       const messageText = submitError instanceof Error ? submitError.message : 'Unable to send your quote.'
       setError(messageText)

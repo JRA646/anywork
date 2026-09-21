@@ -279,7 +279,7 @@ export function RequestDetailPage({
         </div>
 
         <div className="requestSummaryGrid">
-          <div className="requestSummaryCard"><span>Service</span><strong>{service?.label || service?.title || 'Service request'}</strong><small>{service?.title || request.service_key || ''}</small></div>
+          <div className="requestSummaryCard"><span>Service</span><strong>{service?.label || service?.title || 'Service request'}</strong><small>{service?.title || ('service_key' in request ? request.service_key : request.serviceId) || ''}</small></div>
           <div className="requestSummaryCard"><span>Location</span><strong>{requestLocation}</strong><small>Service address</small></div>
           <div className="requestSummaryCard"><span>Budget</span><strong>{requestBudget ? '$' + requestBudget.toLocaleString() : 'Open to quotes'}</strong><small>Customer budget</small></div>
           <div className="requestSummaryCard requestSummaryHighlight"><span>Next step</span><strong>{selectedQuote ? 'Confirm scheduling' : 'Review provider quotes'}</strong><small>{selectedQuote ? 'Your selected provider is ready to coordinate.' : `${quoteViews.length} providers have responded to this request.`}</small></div>

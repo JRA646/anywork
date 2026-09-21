@@ -3,6 +3,10 @@
 -- creates the shared marketplace tables when they do not already exist.
 
 create extension if not exists pgcrypto;
+create schema if not exists private;
+create or replace function private.anywork_request_number()
+returns text language sql volatile as 'select ''AW-'' || to_char(now(), ''YYYYMMDD'') || ''-'' || upper(substr(replace(gen_random_uuid()::text,''-'',''''),1,6));';
+
 
 -- ---------------------------------------------------------------------------
 -- 1. Dynamic service catalog
@@ -582,13 +586,13 @@ $$;
 
 -- Audit important operational changes across the production modules.
 create or replace function private.anywork_audit_trigger()
-returns trigger language plpgsql security definer set search_path=public,private as $
+returns trigger language plpgsql security definer set search_path=public,private as $$
 begin
   insert into public.anywork_audit_logs(actor_user_id, action, entity_type, entity_id, metadata)
   values(auth.uid(), tg_op, tg_table_name, coalesce(new.id::text, old.id::text), jsonb_build_object('timestamp',now()));
   return coalesce(new, old);
 end;
-$;
+$$;
 
 drop trigger if exists anywork_provider_verification_audit on public.anywork_provider_verifications;
 create trigger anywork_provider_verification_audit after insert or update or delete on public.anywork_provider_verifications for each row execute function private.anywork_audit_trigger();

@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, Boxes, HardHat, Hammer, Printer, Wrench } from 'lucide-react'
+import { BriefcaseBusiness, Boxes, Globe, HardHat, Hammer, Printer, Sparkles, Smartphone, Store, Wrench } from 'lucide-react'
 
 export const icons = {
   Printer,
@@ -7,4 +7,8 @@ export const icons = {
   Wrench,
   HardHat,
   BriefcaseBusiness,
+  Globe,
+  Sparkles,
+  Smartphone,
+  Store,
 } as const

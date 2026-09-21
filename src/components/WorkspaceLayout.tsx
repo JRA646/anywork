@@ -35,7 +35,7 @@ import { confirmAction } from '../lib/alerts'
 const nav = {
   customer: ['dashboard', 'requests', 'jobs', 'messages', 'addresses', 'invoices', 'reviews', 'support', 'profile'],
   provider: ['dashboard', 'requests', 'jobs', 'calendar', 'services', 'earnings', 'verification', 'checkins', 'invoices', 'reviews', 'support', 'profile'],
-  admin: ['dashboard', 'requests', 'jobs', 'providers', 'services', 'service-builder', 'customers', 'payments', 'reviews', 'disputes', 'support', 'audit', 'settings', 'profile'],
+  admin: ['dashboard', 'requests', 'jobs', 'providers', 'services', 'service-builder', 'customers', 'verification', 'payments', 'reviews', 'disputes', 'support', 'audit', 'settings', 'profile'],
 } as const
 
 const labels: Record<string, string> = {
@@ -52,6 +52,7 @@ const labels: Record<string, string> = {
   addresses: 'Addresses',
   invoices: 'Invoices',
   payments: 'Payments',
+  verification: 'Verification',
   reviews: 'Reviews',
   support: 'Support',
   calendar: 'Calendar',
@@ -76,6 +77,7 @@ const icons: Record<string, LucideIcon> = {
   addresses: Store,
   invoices: FileText,
   payments: CircleDollarSign,
+  verification: ShieldCheck,
   reviews: Star,
   support: CircleHelp,
   calendar: CalendarDays,

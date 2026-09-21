@@ -649,3 +649,5 @@
 .productionCheckbox{display:flex!important;align-items:center;gap:8px!important;padding:12px 0}
 .productionCheckbox input{width:auto!important}
 @media(max-width:760px){.productionFormGrid{grid-template-columns:1fr}.verificationGrid{grid-template-columns:1fr 1fr}.productionListRow{align-items:flex-start}.productionListRow .statusBadge{margin-left:auto}.productionWorkspace .metricRow{grid-template-columns:1fr 1fr}}
+
+.requestCustomFields{margin-top:18px;padding-top:18px;border-top:1px solid #eee}.requestCustomFields .fieldGrid{margin-top:12px}.customFieldCheck{display:flex!important;align-items:center;gap:8px}.customFieldCheck input{width:auto!important}.requestCustomFields select[multiple]{min-height:100px}.productionButtonGrid .buttonPrimary,.productionButtonGrid .buttonSecondary{white-space:nowrap}

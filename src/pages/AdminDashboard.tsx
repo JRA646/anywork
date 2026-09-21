@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Activity, CheckCircle2, CircleDollarSign, FileText, Flag, ShieldCheck, Users } from 'lucide-react'
 import { requests, providers, services } from '../data/mockData'
 import { StatusBadge } from '../components/StatusBadge'

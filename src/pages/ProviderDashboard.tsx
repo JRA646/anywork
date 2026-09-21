@@ -271,27 +271,50 @@ function ProviderJobs({ onNavigate }: { onNavigate: (path: string) => void }) {
   }, [])
 
   const filters = ['All', 'Upcoming', 'Today', 'In Progress', 'Completed'] as const
-  const acceptedQuoteByRequest = new Map(quotes.filter((quote) => quote.status === 'Accepted').map((quote) => [quote.request_id, quote]))
-  const filtered = requests.filter((request) => {
-    if (filter === 'All') return true
-    if (filter === 'In Progress') return request.status === 'In Progress'
-    if (filter === 'Completed') return request.status === 'Completed'
-    if (filter === 'Today') return request.preferred_date ? new Date(request.preferred_date).toDateString() === new Date().toDateString() : false
+  const acceptedQuoteByRequest = new Map(
+    quotes.filter((quote) => quote.status === 'Accepted').map((quote) => [quote.request_id, quote]),
+  )
+
+  const matchesFilter = (request: DbRequest, currentFilter: typeof filters[number]) => {
+    if (currentFilter === 'All') return true
+    if (currentFilter === 'In Progress') return request.status === 'In Progress'
+    if (currentFilter === 'Completed') return request.status === 'Completed'
+    if (currentFilter === 'Today') {
+      return request.preferred_date
+        ? new Date(request.preferred_date).toDateString() === new Date().toDateString()
+        : false
+    }
     return ['Scheduled', 'In Progress'].includes(request.status)
-  })
+  }
+
+  const filtered = requests.filter((request) => matchesFilter(request, filter))
 
   return (
     <div className="workspaceDashboard providerHub">
       <PageTitle kicker="OPERATIONS" title="Jobs" description="Run confirmed work from schedule through completion." />
       <div className="providerStatusTabs">
-        {filters.map((item) => <button key={item} className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}><span>{item}</span><b>{filterCount(item)}</b></button>)}
+        {filters.map((item) => (
+          <button key={item} className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
+            <span>{item}</span><b>{requests.filter((request) => matchesFilter(request, item)).length}</b>
+          </button>
+        ))}
       </div>
       <div className="providerJobsList">
         {loading ? <EmptyPanel title="Loading jobs" description="Checking your confirmed work." /> : filtered.length ? filtered.map((request) => (
           <article className="providerJobCard" key={request.id}>
-            <div className="providerJobDate"><strong>{request.preferred_date ? new Date(request.preferred_date).toLocaleDateString([], { day: '2-digit', month: 'short' }) : '—'}</strong><span>{request.preferred_date ? new Date(request.preferred_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Flexible'}</span></div>
-            <div className="providerJobMain"><span className="requestId">{request.request_number}</span><h3>{request.title}</h3><p>{request.location}</p></div>
-            <div className="providerJobValue"><span>Job value</span><strong>{acceptedQuoteByRequest.get(request.id) ? '
+            <div className="providerJobDate">
+              <strong>{request.preferred_date ? new Date(request.preferred_date).toLocaleDateString([], { day: '2-digit', month: 'short' }) : '—'}</strong>
+              <span>{request.preferred_date ? new Date(request.preferred_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Flexible'}</span>
+            </div>
+            <div className="providerJobMain">
+              <span className="requestId">{request.request_number}</span>
+              <h3>{request.title}</h3>
+              <p>{request.location}</p>
+            </div>
+            <div className="providerJobValue">
+              <span>Job value</span>
+              <strong>{acceptedQuoteByRequest.get(request.id) ? '$' + Number(acceptedQuoteByRequest.get(request.id)!.amount).toLocaleString() : request.budget !== null ? '$' + Number(request.budget).toLocaleString() : 'TBD'}</strong>
+            </div>
             <StatusBadge status={request.status} />
             <button className="jobRowArrow" onClick={() => onNavigate('/provider/jobs/' + request.id)}><ChevronRight size={18} /></button>
           </article>

@@ -548,6 +548,158 @@ export async function markMessagesRead(messageIds: string[]) {
   if (error) throw error
 }
 
+export type DbRequestEvent = {
+  id: string
+  request_id: string
+  event_type: string
+  actor_user_id: string | null
+  title: string
+  detail: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+export type DbNotification = {
+  id: string
+  user_id: string
+  type: string
+  title: string
+  body: string
+  request_id: string | null
+  quote_id: string | null
+  message_id: string | null
+  read_at: string | null
+  created_at: string
+}
+
+export type GuestPortalProvider = {
+  user_id: string
+  display_name: string | null
+  first_name: string | null
+  last_name: string | null
+  company_name: string | null
+  avatar_url: string | null
+  city: string | null
+}
+
+export type GuestPortalResponse = {
+  request: DbRequest
+  quotes: DbQuote[]
+  providers: GuestPortalProvider[]
+  expiresAt: string
+}
+
+export async function listRequestEvents(requestId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('anywork_request_events')
+    .select('*')
+    .eq('request_id', requestId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return (data || []) as DbRequestEvent[]
+}
+
+export async function listNotifications(limit = 30) {
+  const client = requireSupabase()
+  const userId = await getCurrentUserId()
+  const { data, error } = await client
+    .from('anywork_notifications')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return (data || []) as DbNotification[]
+}
+
+export async function markNotificationsRead(notificationIds: string[]) {
+  if (!notificationIds.length) return
+  const client = requireSupabase()
+  const userId = await getCurrentUserId()
+  const { error } = await client
+    .from('anywork_notifications')
+    .update({ read_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .in('id', notificationIds)
+
+  if (error) throw error
+}
+
+export async function subscribeToNotifications(
+  onNotification: (notification: DbNotification) => void,
+  onStatus?: (status: RealtimeStatus) => void,
+) {
+  const client = requireSupabase()
+  const userId = await getCurrentUserId()
+  const channel = client
+    .channel(`anywork:user-notifications:${userId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'anywork_notifications',
+        filter: `user_id=eq.${userId}`,
+      },
+      (payload) => {
+        const notification = (payload.eventType === 'DELETE' ? payload.old : payload.new) as DbNotification
+        onNotification(notification)
+      },
+    )
+    .subscribe((status) => onStatus?.(status as RealtimeStatus))
+
+  return () => {
+    void client.removeChannel(channel)
+  }
+}
+
+export async function subscribeToRequestEvents(
+  requestId: string,
+  onEvent: (event: DbRequestEvent) => void,
+) {
+  const client = requireSupabase()
+  const channel = client
+    .channel(`anywork:request-events:${requestId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'anywork_request_events',
+        filter: `request_id=eq.${requestId}`,
+      },
+      (payload) => onEvent(payload.new as DbRequestEvent),
+    )
+    .subscribe()
+
+  return () => {
+    void client.removeChannel(channel)
+  }
+}
+
+export async function getGuestRequestPortal(token: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.functions.invoke('guest-request-portal', {
+    body: { token, action: 'get' },
+  })
+
+  if (error) throw error
+  return data as GuestPortalResponse
+}
+
+export async function acceptGuestQuote(token: string, quoteId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.functions.invoke('guest-request-portal', {
+    body: { token, action: 'accept_quote', quoteId },
+  })
+
+  if (error) throw error
+  return data as { accepted: boolean; request: DbRequest; quote: DbQuote }
+}
+
 export type RealtimeStatus = 'SUBSCRIBED' | 'CHANNEL_ERROR' | 'TIMED_OUT' | 'CLOSED'
 
 export type DbRealtimeChange<T> = {

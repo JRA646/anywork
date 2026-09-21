@@ -1,8 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { CheckCircle2, FileText, LifeBuoy, Plus, ShieldCheck, Trash2 } from 'lucide-react'
-import { listAdminServices, type DbService, type DbRequest } from '../lib/anyworkApi'
+import { CheckCircle2, FileText, LifeBuoy, Plus, ShieldCheck, Trash2, WalletCards } from 'lucide-react'
+import { listAdminServices, type DbService, type DbRequest, submitJobReview } from '../lib/anyworkApi'
 import {
-  createSupportTicket, deleteAddress, getProviderVerification, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments,
+  createSupportTicket, deleteAddress, getProviderVerification, submitProviderReview, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments,
   listInvoices, listPayments, listProviderAvailability, createInvoice, recordPayment, listProviderTimeOff, listReviews, listServiceFields, listSupportTickets,
   openDispute, saveAddress, saveProviderAvailability, saveProviderTimeOff, saveServiceField, submitProviderVerification, updateDispute,
   type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets, listAdminReviews, listJobPhotos, getJobPhotoUrl, uploadJobPhoto,
@@ -56,11 +56,16 @@ function FinancePage({ role }: { role:'customer'|'provider'|'admin' }) {
 
 function ReviewsPage({ role }: { role:'customer'|'provider'|'admin' }) {
   const [rows,setRows]=useState<any[]>([])
-  useEffect(()=>{void (role==='admin'?listAdminReviews():listReviews(role)).then(setRows).catch(()=>setRows([]))},[role])
+  const [requestId,setRequestId]=useState('')
+  const [otherUserId,setOtherUserId]=useState('')
+  const [rating,setRating]=useState('5')
+  const [comment,setComment]=useState('')
+  const load=()=>void (role==='admin'?listAdminReviews():listReviews(role)).then(setRows).catch(()=>setRows([]))
+  useEffect(load,[role])
   const average=rows.length?rows.reduce((s,r)=>s+Number(r.rating),0)/rows.length:0
-  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="REPUTATION" title="Reviews" description="Track service quality and customer feedback."/><div className="metricRow"><Metric label="Reviews" value={String(rows.length)} note="Published reviews"/><Metric label="Average rating" value={average?average.toFixed(1)+' ★':'—'} note="Out of 5"/></div><Panel title="Review history" kicker="FEEDBACK">{rows.map(row=><div className="productionReview" key={row.id}><div><strong>{'★'.repeat(Number(row.rating))}{'☆'.repeat(5-Number(row.rating))}</strong><span>{row.comment||'No written comment'}</span></div><small>{new Date(row.created_at).toLocaleDateString()}</small></div>)}{!rows.length&&<Empty text="No reviews yet."/>}</Panel></div>
+  const submit=async()=>{if(!requestId||!otherUserId||!comment)return;if(role==='customer')await submitJobReview({requestId,providerId:otherUserId,rating:Number(rating),comment});if(role==='provider')await submitProviderReview({requestId,customerId:otherUserId,rating:Number(rating),comment});setRequestId('');setOtherUserId('');setComment('');load()}
+  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="REPUTATION" title="Reviews" description="Track service quality and submit verified post-job feedback."/><div className="metricRow"><Metric label="Reviews" value={String(rows.length)} note="Published reviews"/><Metric label="Average rating" value={average?average.toFixed(1)+' ★':'—'} note="Out of 5"/></div>{role!=='admin'&&<Panel title="Leave a review" kicker="POST-JOB FEEDBACK"><div className="productionFormGrid"><label>Request ID<input value={requestId} onChange={e=>setRequestId(e.target.value)} placeholder="Completed request UUID"/></label><label>{role==='customer'?'Provider':'Customer'} ID<input value={otherUserId} onChange={e=>setOtherUserId(e.target.value)} placeholder="User UUID"/></label><label>Rating<select value={rating} onChange={e=>setRating(e.target.value)}>{[5,4,3,2,1].map(x=><option key={x}>{x}</option>)}</select></label><label>Comment<textarea value={comment} onChange={e=>setComment(e.target.value)} rows={3}/></label></div><button className="buttonPrimary" onClick={()=>void submit()}><Star size={15}/> Submit review</button></Panel>}<Panel title="Review history" kicker="FEEDBACK">{rows.map(row=><div className="productionReview" key={row.id}><div><strong>{'★'.repeat(Number(row.rating))}{'☆'.repeat(5-Number(row.rating))}</strong><span>{row.comment||'No written comment'}</span></div><small>{new Date(row.created_at).toLocaleDateString()}</small></div>)}{!rows.length&&<Empty text="No reviews yet."/>}</Panel></div>
 }
-
 function SupportPage({ admin }: { admin:boolean }) {
   const [rows,setRows]=useState<SupportTicket[]>([])
   const [subject,setSubject]=useState('')

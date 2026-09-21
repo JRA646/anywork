@@ -130,7 +130,9 @@ function Application() {
           ? <SimpleMessages title="ANYwork Support" />
           : section === 'profile'
             ? <ProfilePage role="customer" />
-            : <CustomerDashboard profile={profile} onNavigate={navigate} />
+            : section === 'help'
+              ? <HelpCenterPage />
+              : <CustomerDashboard profile={profile} onNavigate={navigate} />
 
     return (
       <WorkspaceLayout
@@ -164,16 +166,29 @@ function Application() {
 
   if (path === '/provider' || path.startsWith('/provider/')) {
     const section = path.split('/')[2] || 'dashboard'
+    const providerContent = section === 'profile'
+      ? <ProfilePage role="provider" />
+      : section === 'help'
+        ? <HelpCenterPage />
+        : <ProviderDashboard section={section} profile={profile} onNavigate={navigate} />
+    const providerTitle = section === 'dashboard'
+      ? 'Overview'
+      : section === 'help'
+        ? 'Help Center'
+        : section === 'profile'
+          ? 'Profile'
+          : section.charAt(0).toUpperCase() + section.slice(1)
+
     return (
       <WorkspaceLayout
         role="provider"
         profile={profile}
-        title={section === 'dashboard' ? 'Overview' : section.charAt(0).toUpperCase() + section.slice(1)}
+        title={providerTitle}
         current={section}
         onNavigate={(item) => navigate('/provider/' + item)}
         onPublicSite={handleSignOut}
       >
-        <ProviderDashboard section={section} profile={profile} onNavigate={navigate} />
+        {providerContent}
       </WorkspaceLayout>
     )
   }

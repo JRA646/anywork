@@ -381,7 +381,7 @@ export async function listCustomerQuotes(requestIds?: string[]) {
   if (requestIds?.length) query = query.in('request_id', requestIds)
   const { data, error } = await query
   if (error) throw error
-  return (data || []).map(({ anywork_service_requests: _request, ...quote }) => quote) as DbQuote[]
+  return (data || []).map((row) => row as unknown as DbQuote)
 }
 
 export async function getRequest(requestId: string) {

@@ -5,7 +5,7 @@ import {
   createSupportTicket, deleteAddress, getProviderVerification, submitProviderReview, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments,
   listInvoices, listPayments, listProviderAvailability, createInvoice, recordPayment, listProviderTimeOff, listReviews, listServiceFields, listSupportTickets,
   openDispute, saveAddress, saveProviderAvailability, saveProviderTimeOff, saveServiceField, submitProviderVerification, updateDispute,
-  type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets, listAdminReviews, listJobPhotos, getJobPhotoUrl, uploadJobPhoto,
+  type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets, listAdminReviews, listJobPhotos, getJobPhotoUrl, uploadJobPhoto, listAdminVerifications, updateProviderVerification,
 } from '../lib/productionApi'
 
 export function ProductionWorkspacePage({ role, section, onNavigate }: { role: 'customer'|'provider'|'admin'; section: string; profile?: AnyWorkProfile; onNavigate: (path:string)=>void }) {
@@ -16,6 +16,7 @@ export function ProductionWorkspacePage({ role, section, onNavigate }: { role: '
   if (section === 'disputes') return <DisputesPage admin={role === 'admin'} />
   if (role === 'provider' && section === 'calendar') return <ProviderCalendarPage />
   if (role === 'provider' && section === 'verification') return <ProviderVerificationPage />
+  if (role === 'admin' && section === 'verification') return <AdminVerificationPage />
   if (role === 'provider' && section === 'checkins') return <ProviderCheckinPage onNavigate={onNavigate} />
   if (role === 'admin' && section === 'jobs') return <AdminJobsPage />
   if (role === 'admin' && section === 'audit') return <AuditPage />
@@ -102,6 +103,13 @@ function ProviderVerificationPage() {
   useEffect(()=>{void getProviderVerification().then(setVerification).catch(()=>undefined)},[])
   const submit=async()=>setVerification(await submitProviderVerification({notes:'Provider requested verification review.'}))
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="TRUST" title="Provider verification" description="Build customer trust by completing your business verification."/><Panel title="Verification status" kicker="ACCOUNT TRUST"><div className="verificationGrid">{[['Identity',verification?.identity_verified],['Business',verification?.business_verified],['Documents',verification?.documents_verified],['Payment',verification?.payment_verified]].map(([label,ok])=><div key={String(label)}><ShieldCheck/><strong>{label}</strong><span>{ok?'Verified':'Pending review'}</span></div>)}</div><button className="buttonPrimary" onClick={()=>void submit()}><ShieldCheck size={15}/> Submit for review</button></Panel></div>
+}
+
+function AdminVerificationPage() {
+  const [rows,setRows]=useState<any[]>([])
+  const load=()=>void listAdminVerifications().then(setRows).catch(()=>setRows([]))
+  useEffect(load,[])
+  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="TRUST & SAFETY" title="Provider verification" description="Review and approve provider trust checks from the admin workspace."/><Panel title="Verification queue" kicker="PROVIDER REVIEW">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.provider_id}</strong><span>{row.status} · identity {row.identity_verified?'verified':'pending'} · business {row.business_verified?'verified':'pending'}</span></div><select value={row.status} onChange={e=>void updateProviderVerification(row.id,e.target.value).then(load)}><option>Pending</option><option>Under Review</option><option>Verified</option><option>Rejected</option></select></div>)}{!rows.length&&<Empty text="No provider verification records."/>}</Panel></div>
 }
 
 function ProviderCheckinPage({onNavigate}:{onNavigate:(path:string)=>void}) {

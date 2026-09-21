@@ -80,22 +80,18 @@ function Application() {
 
     if (!loading) {
       if (path === '/signin' || path === '/admin/signin') {
-        if (!session || !profile) return
-
-        const destination = profile.role === 'admin' ? '/admin' : '/' + profile.role
-        if (path !== '/admin/signin' || profile.role === 'admin') navigate(destination)
-        return
-      }
-
-      const protectedRole = roleRoute(path)
-      if (protectedRole) {
-        if (!session || !profile) {
-          navigate(protectedRole === 'admin' ? '/admin/signin' : '/signin')
-          return
+        if (session && profile) {
+          const destination = profile.role === 'admin' ? '/admin' : '/' + profile.role
+          if (path !== '/admin/signin' || profile.role === 'admin') navigate(destination)
         }
-
-        if (profile.role !== protectedRole) {
-          navigate(profile.role === 'admin' ? '/admin' : '/' + profile.role)
+      } else {
+        const protectedRole = roleRoute(path)
+        if (protectedRole) {
+          if (!session || !profile) {
+            navigate(protectedRole === 'admin' ? '/admin/signin' : '/signin')
+          } else if (profile.role !== protectedRole) {
+            navigate(profile.role === 'admin' ? '/admin' : '/' + profile.role)
+          }
         }
       }
     }

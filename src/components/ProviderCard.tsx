@@ -5,7 +5,7 @@ import { providerImageById } from '../data/media'
 export function ProviderCard({ provider, compact = false, onClick }: { provider: Provider; compact?: boolean; onClick?: () => void }) {
   return (
     <button
-      className={'providerCardModern providerCardImage ' + (compact ? 'compact' : '')}
+      className={'providerCardModern providerCardImage tw-image-shine group ' + (compact ? 'compact' : '')}
       style={{ '--provider-image': 'url("' + providerImageById[provider.id] + '")' } as Record<string, string>}
       onClick={onClick}
     >

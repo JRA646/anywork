@@ -7,6 +7,7 @@ import {
   Paperclip,
   Search,
   Send,
+  Radio,
   ShieldCheck,
   Smile,
 } from 'lucide-react'
@@ -16,7 +17,7 @@ import {
   listProfiles,
   markMessagesRead,
   sendMessage,
-  subscribeToRequestMessages,
+  subscribeToUserMessages,
   type DbMessage,
   type DbProfile,
 } from '../lib/anyworkApi'
@@ -62,6 +63,7 @@ export function CustomerMessagesPage({
   const [draft, setDraft] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [realtime, setRealtime] = useState<'connecting' | 'live' | 'offline'>('connecting')
 
   const load = async () => {
     setLoading(true)
@@ -84,15 +86,26 @@ export function CustomerMessagesPage({
   useEffect(() => { void load() }, [requestId, providerId])
 
   useEffect(() => {
-    if (!requestId || !currentUserId) return
+    if (!currentUserId) return
     let cleanup: (() => void) | undefined
-    void subscribeToRequestMessages(requestId, (message) => {
-      setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message])
+    void subscribeToUserMessages((message) => {
+      if (requestId && message.request_id !== requestId) return
+      setMessages((current) => {
+        const existing = current.findIndex((item) => item.id === message.id)
+        if (existing === -1) return [...current, message]
+        const next = [...current]
+        next[existing] = message
+        return next
+      })
       const otherId = message.sender_id === currentUserId ? message.receiver_id : message.sender_id
-      if (!profiles.some((profile) => profile.user_id === otherId)) {
-        void listProfiles([otherId]).then((rows) => setProfiles((current) => [...current.filter((item) => item.user_id !== otherId), ...rows]))
-      }
-    }).then((dispose) => { cleanup = dispose }).catch(() => undefined)
+      void listProfiles([otherId]).then((rows) => {
+        if (rows.length) {
+          setProfiles((current) => [...current.filter((item) => item.user_id !== otherId), ...rows])
+        }
+      }).catch(() => undefined)
+    }, (status) => {
+      setRealtime(status === 'SUBSCRIBED' ? 'live' : status === 'CLOSED' ? 'offline' : 'connecting')
+    }).then((dispose) => { cleanup = dispose }).catch(() => setRealtime('offline'))
     return () => cleanup?.()
   }, [requestId, currentUserId])
 
@@ -178,7 +191,12 @@ export function CustomerMessagesPage({
           <h1>{workspaceRole === 'provider' ? 'Customer conversations' : 'Conversations'}</h1>
           <p>{workspaceRole === 'provider' ? 'Keep every customer conversation attached to its request and job.' : 'Keep provider and support conversations connected to the work.'}</p>
         </div>
-        <div className="messagesHeaderStatus"><ShieldCheck size={16} /> Secure work conversations</div>
+        <div className="messagesHeaderStatus">
+          <span className={'messagesRealtimeStatus ' + realtime}>
+            <Radio size={13} /> {realtime === 'live' ? 'Live updates' : realtime === 'connecting' ? 'Connecting…' : 'Reconnecting…'}
+          </span>
+          <span className="messagesSecurityStatus"><ShieldCheck size={16} /> Secure work conversations</span>
+        </div>
       </div>
 
       {error && <div className="formError messagesError">{error}</div>}
@@ -227,8 +245,9 @@ export function CustomerMessagesPage({
 
           <div className="messageThreadBody">
             <div className="messageDateDivider"><span>Conversation</span></div>
-            {selected?.messages.map((message) => (
-              <div key={message.id} className={'messageRow ' + (message.sender_id === currentUserId ? 'me' : 'them')}>
+            {selected?.messages.map((message, index) => (
+
+              <div key={message.id} className={'messageRow ' + (message.sender_id === currentUserId ? 'me' : 'them') + (selected.messages[index - 1]?.sender_id === message.sender_id ? ' grouped' : '')}>
                 <div className="messageBubble">
                   <p>{message.body}</p>
                   <span>{new Date(message.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} {message.sender_id === currentUserId && <CheckCheck size={12} />}</span>

@@ -199,6 +199,7 @@ function ProviderRequests({ onNavigate }: { onNavigate: (path: string) => void }
   const [filter, setFilter] = useState<RequestFilter>('All')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [realtime, setRealtime] = useState<'connecting' | 'live' | 'offline'>('connecting')
 
   const load = async () => {
     setLoading(true)
@@ -225,7 +226,7 @@ function ProviderRequests({ onNavigate }: { onNavigate: (path: string) => void }
       } else if (change.record) {
         setRequests((current) => [...current.filter((item) => item.id !== change.record!.id), change.record!].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()))
       }
-    }).then((dispose) => { requestCleanup = dispose }).catch(() => undefined)
+    }, (status) => setRealtime(status === 'SUBSCRIBED' ? 'live' : status === 'CLOSED' ? 'offline' : 'connecting')).then((dispose) => { requestCleanup = dispose }).catch(() => setRealtime('offline'))
     void subscribeToQuotes((change) => {
       if (!change.record && change.oldRecord?.id) {
         setQuotes((current) => current.filter((item) => item.id !== change.oldRecord?.id))
@@ -255,7 +256,10 @@ function ProviderRequests({ onNavigate }: { onNavigate: (path: string) => void }
 
   return (
     <div className="workspaceDashboard providerHub">
-      <PageTitle kicker="OPPORTUNITIES" title="Service requests" description="Review new work, send quotes and turn qualified opportunities into scheduled jobs." />
+      <div className="providerRequestPageHeading">
+        <PageTitle kicker="OPPORTUNITIES" title="Service requests" description="Review new work, send quotes and turn qualified opportunities into scheduled jobs." />
+        <span className={'providerLiveStatus ' + realtime}><span /> {realtime === 'live' ? 'Live requests' : realtime === 'connecting' ? 'Connecting…' : 'Reconnecting…'}</span>
+      </div>
 
       <div className="providerRequestToolbar">
         <div className="searchField"><Search size={15} /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search request, service or location..." /></div>

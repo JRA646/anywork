@@ -579,6 +579,32 @@ begin
 end;
 $$;
 
+
+-- Audit important operational changes across the production modules.
+create or replace function private.anywork_audit_trigger()
+returns trigger language plpgsql security definer set search_path=public,private as $
+begin
+  insert into public.anywork_audit_logs(actor_user_id, action, entity_type, entity_id, metadata)
+  values(auth.uid(), tg_op, tg_table_name, coalesce(new.id::text, old.id::text), jsonb_build_object('timestamp',now()));
+  return coalesce(new, old);
+end;
+$;
+
+drop trigger if exists anywork_provider_verification_audit on public.anywork_provider_verifications;
+create trigger anywork_provider_verification_audit after insert or update or delete on public.anywork_provider_verifications for each row execute function private.anywork_audit_trigger();
+
+drop trigger if exists anywork_invoice_audit on public.anywork_invoices;
+create trigger anywork_invoice_audit after insert or update or delete on public.anywork_invoices for each row execute function private.anywork_audit_trigger();
+
+drop trigger if exists anywork_payment_audit on public.anywork_payments;
+create trigger anywork_payment_audit after insert or update or delete on public.anywork_payments for each row execute function private.anywork_audit_trigger();
+
+drop trigger if exists anywork_dispute_audit on public.anywork_disputes;
+create trigger anywork_dispute_audit after insert or update or delete on public.anywork_disputes for each row execute function private.anywork_audit_trigger();
+
+drop trigger if exists anywork_support_audit on public.anywork_support_tickets;
+create trigger anywork_support_audit after insert or update or delete on public.anywork_support_tickets for each row execute function private.anywork_audit_trigger();
+
 -- ---------------------------------------------------------------------------
 -- 9. RLS
 -- ---------------------------------------------------------------------------

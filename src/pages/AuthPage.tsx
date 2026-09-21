@@ -2,6 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react'
 import { ArrowRight, Building2, CheckCircle2, LockKeyhole, Mail, ShieldCheck, UserRound } from 'lucide-react'
 import type { AnyWorkProfile, AnyWorkRole } from '../types/auth'
 import { useAuth } from '../auth/AuthContext'
+import { BrandLogo } from '../components/BrandLogo'
 
 export function AuthPage({
   mode,
@@ -65,10 +66,7 @@ export function AuthPage({
   return (
     <main className="authShell">
       <section className="authPromo">
-        <button className="authPromoBrand" type="button" onClick={() => window.history.back()}>
-          <span className="marketLogo">AW</span>
-          <strong>ANYwork</strong>
-        </button>
+        <button className="authPromoBrand authPromoBrandLogo" type="button" onClick={() => window.history.back()}><BrandLogo variant="auth" /></button>
         <div className="authPromoContent">
           <span className="eyebrow">{admin ? 'OPERATIONS WORKSPACE' : 'SERVICE MARKETPLACE'}</span>
           <h1>{admin ? 'Run the marketplace with clarity.' : 'Get the right work moving.'}</h1>

@@ -8,7 +8,7 @@ import {
   type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets, listAdminReviews, listJobPhotos, getJobPhotoUrl, uploadJobPhoto, listAdminVerifications, updateProviderVerification, listFavorites, toggleFavorite,
 } from '../lib/productionApi'
 
-export function ProductionWorkspacePage({ role, section, onNavigate }: { role: 'customer'|'provider'|'admin'; section: string; profile?: AnyWorkProfile; onNavigate: (path:string)=>void }) {
+export function ProductionWorkspacePage({ role, section, onNavigate, profile: _profile }: { role: 'customer'|'provider'|'admin'; section: string; profile?: AnyWorkProfile; onNavigate: (path:string)=>void }) {
   if (section === 'account') return <AccountPage onNavigate={onNavigate} />
   if (section === 'addresses') return <AddressesPage />
   if (section === 'favorites') return <FavoritesPage />
@@ -19,7 +19,7 @@ export function ProductionWorkspacePage({ role, section, onNavigate }: { role: '
   if (role === 'provider' && section === 'calendar') return <ProviderCalendarPage />
   if (role === 'provider' && section === 'verification') return <ProviderVerificationPage />
   if (role === 'admin' && section === 'verification') return <AdminVerificationPage />
-  if (role === 'provider' && section === 'checkins') return <ProviderCheckinPage onNavigate={onNavigate} />
+  if (role === 'provider' && section === 'checkins') return <ProviderCheckinPage />
   if (role === 'admin' && section === 'jobs') return <AdminJobsPage />
   if (role === 'admin' && section === 'audit') return <AuditPage />
   if (role === 'admin' && section === 'service-builder') return <ServiceBuilderPage />
@@ -150,7 +150,7 @@ function AdminVerificationPage() {
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="TRUST & SAFETY" title="Provider verification" description="Review and approve provider trust checks from the admin workspace."/><Panel title="Verification queue" kicker="PROVIDER REVIEW">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.provider_id}</strong><span>{row.status} · identity {row.identity_verified?'verified':'pending'} · business {row.business_verified?'verified':'pending'}</span></div><select value={row.status} onChange={e=>void updateProviderVerification(row.id,e.target.value).then(load)}><option>Pending</option><option>Under Review</option><option>Verified</option><option>Rejected</option></select></div>)}{!rows.length&&<Empty text="No provider verification records."/>}</Panel></div>
 }
 
-function ProviderCheckinPage({onNavigate}:{onNavigate:(path:string)=>void}) {
+function ProviderCheckinPage() {
   const [requestId,setRequestId]=useState('')
   const [type,setType]=useState('arrived')
   const [photoType,setPhotoType]=useState<'before'|'during'|'after'|'completion'|'invoice'|'other'>('during')

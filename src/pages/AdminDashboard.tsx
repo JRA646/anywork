@@ -398,7 +398,22 @@ export function AdminServices() {
         </label>
 
         <label><span>Starting price</span><input type="number" min="0" value={form.startingPrice} onChange={(event) => setForm((current) => ({ ...current, startingPrice: event.target.value }))} placeholder="Leave empty for Quote" /></label>
-        <section className="adminLivePreview"><div><span className="eyebrow">CUSTOMER PREVIEW</span><strong>How this service will appear</strong></div><div className="adminLivePreviewCard">{form.imageUrl ? <img src={form.imageUrl} alt="" /> : <div className="adminLivePreviewPlaceholder"><Store size={22} /></div>}<div><small>{form.category || 'Category'}{form.subcategory ? ' · ' + form.subcategory : ''}</small><h4>{form.label || 'Service name'}</h4><p>{form.description || 'Your service description will appear here.'}</p><strong>{form.startingPrice ? '        <div className="drawerActions"><button type="button" className="buttonSecondary" onClick={() => setShowForm(false)}>Cancel</button><button type="submit" className="buttonPrimary" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update service' : 'Save service'}</button></div>
+        <section className="adminLivePreview">
+          <div><span className="eyebrow">CUSTOMER PREVIEW</span><strong>How this service will appear</strong></div>
+          <div className="adminLivePreviewCard">
+            {form.imageUrl ? <img src={form.imageUrl} alt="" /> : <div className="adminLivePreviewPlaceholder"><Store size={22} /></div>}
+            <div>
+              <small>{form.category || 'Category'}{form.subcategory ? ' · ' + form.subcategory : ''}</small>
+              <h4>{form.label || 'Service name'}</h4>
+              <p>{form.description || 'Your service description will appear here.'}</p>
+              <strong>{form.startingPrice ? '$' + Number(form.startingPrice).toLocaleString() : 'Quote'}</strong>
+            </div>
+          </div>
+        </section>
+        <div className="drawerActions">
+          <button type="button" className="buttonSecondary" onClick={() => setShowForm(false)}>Cancel</button>
+          <button type="submit" className="buttonPrimary" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Update service' : 'Save service'}</button>
+        </div>
       </form>
     </div>}
   </div>

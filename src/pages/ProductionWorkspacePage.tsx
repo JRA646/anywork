@@ -7,7 +7,6 @@ import {
   openDispute, saveAddress, saveProviderAvailability, saveProviderTimeOff, saveServiceField, submitProviderVerification, updateDispute,
   type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets, listAdminReviews,
 } from '../lib/productionApi'
-import { StatusBadge } from '../components/StatusBadge'
 
 export function ProductionWorkspacePage({ role, section, onNavigate }: { role: 'customer'|'provider'|'admin'; section: string; profile?: AnyWorkProfile; onNavigate: (path:string)=>void }) {
   if (section === 'addresses') return <AddressesPage />

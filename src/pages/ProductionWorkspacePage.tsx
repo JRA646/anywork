@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { CheckCircle2, FileText, LifeBuoy, Plus, ShieldCheck, Trash2, WalletCards, Star } from 'lucide-react'
-import { listAdminServices, listPublicServices, type DbService, type DbRequest, submitJobReview, updateAdminRequestStatus } from '../lib/anyworkApi'
+import { listAdminServices, listPublicServices, listCustomerRequests, listProviderRequests, type DbService, type DbRequest, submitJobReview, updateAdminRequestStatus } from '../lib/anyworkApi'
 import {
   createSupportTicket, deleteAddress, getProviderVerification, submitProviderReview, updateSupportTicket, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments,
   listInvoices, listPayments, listProviderAvailability, createInvoice, recordPayment, listProviderTimeOff, listReviews, listServiceFields, listSupportTickets,
@@ -68,15 +68,23 @@ function FinancePage({ role }: { role:'customer'|'provider'|'admin' }) {
 
 function ReviewsPage({ role }: { role:'customer'|'provider'|'admin' }) {
   const [rows,setRows]=useState<any[]>([])
+  const [jobs,setJobs]=useState<DbRequest[]>([])
   const [requestId,setRequestId]=useState('')
-  const [otherUserId,setOtherUserId]=useState('')
   const [rating,setRating]=useState('5')
   const [comment,setComment]=useState('')
   const load=()=>void (role==='admin'?listAdminReviews():listReviews(role)).then(setRows).catch(()=>setRows([]))
-  useEffect(load,[role])
+  useEffect(()=>{void load()},[role])
+  useEffect(()=>{if(role==='customer')void listCustomerRequests().then(setJobs).catch(()=>setJobs([]));if(role==='provider')void listProviderRequests().then(rows=>setJobs(rows.filter(row=>row.selected_provider_id))).catch(()=>setJobs([]))},[role])
   const average=rows.length?rows.reduce((s,r)=>s+Number(r.rating),0)/rows.length:0
-  const submit=async()=>{if(!requestId||!otherUserId||!comment)return;if(role==='customer')await submitJobReview({requestId,providerId:otherUserId,rating:Number(rating),comment});if(role==='provider')await submitProviderReview({requestId,customerId:otherUserId,rating:Number(rating),comment});setRequestId('');setOtherUserId('');setComment('');load()}
-  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="REPUTATION" title="Reviews" description="Track service quality and submit verified post-job feedback."/><div className="metricRow"><Metric label="Reviews" value={String(rows.length)} note="Published reviews"/><Metric label="Average rating" value={average?average.toFixed(1)+' ★':'—'} note="Out of 5"/></div>{role!=='admin'&&<Panel title="Leave a review" kicker="POST-JOB FEEDBACK"><div className="productionFormGrid"><label>Request ID<input value={requestId} onChange={e=>setRequestId(e.target.value)} placeholder="Completed request UUID"/></label><label>{role==='customer'?'Provider':'Customer'} ID<input value={otherUserId} onChange={e=>setOtherUserId(e.target.value)} placeholder="User UUID"/></label><label>Rating<select value={rating} onChange={e=>setRating(e.target.value)}>{[5,4,3,2,1].map(x=><option key={x}>{x}</option>)}</select></label><label>Comment<textarea value={comment} onChange={e=>setComment(e.target.value)} rows={3}/></label></div><button className="buttonPrimary" onClick={()=>void submit()}><Star size={15}/> Submit review</button></Panel>}<Panel title="Review history" kicker="FEEDBACK">{rows.map(row=><div className="productionReview" key={row.id}><div><strong>{'★'.repeat(Number(row.rating))}{'☆'.repeat(5-Number(row.rating))}</strong><span>{row.comment||'No written comment'}</span></div><small>{new Date(row.created_at).toLocaleDateString()}</small></div>)}{!rows.length&&<Empty text="No reviews yet."/>}</Panel></div>
+  const reviewableJobs=jobs.filter(job=>job.status==='Completed')
+  const selectedJob=reviewableJobs.find(job=>job.id===requestId)
+  const submit=async()=>{
+    if(!selectedJob||!comment.trim())return
+    if(role==='customer'&&selectedJob.selected_provider_id)await submitJobReview({requestId:selectedJob.id,providerId:selectedJob.selected_provider_id,rating:Number(rating),comment})
+    if(role==='provider'&&selectedJob.customer_id)await submitProviderReview({requestId:selectedJob.id,customerId:selectedJob.customer_id,rating:Number(rating),comment})
+    setRequestId('');setComment('');load()
+  }
+  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="REPUTATION" title="Reviews" description="Share verified feedback after a completed service."/><div className="metricRow"><Metric label="Reviews" value={String(rows.length)} note="Published reviews"/><Metric label="Average rating" value={average?average.toFixed(1)+' ★':'—'} note="Out of 5"/></div>{role!=='admin'&&<Panel title="Leave a review" kicker="POST-JOB FEEDBACK"><div className="productionFormGrid"><label>Completed job<select value={requestId} onChange={e=>setRequestId(e.target.value)}><option value="">Choose a completed job</option>{reviewableJobs.map(job=><option key={job.id} value={job.id}>{job.title} · {job.request_number}</option>)}</select></label><label>Rating<select value={rating} onChange={e=>setRating(e.target.value)}>{[5,4,3,2,1].map(x=><option key={x}>{x}</option>)}</select></label><label>Comment<textarea value={comment} onChange={e=>setComment(e.target.value)} rows={3} placeholder="How did the service go?"/></label></div><button className="buttonPrimary" onClick={()=>void submit()} disabled={!selectedJob||!comment.trim()}><Star size={15}/> Submit review</button></Panel>}<Panel title="Review history" kicker="FEEDBACK">{rows.map(row=><div className="productionReview" key={row.id}><div><strong>{'★'.repeat(Number(row.rating))}{'☆'.repeat(5-Number(row.rating))}</strong><span>{row.comment||'No written comment'}</span></div><small>{new Date(row.created_at).toLocaleDateString()}</small></div>)}{!rows.length&&<Empty text="No reviews yet."/>}</Panel></div>
 }
 function SupportPage({ admin }: { admin:boolean }) {
   const [rows,setRows]=useState<SupportTicket[]>([])
@@ -92,15 +100,16 @@ async function importAdminTickets(){return (await listAdminSupportTickets())}
 
 function DisputesPage({ admin }: { admin:boolean }) {
   const [rows,setRows]=useState<Dispute[]>([])
-  const load=()=> (admin?listAdminDisputes():listDisputes()).then(setRows).catch(()=>setRows([]))
-  useEffect(()=>{void load()},[admin])
+  const [jobs,setJobs]=useState<DbRequest[]>([])
   const [requestId,setRequestId]=useState('')
   const [reason,setReason]=useState('Service issue')
   const [description,setDescription]=useState('')
+  const load=()=> (admin?listAdminDisputes():listDisputes()).then(setRows).catch(()=>setRows([]))
+  useEffect(()=>{void load()},[admin])
+  useEffect(()=>{if(!admin)void listCustomerRequests().then(setJobs).catch(()=>setJobs([]))},[admin])
   const open=async()=>{if(!requestId||!description)return;await openDispute(requestId,reason,description);setRequestId('');setDescription('');await load()}
-  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="TRUST" title="Disputes" description="Keep issues documented, visible and accountable."/>{!admin&&<Panel title="Open a dispute" kicker="CUSTOMER / PROVIDER"><div className="productionFormGrid"><label>Request ID<input value={requestId} onChange={e=>setRequestId(e.target.value)} placeholder="Request UUID"/></label><label>Reason<input value={reason} onChange={e=>setReason(e.target.value)}/></label><label>Description<textarea value={description} onChange={e=>setDescription(e.target.value)} rows={4}/></label></div><button className="buttonPrimary" onClick={()=>void open()}>Open dispute</button></Panel>}<Panel title="Dispute queue" kicker="CASE MANAGEMENT">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.reason}</strong><span>{row.description}</span></div>{admin?<select value={row.status} onChange={e=>void updateDispute(row.id,e.target.value).then(load)}><option>Open</option><option>Under Review</option><option>Waiting Customer</option><option>Waiting Provider</option><option>Resolved</option><option>Closed</option></select>:<span className="statusBadge neutral">{row.status}</span>}</div>)}{!rows.length&&<Empty text="No disputes."/>}</Panel></div>
+  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="TRUST" title="Disputes" description="Get help when a service needs review or resolution."/>{!admin&&<Panel title="Open a dispute" kicker="YOUR JOB"><div className="productionFormGrid"><label>Job<select value={requestId} onChange={e=>setRequestId(e.target.value)}><option value="">Choose a job</option>{jobs.map(job=><option key={job.id} value={job.id}>{job.title} · {job.request_number}</option>)}</select></label><label>Reason<input value={reason} onChange={e=>setReason(e.target.value)}/></label><label>Description<textarea value={description} onChange={e=>setDescription(e.target.value)} rows={4} placeholder="Tell us what happened."/></label></div><button className="buttonPrimary" onClick={()=>void open()} disabled={!requestId||!description.trim()}>Open dispute</button></Panel>}<Panel title="Dispute queue" kicker="CASE MANAGEMENT">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.reason}</strong><span>{row.description}</span></div>{admin?<select value={row.status} onChange={e=>void updateDispute(row.id,e.target.value).then(load)}><option>Open</option><option>Under Review</option><option>Waiting Customer</option><option>Waiting Provider</option><option>Resolved</option><option>Closed</option></select>:<span className="statusBadge neutral">{row.status}</span>}</div>)}{!rows.length&&<Empty text="No disputes."/>}</Panel></div>
 }
-
 function ProviderCalendarPage() {
   const [rows,setRows]=useState<any[]>([])
   const [timeOff,setTimeOff]=useState<any[]>([])

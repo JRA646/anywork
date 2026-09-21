@@ -431,6 +431,11 @@ on conflict (id) do update set
   file_size_limit = excluded.file_size_limit,
   allowed_mime_types = excluded.allowed_mime_types;
 
+-- Request-photo bucket is separate because these files are customer-owned request attachments.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('anywork-request-photos', 'anywork-request-photos', false, 5242880, array['image/jpeg','image/png','image/webp'])
+on conflict (id) do update set public=excluded.public,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
+
 -- ---------------------------------------------------------------------------
 -- 7. Shared timestamps / request number / events / notifications
 -- ---------------------------------------------------------------------------
@@ -728,3 +733,29 @@ on conflict(category_id,name) do nothing;
 insert into public.anywork_provider_verifications(provider_id)
 select user_id from public.anywork_profiles where role='provider'
 on conflict(provider_id) do nothing;
+
+drop policy if exists "ANYwork request photos upload" on storage.objects;
+create policy "ANYwork request photos upload" on storage.objects for insert to authenticated
+with check (
+  bucket_id='anywork-request-photos'
+  and (storage.foldername(name))[2] = auth.uid()::text
+);
+
+drop policy if exists "ANYwork request photos read" on storage.objects;
+create policy "ANYwork request photos read" on storage.objects for select to authenticated
+using (
+  bucket_id='anywork-request-photos'
+  and (
+    owner_id=auth.uid()::text
+    or private.anywork_current_role()='admin'
+    or exists (
+      select 1 from public.anywork_request_photos p
+      join public.anywork_service_requests r on r.id=p.request_id
+      where p.storage_path=name and (r.customer_id=auth.uid() or r.selected_provider_id=auth.uid())
+    )
+  )
+);
+
+drop policy if exists "ANYwork request photos delete" on storage.objects;
+create policy "ANYwork request photos delete" on storage.objects for delete to authenticated
+using (bucket_id='anywork-request-photos' and (owner_id=auth.uid()::text or private.anywork_current_role()='admin'));

@@ -152,7 +152,6 @@ export function QuoteWizard({
       })
 
       let uploadWarning = ''
-      let uploadedCount = 0
 
       if (!isGuest) {
         for (let index = 0; index < selectedPhotos.length; index += 1) {

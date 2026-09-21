@@ -189,3 +189,14 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
 @keyframes authSpin{to{transform:rotate(360deg)}}
 @keyframes authOrb{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-15px,-12px,0) scale(1.06)}}
 @media(prefers-reduced-motion:reduce){.authPageAnimated *,.authPageAnimated:before,.authPageAnimated:after{animation:none!important;transition:none!important}}
+
+/* Fixed workspace sidebar */
+.workspace{align-items:start;min-height:100vh}
+.workspaceSidebar{position:sticky;top:0;align-self:start;width:230px;height:100vh;max-height:100vh;overflow-y:auto;overflow-x:hidden;z-index:70;scrollbar-width:thin;scrollbar-color:#3b3b3b transparent}
+.workspaceSidebar::-webkit-scrollbar{width:6px}
+.workspaceSidebar::-webkit-scrollbar-track{background:transparent}
+.workspaceSidebar::-webkit-scrollbar-thumb{background:#3b3b3b;border-radius:999px}
+.workspaceMain{min-height:100vh}
+.workspaceTopbar{position:sticky;top:0;z-index:90}
+@media(max-width:1050px){.workspaceSidebar{position:static;width:auto;height:auto;max-height:none;overflow:visible}}
+@media(max-width:700px){.workspace{min-height:100vh}.workspaceSidebar{display:none}}

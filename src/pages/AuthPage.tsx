@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { ArrowRight, Building2, CheckCircle2, LockKeyhole, Mail, ShieldCheck, UserRound } from 'lucide-react'
 import type { AnyWorkProfile, AnyWorkRole } from '../types/auth'
 import { useAuth } from '../auth/AuthContext'
@@ -25,7 +25,7 @@ export function AuthPage({
 
   const admin = mode === 'admin'
 
-  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setBusy(true)
     setError('')
@@ -140,7 +140,7 @@ export function AuthPage({
               {registering ? (
                 <>Already have an account? <button type="button" onClick={() => { setRegistering(false); setMessage(''); setError('') }}>Sign in</button></>
               ) : (
-                <>New to ANYwork? <button type="button" onClick={() => { setRegistering(true); setMessage(''); setError('') }}>Create an account</button></>
+                <>New to ANYwork? <button type="button" onClick={() => { setRegistering(true); setMessage(''); setError('') }}>Create an account</button>
               )}
             </div>
           )}
@@ -152,7 +152,7 @@ export function AuthPage({
   )
 }
 
-function AuthField({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
+function AuthField({ label, icon, children }: { label: string; icon?: ReactNode; children: ReactNode }) {
   return (
     <label className="authField">
       <span>{label}</span>

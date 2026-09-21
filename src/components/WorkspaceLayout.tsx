@@ -160,7 +160,7 @@ export function WorkspaceLayout({
         title: titleText,
         detail: record?.title || 'A service request has changed.',
         createdAt: Date.now(),
-        href: record?.id ? '/' + role + '/requests/' + record.id : undefined,
+        href: record?.id ? '/requests/' + record.id : undefined,
       })
     }
 
@@ -177,7 +177,7 @@ export function WorkspaceLayout({
         title: change.event === 'INSERT' ? 'New quote activity' : 'Quote updated',
         detail: role === 'customer' ? 'A provider has responded to one of your requests.' : 'A quote in your marketplace pipeline changed.',
         createdAt: Date.now(),
-        href: record?.request_id ? '/' + role + '/requests/' + record.request_id : undefined,
+        href: record?.request_id ? '/requests/' + record.request_id : undefined,
       })
     }
 
@@ -190,8 +190,8 @@ export function WorkspaceLayout({
         detail: 'You received a new work conversation message.',
         createdAt: Date.now(),
         href: message.request_id
-          ? '/' + role + '/messages?request=' + message.request_id + '&provider=' + message.sender_id
-          : '/' + role + '/messages',
+          ? '/messages?request=' + message.request_id + '&provider=' + message.sender_id
+          : '/messages',
       })
     }
 
@@ -299,7 +299,7 @@ export function WorkspaceLayout({
                       type="button"
                       onClick={() => {
                         setNotificationsOpen(false)
-                        if (notification.href) onNavigate(notification.href.replace('/' + role, ''))
+                        if (notification.href) onNavigate(notification.href)
                       }}
                     >
                       <span className="notificationIndicator" />

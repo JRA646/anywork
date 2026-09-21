@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { CalendarDays, CheckCircle2, Clock3, FileText, LifeBuoy, MapPin, Plus, ShieldCheck, Star, Trash2, WalletCards } from 'lucide-react'
-import { listAdminServices, type DbService } from '../lib/anyworkApi'
+import { listAdminServices, type DbService, type DbRequest } from '../lib/anyworkApi'
 import {
   createSupportTicket, deleteAddress, getProviderVerification, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments,
   listInvoices, listPayments, listProviderAvailability, listProviderTimeOff, listReviews, listServiceFields, listSupportTickets,
   openDispute, saveAddress, saveProviderAvailability, saveProviderTimeOff, saveServiceField, submitProviderVerification, updateDispute,
-  type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket,
+  type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes,
 } from '../lib/productionApi'
 import type { AnyWorkProfile } from '../types/auth'
 import { StatusBadge } from '../components/StatusBadge'
@@ -63,7 +63,7 @@ function SupportPage({ admin }: { admin:boolean }) {
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="SUPPORT" title="Support center" description="Create and track support tickets without leaving ANYwork."/><Panel title="New support ticket" kicker="CONTACT SUPPORT"><div className="productionFormGrid"><label>Subject<input value={subject} onChange={e=>setSubject(e.target.value)} placeholder="What do you need help with?"/></label><label>Description<textarea value={description} onChange={e=>setDescription(e.target.value)} rows={5}/></label></div><button className="buttonPrimary" onClick={()=>void submit()}><LifeBuoy size={15}/> Create ticket</button></Panel><Panel title="Tickets" kicker="TICKET HISTORY">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.ticket_number} · {row.subject}</strong><span>{row.priority} · {new Date(row.created_at).toLocaleDateString()}</span></div><StatusBadge status={row.status}/></div>)}{!rows.length&&<Empty text="No support tickets."/>}</Panel></div>
 }
 async function importAdminTickets(){return (await listAdminSupportTickets())}
-import { listAdminSupportTickets } from '../lib/productionApi'
+
 
 function DisputesPage({ admin }: { admin:boolean }) {
   const [rows,setRows]=useState<Dispute[]>([])

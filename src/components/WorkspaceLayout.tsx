@@ -58,7 +58,6 @@ const labels: Record<string, string> = {
   verification: 'Verification',
   checkins: 'Job Check-in',
   'service-builder': 'Service Builder',
-  jobs: 'Jobs',
   disputes: 'Disputes',
   audit: 'Audit Log',
 }
@@ -83,7 +82,6 @@ const icons: Record<string, LucideIcon> = {
   verification: ShieldCheck,
   checkins: BriefcaseBusiness,
   'service-builder': Store,
-  jobs: BriefcaseBusiness,
   disputes: ShieldCheck,
   audit: Activity,
 }

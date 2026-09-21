@@ -24,6 +24,7 @@ import { ProfilePage } from '../pages/ProfilePage'
 import { HelpCenterPage } from '../pages/HelpCenterPage'
 import { GuestRequestPage } from '../pages/GuestRequestPage'
 import { InvoicePage } from '../pages/InvoicePage'
+import { CustomerJobWorkspace } from '../pages/CustomerJobWorkspace'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
 import { BrandLogo } from '../components/BrandLogo'
@@ -124,6 +125,27 @@ function Application() {
     return <GuestRequestPage token={token} />
   }
 
+  if (path.startsWith('/customer/jobs/')) {
+    const jobRequestId = path.split('/')[3]
+    if (!profile || profile.role !== 'customer') {
+      navigate('/signin')
+      return null
+    }
+
+    return (
+      <WorkspaceLayout
+        role="customer"
+        profile={profile}
+        title="Job"
+        current="jobs"
+        onNavigate={(item) => navigate('/customer/' + (item === 'dashboard' ? '' : item))}
+        onPublicSite={handleSignOut}
+      >
+        <CustomerJobWorkspace requestId={jobRequestId} onBack={() => navigate('/customer/requests')} onNavigate={navigate} />
+      </WorkspaceLayout>
+    )
+  }
+
   if (path.startsWith('/customer/invoices/')) {
     const invoiceRequestId = path.split('/')[3]
     if (!profile || profile.role !== 'customer') {
@@ -218,7 +240,7 @@ function Application() {
         <WorkspaceLayout
           role="customer"
           profile={profile}
-          title={section === 'requests' ? 'Requests' : section === 'messages' ? 'Messages' : section === 'profile' ? 'Profile' : section === 'help' ? 'Help Center' : 'Overview'}
+          title={section === 'requests' ? 'Requests' : section === 'jobs' ? 'Jobs' : section === 'messages' ? 'Messages' : section === 'profile' ? 'Profile' : section === 'help' ? 'Help Center' : 'Overview'}
           current={section}
           onNavigate={(item) => navigate('/customer/' + (item === 'dashboard' ? '' : item))}
           onPublicSite={handleSignOut}

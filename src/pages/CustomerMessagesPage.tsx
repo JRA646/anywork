@@ -145,7 +145,7 @@ export function CustomerMessagesPage({
         initials: initialsFrom(profile),
         unread,
         lastMessage: messageList[messageList.length - 1]?.body || '',
-        time: new Date(messageList[messageList.length - 1]?.created_at || Date.now()).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+        time: messageList[messageList.length - 1]?.created_at ? new Date(messageList[messageList.length - 1].created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '—',
         messages: messageList,
       })
     }

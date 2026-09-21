@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   CheckCheck,
   ChevronLeft,
@@ -68,7 +68,7 @@ export function CustomerMessagesPage({
   const threadEndRef = useRef<HTMLDivElement | null>(null)
   const lastLoadedAtRef = useRef(0)
 
-  const load = async (showLoading = true) => {
+  const load = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true)
     setError('')
     try {

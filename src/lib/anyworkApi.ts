@@ -297,6 +297,22 @@ export async function acceptQuote(requestId: string, quoteId: string, providerId
   if (requestError) throw requestError
 }
 
+export async function updateProviderJobStatus(requestId: string, status: 'In Progress' | 'Completed') {
+  const client = requireSupabase()
+  const providerId = await getCurrentUserId()
+
+  const { data, error } = await client
+    .from('anywork_service_requests')
+    .update({ status })
+    .eq('id', requestId)
+    .eq('selected_provider_id', providerId)
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as DbRequest
+}
+
 export async function sendMessage(input: {
   requestId?: string | null
   receiverId: string

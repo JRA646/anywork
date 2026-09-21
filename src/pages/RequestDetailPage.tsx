@@ -80,8 +80,8 @@ export function RequestDetailPage({
               <MessageCircle size={15} /> Message
             </button>
             {request.status === 'Requested' ? (
-              <button className="buttonSecondary">
-                <Pencil size={15} /> Edit request
+              <button className="buttonSecondary" onClick={() => onNavigate('/help')}>
+                <Pencil size={15} /> Request support
               </button>
             ) : (
               <button className="buttonPrimary" onClick={() => document.getElementById('request-quotes')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>

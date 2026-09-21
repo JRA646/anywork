@@ -75,6 +75,17 @@ export type Dispute = {
   created_at: string
 }
 
+export type DbProviderAssignment = {
+  id: string
+  request_id: string
+  provider_id: string
+  status: 'Suggested' | 'Invited' | 'Assigned' | 'Declined'
+  match_score: number | null
+  match_reasons: string[] | null
+  created_at: string
+  updated_at: string
+}
+
 export type SupportTicket = {
   id: string
   ticket_number: string
@@ -570,13 +581,13 @@ export async function assignProvider(requestId: string, providerId: string) {
   return data
 }
 
-export async function listProviderAssignments(requestId?: string) {
+export async function listProviderAssignments(requestId?: string): Promise<DbProviderAssignment[]> {
   const client = requireSupabase()
   let query = client.from('anywork_provider_assignments').select('*').order('match_score', { ascending: false })
   if (requestId) query = query.eq('request_id', requestId)
   const { data, error } = await query.limit(300)
   if (error) throw error
-  return data || []
+  return (data || []) as DbProviderAssignment[]
 }
 
 export async function respondProviderAssignment(assignmentId: string, status: 'Assigned' | 'Declined') {

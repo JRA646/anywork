@@ -44,6 +44,30 @@ export type DbProfile = {
   is_active: boolean
 }
 
+export type DbService = {
+  id: string
+  title: string
+  label: string
+  description: string
+  icon: string
+  items: string[]
+  starting_price: number | null
+  starting_price_label: string | null
+  enabled: boolean
+}
+
+export async function listPublicServices() {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('anywork_services')
+    .select('id, title, label, description, icon, items, starting_price, starting_price_label, enabled')
+    .eq('enabled', true)
+    .order('title', { ascending: true })
+
+  if (error) throw error
+  return (data || []) as DbService[]
+}
+
 export type DbProviderService = {
   id: string
   provider_id: string

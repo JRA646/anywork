@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Bell, CheckCircle2, MapPin, Save, UserRound } from 'lucide-react'
 import type { AnyWorkProfile } from '../types/auth'
 import { useAuth } from '../auth/AuthContext'
+import { showError, showSuccess } from '../lib/alerts'
 
 export function ProfilePage({ role }: { role: 'customer' | 'provider' | 'admin' }) {
   const { profile, user, updateProfile } = useAuth()
@@ -40,8 +41,11 @@ export function ProfilePage({ role }: { role: 'customer' | 'provider' | 'admin' 
         postal_code: form.postalCode || null,
       })
       setSaved(true)
+      await showSuccess('Profile saved', 'Your ANYwork profile has been updated.')
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Unable to save your profile.')
+      const message = saveError instanceof Error ? saveError.message : 'Unable to save your profile.'
+      setError(message)
+      await showError('Unable to save profile', message)
     } finally {
       setSaving(false)
     }

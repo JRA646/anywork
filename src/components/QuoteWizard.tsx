@@ -167,9 +167,10 @@ export function QuoteWizard({
         companyWebsite: companyWebsite.trim(),
       })
 
-      if (!isGuest && Object.keys(fieldAnswers).length) await saveRequestAnswers(created.id, fieldAnswers)
-
       let uploadWarning = ''
+      if (!isGuest && Object.keys(fieldAnswers).length) {
+        try { await saveRequestAnswers(created.id, fieldAnswers) } catch { uploadWarning = 'Your request was created, but some service-specific answers could not be saved. Please review the request details.' }
+      }
 
       if (!isGuest) {
         for (let index = 0; index < selectedPhotos.length; index += 1) {

@@ -62,16 +62,38 @@ export function RequestDetailPage({
       setLoading(true)
       setError('')
       try {
-        const request = await getRequest(requestId)
-        const rows = await listQuotesForRequest(request.id)
-        const providerIds = Array.from(new Set(rows.map((quote) => quote.provider_id)))
-        const profiles = await listProfiles(providerIds)
+        const request = await Promise.race([
+          getRequest(requestId),
+          new Promise<DbRequest>((_, reject) => {
+            window.setTimeout(() => reject(new Error('The request is taking too long to load. Please try again.')), 8000)
+          }),
+        ])
+
+        const rows = await Promise.race([
+          listQuotesForRequest(request.id),
+          new Promise<DbQuote[]>((_, reject) => {
+            window.setTimeout(() => reject(new Error('Provider quotes are taking too long to load.')), 8000)
+          }),
+        ])
+
+        let profiles: DbProfile[] = []
+        if (rows.length) {
+          const providerIds = Array.from(new Set(rows.map((quote) => quote.provider_id)))
+          profiles = await Promise.race([
+            listProfiles(providerIds),
+            new Promise<DbProfile[]>((_, reject) => {
+              window.setTimeout(() => reject(new Error('Provider details are taking too long to load.')), 8000)
+            }),
+          ])
+        }
+
         setDbRequest(request)
         setDbQuotes(rows)
         setDbProfiles(profiles)
         setSelectedQuoteId(rows.find((quote) => quote.status === 'Accepted')?.id || null)
       } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : 'Unable to load this request.')
+        const message = loadError instanceof Error ? loadError.message : 'Unable to load this request.'
+        setError(message)
       } finally {
         setLoading(false)
       }
@@ -185,7 +207,19 @@ export function RequestDetailPage({
   }
 
   if (!request) {
-    return <div className="workspaceDashboard requestDetailPage"><div className="requestEmptyModern"><h2>Request not found</h2><p>This request is no longer available.</p><button className="buttonPrimary" onClick={onBack}>Back to requests</button></div></div>
+    return (
+      <div className="workspaceDashboard requestDetailPage">
+        <div className="requestEmptyModern">
+          <span className="eyebrow">REQUEST UNAVAILABLE</span>
+          <h2>{error ? 'We could not load this request.' : 'Request not found'}</h2>
+          <p>{error || 'This request is no longer available in your account.'}</p>
+          <div className="requestEmptyActions">
+            <button className="buttonSecondary" onClick={onBack}>Back to requests</button>
+            {isUuid && <button className="buttonPrimary" onClick={() => window.location.reload()}>Try again</button>}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

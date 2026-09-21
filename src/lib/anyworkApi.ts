@@ -59,6 +59,53 @@ export type DbService = {
   enabled: boolean
 }
 
+export type DbPublicProvider = {
+  id: string
+  name: string
+  initials: string
+  service_ids: string[]
+  rating: number
+  review_count: number
+  completed_jobs: number
+  location: string
+  response_time: string
+  response_rate: string
+  summary: string
+  verified: boolean
+}
+
+export type DbPublicProviderReview = {
+  id: string
+  rating: number
+  comment: string | null
+  created_at: string
+}
+
+export async function listPublicProviders(): Promise<DbPublicProvider[]> {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_list_public_providers')
+  if (error) throw error
+  return (data || []).map((row) => ({
+    ...row,
+    service_ids: Array.isArray(row.service_ids) ? row.service_ids : [],
+    rating: Number(row.rating || 0),
+    review_count: Number(row.review_count || 0),
+    completed_jobs: Number(row.completed_jobs || 0),
+  })) as DbPublicProvider[]
+}
+
+export async function listPublicProviderReviews(providerId: string): Promise<DbPublicProviderReview[]> {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_list_public_provider_reviews', {
+    p_provider_id: providerId,
+  })
+  if (error) throw error
+  return (data || []).map((row) => ({
+    ...row,
+    rating: Number(row.rating || 0),
+  })) as DbPublicProviderReview[]
+}
+
 export async function listPublicServices() {
   const client = requireSupabase()
   const { data, error } = await client

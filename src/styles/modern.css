@@ -690,3 +690,17 @@
   .dispatchDate{display:flex;justify-content:space-between}
   .providerMatchGrid{grid-template-columns:1fr}
 }
+
+
+.customerActionCenter{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:22px 24px;margin-bottom:16px;border:1px solid #e5e1d8;border-radius:16px;background:linear-gradient(135deg,#fff,#f7f5ef)}
+.customerActionCenter>div{min-width:0}
+.customerActionCenter h2{font-size:22px;letter-spacing:-.7px;margin:5px 0}
+.customerActionCenter p{margin:0;color:#777;max-width:680px;font-size:12px;line-height:1.55}
+.customerQuickLinks{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.customerQuickLinks button{display:grid;grid-template-columns:1fr auto;gap:5px;text-align:left;padding:15px;border:1px solid #e8e4dc;border-radius:13px;background:#fff;cursor:pointer}
+.customerQuickLinks button:hover{border-color:#cfc9be;box-shadow:0 5px 16px rgba(20,20,20,.04)}
+.customerQuickLinks strong{font-size:12px}
+.customerQuickLinks span{font-size:10px;color:#888}
+.customerQuickLinks svg{grid-row:1 / span 2;grid-column:2;align-self:center}
+@media(max-width:760px){.customerActionCenter{align-items:flex-start;flex-direction:column}.customerActionCenter .buttonPrimary{width:100%;justify-content:center}.customerQuickLinks{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.customerQuickLinks{grid-template-columns:1fr}}

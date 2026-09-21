@@ -14,6 +14,7 @@ import {
 import { services } from '../data/mockData'
 import { StatusBadge } from '../components/StatusBadge'
 import { RequestPhotos } from '../components/RequestPhotos'
+import { showError, showSuccess } from '../lib/alerts'
 import {
   getRequest,
   getCurrentUserId,
@@ -100,9 +101,18 @@ export function ProviderJobDetail({
     setBusy(true)
     setError('')
     try {
-      setRequest(await updateProviderJobStatus(request.id, status))
+      const nextRequest = await updateProviderJobStatus(request.id, status)
+      setRequest(nextRequest)
+      await showSuccess(
+        status === 'Completed' ? 'Job completed' : 'Job started',
+        status === 'Completed'
+          ? 'The customer can now see that this job has been completed.'
+          : 'The job is now marked as in progress.',
+      )
     } catch (statusError) {
-      setError(statusError instanceof Error ? statusError.message : 'Unable to update the job status.')
+      const message = statusError instanceof Error ? statusError.message : 'Unable to update the job status.'
+      setError(message)
+      await showError('Unable to update job', message)
     } finally {
       setBusy(false)
     }

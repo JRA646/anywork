@@ -1803,3 +1803,5 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
   .adminImagePreview{width:100%;height:150px}
   .searchableSelectMenu{top:67px}
 }
+
+.adminLivePreview{margin:18px 0;padding:14px;border:1px solid #e6e0d7;border-radius:14px;background:#faf9f6}.adminLivePreview>div:first-child{display:grid;gap:4px;margin-bottom:10px}.adminLivePreview>div:first-child strong{font-size:12px}.adminLivePreviewCard{display:grid;grid-template-columns:92px 1fr;gap:12px;background:#fff;border:1px solid #e4dfd7;border-radius:11px;overflow:hidden}.adminLivePreviewCard img,.adminLivePreviewPlaceholder{width:92px;height:112px;object-fit:cover}.adminLivePreviewPlaceholder{display:grid;place-items:center;background:#f1eee8;color:#aaa197}.adminLivePreviewCard>div:last-child{padding:11px 11px 11px 0}.adminLivePreviewCard small{font-size:8px;color:#9a9289;text-transform:uppercase;font-weight:800}.adminLivePreviewCard h4{margin:5px 0;font-size:14px}.adminLivePreviewCard p{margin:0 0 8px!important;font-size:9px!important;line-height:1.45!important;color:#817a72!important}.adminLivePreviewCard strong{font-size:10px}

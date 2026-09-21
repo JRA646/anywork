@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, MapPin, Upload, X } from 'lucide-react'
 import { services } from '../data/mockData'
 import { createServiceRequest, uploadRequestPhoto, type DbRequest } from '../lib/anyworkApi'
+import { showError, showSuccess } from '../lib/alerts'
 
 const getLocalDateTimeMin = () => {
   const now = new Date()
@@ -135,8 +136,15 @@ export function QuoteWizard({
       setCreatedRequest(created)
       setError(uploadWarning)
       setSubmitted(true)
+      if (uploadWarning) {
+        await showSuccess('Request created', 'Your request was created. Some photos need to be added from the request page.')
+      } else {
+        await showSuccess('Request created', 'Providers can now review your request and respond with quotes.')
+      }
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'We could not create the request. Please try again.')
+      const message = submitError instanceof Error ? submitError.message : 'We could not create the request. Please try again.'
+      setError(message)
+      await showError('Unable to create request', message)
     } finally {
       setUploadingPhotoIndex(null)
       setBusy(false)

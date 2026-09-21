@@ -569,3 +569,17 @@
     height:38px;
   }
 }
+
+.jobWorkflowForm{display:grid;gap:14px;margin-top:18px}
+.jobWorkflowForm label{display:grid;gap:7px}
+.jobWorkflowForm label span{font-size:12px;font-weight:700;color:#667085}
+.jobWorkflowForm input,.jobWorkflowForm textarea{width:100%;box-sizing:border-box;border:1px solid #d9dee8;border-radius:12px;padding:11px 12px;font:inherit;background:#fff}
+.jobWorkflowForm button{justify-self:start}
+.jobChangeCard{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #edf0f5}
+.jobChangeCard:last-child{border-bottom:0}
+.jobChangeCard div:first-child{display:grid;gap:5px}
+.jobChangeCard small{color:#667085}
+.jobChangeCard div:last-child{display:flex;gap:8px}
+.reviewStars{display:flex;gap:4px;margin:12px 0}
+.reviewStars button{border:0;background:transparent;padding:3px;cursor:pointer;color:#f59e0b}
+.sideCard textarea{width:100%;box-sizing:border-box;border:1px solid #d9dee8;border-radius:12px;padding:10px;font:inherit;resize:vertical}

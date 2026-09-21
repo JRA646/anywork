@@ -33,14 +33,15 @@ import {
 import { confirmAction } from '../lib/alerts'
 
 const nav = {
-  customer: ['dashboard', 'requests', 'jobs', 'messages', 'addresses', 'favorites', 'invoices', 'reviews', 'support', 'profile'],
+  customer: ['dashboard', 'requests', 'jobs', 'messages', 'profile'],
   provider: ['dashboard', 'requests', 'jobs', 'calendar', 'services', 'earnings', 'verification', 'checkins', 'invoices', 'reviews', 'support', 'profile'],
-  admin: ['dashboard', 'requests', 'jobs', 'providers', 'services', 'service-builder', 'customers', 'verification', 'payments', 'reviews', 'disputes', 'support', 'audit', 'settings', 'profile'],
+  admin: ['dashboard', 'requests', 'dispatch', 'jobs', 'providers', 'services', 'customers', 'payments', 'reviews', 'support', 'settings', 'profile'],
 } as const
 
 const labels: Record<string, string> = {
   dashboard: 'Dashboard',
   requests: 'Requests',
+  dispatch: 'Dispatch',
   jobs: 'Jobs',
   services: 'Services',
   earnings: 'Earnings',
@@ -53,7 +54,6 @@ const labels: Record<string, string> = {
   favorites: 'Favorites',
   invoices: 'Invoices',
   payments: 'Payments',
-  verification: 'Verification',
   reviews: 'Reviews',
   support: 'Support',
   calendar: 'Calendar',
@@ -82,11 +82,9 @@ const icons: Record<string, LucideIcon> = {
   reviews: Star,
   support: CircleHelp,
   calendar: CalendarDays,
-  verification: ShieldCheck,
   checkins: BriefcaseBusiness,
   'service-builder': Store,
-  disputes: ShieldCheck,
-  audit: Activity,
+  dispatch: BriefcaseBusiness,
 }
 
 type NotificationItem = DbNotification

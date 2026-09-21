@@ -381,9 +381,13 @@ export async function listAdminJobs() {
 
 export async function listAdminReviews() {
   const client = requireSupabase()
-  const { data, error } = await client.from('anywork_reviews').select('*').order('created_at', { ascending: false }).limit(300)
-  if (error) throw error
-  return data || []
+  const [customerReviews, providerReviews] = await Promise.all([
+    client.from('anywork_reviews').select('*').limit(300),
+    client.from('anywork_provider_reviews').select('*').limit(300),
+  ])
+  if (customerReviews.error) throw customerReviews.error
+  if (providerReviews.error) throw providerReviews.error
+  return [...(customerReviews.data || []), ...(providerReviews.data || [])].sort((a,b) => String(b.created_at).localeCompare(String(a.created_at)))
 }
 
 export async function saveRequestAnswers(requestId: string, answers: Record<string, unknown>) {

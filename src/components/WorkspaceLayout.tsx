@@ -143,7 +143,7 @@ export function WorkspaceLayout({
           </div>
         </header>
 
-        <main className="workspaceContent">{children}</main>
+        <main className="workspaceContent animate-anywork-rise">{children}</main>
       </div>
     </div>
   )

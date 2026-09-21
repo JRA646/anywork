@@ -66,7 +66,7 @@ export function ProviderRequestDetail({
         const [currentProviderId, dbRequest] = await Promise.all([getCurrentUserId(), getRequest(requestId)])
         const [quotes, profiles] = await Promise.all([
           listQuotesForRequest(dbRequest.id),
-          listProfiles([dbRequest.customer_id]),
+          dbRequest.customer_id ? listProfiles([dbRequest.customer_id]) : Promise.resolve([] as DbProfile[]),
         ])
         const existingQuote = quotes.find((item) => item.provider_id === currentProviderId) || null
         setRequest(dbRequest)
@@ -121,7 +121,7 @@ export function ProviderRequestDetail({
     : mockRequest?.date || 'Flexible schedule'
   const customerName = customer
     ? customer.company_name || customer.display_name || [customer.first_name, customer.last_name].filter(Boolean).join(' ')
-    : mockRequest?.customer || 'Customer'
+    : request?.requester_name || mockRequest?.customer || 'Guest requester'
   const numericAmount = Number(amount)
   const validQuote = Number.isFinite(numericAmount) && numericAmount > 0 && message.trim().length >= 10
 

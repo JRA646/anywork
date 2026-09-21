@@ -26,6 +26,7 @@ import { GuestRequestPage } from '../pages/GuestRequestPage'
 import { InvoicePage } from '../pages/InvoicePage'
 import { CustomerJobWorkspace } from '../pages/CustomerJobWorkspace'
 import { CustomerJobsPage } from '../pages/CustomerJobsPage'
+import { ProductionWorkspacePage } from '../pages/ProductionWorkspacePage'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
 import { BrandLogo } from '../components/BrandLogo'
@@ -232,7 +233,9 @@ function Application() {
               requestId={new URLSearchParams(window.location.search).get('request') || requestId}
               providerId={new URLSearchParams(window.location.search).get('provider') || undefined}
             />
-          : section === 'profile'
+          : ['addresses','invoices','payments','reviews','support','disputes'].includes(section)
+            ? <ProductionWorkspacePage role="customer" section={section} profile={profile} onNavigate={navigate} />
+        : section === 'profile'
             ? <ProfilePage role="customer" />
             : section === 'help'
               ? <HelpCenterPage />
@@ -296,7 +299,9 @@ function Application() {
 
   if (path === '/provider' || path.startsWith('/provider/')) {
     const section = path.split('/')[2] || 'dashboard'
-    const providerContent = section === 'profile'
+    const providerContent = ['calendar','verification','checkins','invoices','payments','reviews','support','disputes'].includes(section)
+      ? <ProductionWorkspacePage role="provider" section={section} profile={profile} onNavigate={navigate} />
+      : section === 'profile'
       ? <ProfilePage role="provider" />
       : section === 'help'
         ? <HelpCenterPage />
@@ -331,7 +336,9 @@ function Application() {
 
   if (path === '/admin' || path.startsWith('/admin/')) {
     const section = path.split('/')[2] || 'dashboard'
-    const adminContent = section === 'help'
+    const adminContent = ['jobs','payments','reviews','disputes','support','audit','service-builder'].includes(section)
+      ? <ProductionWorkspacePage role="admin" section={section} profile={profile} onNavigate={navigate} />
+      : section === 'help'
       ? <HelpCenterPage />
       : section === 'profile'
         ? <ProfilePage role="admin" />

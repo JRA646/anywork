@@ -1,8 +1,19 @@
+import { useEffect, useState } from 'react'
 import { CheckCircle2, Clock3, MapPin, MessageCircle, Star } from 'lucide-react'
 import type { Provider, Service } from '../types/marketplace'
+import { listPublicProviderReviews, type DbPublicProviderReview } from '../lib/anyworkApi'
 
 export function ProviderProfilePage({ provider, services, onQuote }: { provider: Provider; services: Service[]; onQuote: (serviceId?: string) => void }) {
+  const [reviews, setReviews] = useState<DbPublicProviderReview[]>([])
   const offered = services.filter((service) => provider.serviceIds.includes(service.id))
+
+  useEffect(() => {
+    let mounted = true
+    void listPublicProviderReviews(provider.id)
+      .then((rows) => { if (mounted) setReviews(rows) })
+      .catch(() => { if (mounted) setReviews([]) })
+    return () => { mounted = false }
+  }, [provider.id])
 
   return (
     <main className="pageModern animate-anywork-rise">
@@ -12,7 +23,7 @@ export function ProviderProfilePage({ provider, services, onQuote }: { provider:
         <div className="providerProfileHero">
           <div className="providerAvatarHuge">{provider.initials}</div>
           <div>
-            <div className="profileVerified"><CheckCircle2 size={15} /> Verified provider</div>
+            {provider.verified && <div className="profileVerified"><CheckCircle2 size={15} /> Verified provider</div>}
             <h1>{provider.name}</h1>
             <p>{provider.summary}</p>
             <div className="profileMeta">
@@ -59,11 +70,18 @@ export function ProviderProfilePage({ provider, services, onQuote }: { provider:
             <section className="contentCard">
               <span className="eyebrow">REVIEWS</span>
               <h2>What customers say</h2>
-              <div className="reviewGrid">
-                <div><strong>“Clear communication and excellent finish.”</strong><span>Jordan · Commercial customer</span></div>
-                <div><strong>“Arrived on time and kept us updated.”</strong><span>Alex · Home customer</span></div>
-                <div><strong>“Quote was straightforward and the job matched it.”</strong><span>Retail customer</span></div>
-              </div>
+              {reviews.length ? (
+                <div className="reviewGrid">
+                  {reviews.map((review) => (
+                    <div key={review.id}>
+                      <strong>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</strong>
+                      <span>{review.comment || 'No written comment.'}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="providerEmptyInline">No published reviews yet.</div>
+              )}
             </section>
           </div>
 
@@ -74,7 +92,7 @@ export function ProviderProfilePage({ provider, services, onQuote }: { provider:
               <p>Send your job details and get a quote with availability.</p>
               <button className="buttonPrimary full" onClick={() => onQuote(offered[0]?.id)}>Start a request</button>
               <div className="sideTrust">
-                <span><CheckCircle2 /> Verified profile</span>
+                {provider.verified && <span><CheckCircle2 /> Verified profile</span>}
                 <span><Clock3 /> {provider.responseTime}</span>
                 <span><Star /> {provider.rating} rating</span>
               </div>

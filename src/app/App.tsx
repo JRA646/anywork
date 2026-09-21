@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, LogIn, Menu, UserRound, X } from 'lucide-react'
 import { usePath } from './router'
-import { services as mockServices, providers } from '../data/mockData'
+import { services as mockServices } from '../data/mockData'
 import type { Service } from '../types/marketplace'
-import { listPublicServices } from '../lib/anyworkApi'
+import { listPublicProviders, listPublicServices } from '../lib/anyworkApi'
 import type { Role } from '../types/marketplace'
 import type { AnyWorkProfile } from '../types/auth'
 import { AuthProvider, useAuth } from '../auth/AuthContext'
@@ -54,12 +54,36 @@ function Application() {
   const { path, navigate } = usePath()
   const { session, profile, loading, signOut } = useAuth()
   const [serviceCatalog, setServiceCatalog] = useState<Service[]>(mockServices)
+  const [providerCatalog, setProviderCatalog] = useState<import('../types/marketplace').Provider[]>([])
   const [quoteOpen, setQuoteOpen] = useState(false)
   const [quoteService, setQuoteService] = useState('')
   const [quoteCreatedCallback, setQuoteCreatedCallback] = useState<((requestId: string) => void) | null>(null)
 
   useEffect(() => {
     let mounted = true
+
+    const loadProviders = async () => {
+      try {
+        const rows = await listPublicProviders()
+        if (!mounted) return
+        setProviderCatalog(rows.map((provider) => ({
+          id: provider.id,
+          name: provider.name,
+          initials: provider.initials,
+          serviceIds: provider.service_ids,
+          rating: provider.rating,
+          reviewCount: provider.review_count,
+          completedJobs: provider.completed_jobs,
+          location: provider.location,
+          responseTime: provider.response_time,
+          responseRate: provider.response_rate,
+          summary: provider.summary,
+          verified: provider.verified,
+        })))
+      } catch {
+        if (mounted) setProviderCatalog([])
+      }
+    }
 
     const loadServices = async () => {
       try {
@@ -84,6 +108,7 @@ function Application() {
     }
 
     void loadServices()
+    void loadProviders()
 
     if (!loading) {
       if (path === '/signin' || path === '/admin/signin') {
@@ -183,16 +208,22 @@ function Application() {
 
   if (loading) return <AppLoading />
 
+  const publicProvider = path.startsWith('/providers/')
+    ? providerCatalog.find((item) => item.id === path.split('/')[2])
+    : undefined
+
   const publicContent = path === '/'
-    ? <PublicHome services={serviceCatalog} providers={providers} onNavigate={navigate} onQuote={openQuote} />
+    ? <PublicHome services={serviceCatalog} providers={providerCatalog} onNavigate={navigate} onQuote={openQuote} />
     : path === '/services'
-      ? <PublicServices services={serviceCatalog} providers={providers} onQuote={openQuote} onProvider={(id) => navigate('/providers/' + id)} />
+      ? <PublicServices services={serviceCatalog} providers={providerCatalog} onQuote={openQuote} onProvider={(id) => navigate('/providers/' + id)} />
       : path === '/providers'
-        ? <PublicProviders services={serviceCatalog} providers={providers} onProvider={(id) => navigate('/providers/' + id)} />
+        ? <PublicProviders services={serviceCatalog} providers={providerCatalog} onProvider={(id) => navigate('/providers/' + id)} />
         : path === '/help'
         ? <HelpCenterPage />
       : path.startsWith('/providers/')
-        ? <ProviderProfilePage provider={providers.find((item) => item.id === path.split('/')[2]) || providers[0]} services={serviceCatalog} onQuote={openQuote} />
+        ? publicProvider
+          ? <ProviderProfilePage provider={publicProvider} services={serviceCatalog} onQuote={openQuote} />
+          : <main className="pageModern"><div className="container"><div className="providerEmptyPanel"><strong>Provider not found</strong><span>This provider is no longer listed in the public directory.</span></div></div></main>
         : null
 
   if (publicContent) {

@@ -782,3 +782,9 @@
 
 .workspaceDateTime{display:block;font-size:9px;color:#9b968e;line-height:1.2;letter-spacing:.15px;white-space:nowrap}
 @media(max-width:600px){.workspaceDateTime{font-size:8px;overflow:hidden;text-overflow:ellipsis;max-width:42vw}}
+
+
+.providerAssignmentCard{margin-bottom:15px}
+.providerAssignmentList{display:grid;gap:0}
+.providerAssignmentCard .productionListRow{align-items:center}
+@media(max-width:760px){.providerAssignmentCard .productionButtonGrid{width:100%}.providerAssignmentCard .productionButtonGrid .buttonPrimary,.providerAssignmentCard .productionButtonGrid .buttonSecondary{flex:1;justify-content:center}}

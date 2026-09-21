@@ -252,14 +252,23 @@ export async function listPayments(role?: 'customer' | 'provider') {
 
 export async function recordPayment(input: { invoiceId: string; providerId: string; amount: number; method: string; reference?: string }) {
   const client = requireSupabase()
-  const customerId = await getCurrentUserId()
-  const { data, error } = await client.from('anywork_payments').insert({
-    invoice_id: input.invoiceId, customer_id: customerId, provider_id: input.providerId,
-    amount: input.amount, method: input.method, status: 'Succeeded',
-    transaction_reference: input.reference || null, paid_at: new Date().toISOString(),
-  }).select('*').single()
+  const { data, error } = await client.rpc('anywork_record_manual_payment', {
+    p_invoice_id: input.invoiceId,
+    p_provider_id: input.providerId,
+    p_amount: input.amount,
+    p_method: input.method,
+    p_reference: input.reference || null,
+  })
   if (error) throw error
-  await client.from('anywork_invoices').update({ status: 'Paid', paid_at: new Date().toISOString() }).eq('id', input.invoiceId)
+  return data as Payment
+}
+
+export async function confirmManualPayment(paymentId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_confirm_manual_payment', {
+    p_payment_id: paymentId,
+  })
+  if (error) throw error
   return data as Payment
 }
 
@@ -301,8 +310,9 @@ export async function getProviderVerification() {
 
 export async function submitProviderVerification(input: { notes?: string }) {
   const client = requireSupabase()
-  const userId = await getCurrentUserId()
-  const { data, error } = await client.from('anywork_provider_verifications').upsert({ provider_id: userId, status: 'Under Review', notes: input.notes || null }).select('*').single()
+  const { data, error } = await client.rpc('anywork_submit_provider_verification', {
+    p_notes: input.notes || null,
+  })
   if (error) throw error
   return data
 }
@@ -567,6 +577,16 @@ export async function listProviderAssignments(requestId?: string) {
   const { data, error } = await query.limit(300)
   if (error) throw error
   return data || []
+}
+
+export async function respondProviderAssignment(assignmentId: string, status: 'Assigned' | 'Declined') {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_respond_provider_assignment', {
+    p_assignment_id: assignmentId,
+    p_status: status,
+  })
+  if (error) throw error
+  return data
 }
 
 

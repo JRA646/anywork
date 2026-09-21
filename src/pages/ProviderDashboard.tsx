@@ -9,7 +9,6 @@ import {
   DollarSign,
   MessageCircle,
   PackageCheck,
-  Plus,
   Search,
   Settings2,
   ShieldCheck,
@@ -34,7 +33,7 @@ import {
   type DbQuote,
   type DbRequest,
 } from '../lib/anyworkApi'
-import { confirmAction, showError, showSuccess, showToast } from '../lib/alerts'
+import { confirmAction, showError, showToast } from '../lib/alerts'
 
 type RequestFilter = 'All' | 'Needs quote' | 'Quoted' | 'Scheduled' | 'In Progress' | 'Completed'
 

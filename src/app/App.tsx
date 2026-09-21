@@ -78,27 +78,26 @@ function Application() {
 
     void loadServices()
 
-    if (loading) return
+    if (!loading) {
+      if (path === '/signin' || path === '/admin/signin') {
+        if (!session || !profile) return
 
+        const destination = profile.role === 'admin' ? '/admin' : '/' + profile.role
+        if (path !== '/admin/signin' || profile.role === 'admin') navigate(destination)
+        return
+      }
 
-    if (path === '/signin' || path === '/admin/signin') {
-      if (!session || !profile) return
+      const protectedRole = roleRoute(path)
+      if (protectedRole) {
+        if (!session || !profile) {
+          navigate(protectedRole === 'admin' ? '/admin/signin' : '/signin')
+          return
+        }
 
-      const destination = profile.role === 'admin' ? '/admin' : '/' + profile.role
-      if (path !== '/admin/signin' || profile.role === 'admin') navigate(destination)
-      return
-    }
-
-    const protectedRole = roleRoute(path)
-    if (!protectedRole) return
-
-    if (!session || !profile) {
-      navigate(protectedRole === 'admin' ? '/admin/signin' : '/signin')
-      return
-    }
-
-    if (profile.role !== protectedRole) {
-      navigate(profile.role === 'admin' ? '/admin' : '/' + profile.role)
+        if (profile.role !== protectedRole) {
+          navigate(profile.role === 'admin' ? '/admin' : '/' + profile.role)
+        }
+      }
     }
     return () => {
       mounted = false

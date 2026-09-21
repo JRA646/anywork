@@ -25,6 +25,10 @@ create table if not exists public.anywork_profiles (
   updated_at timestamptz not null default now()
 );
 
+drop function if exists public.anywork_current_role();
+drop function if exists public.anywork_handle_new_user();
+drop function if exists public.anywork_set_updated_at();
+
 create schema if not exists private;
 
 create or replace function private.anywork_current_role()

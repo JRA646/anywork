@@ -92,7 +92,7 @@ export function ProviderProfilePage({ provider, services, onQuote }: { provider:
               <p>Send your job details and get a quote with availability.</p>
               <button className="buttonPrimary full" onClick={() => onQuote(offered[0]?.id)}>Start a request</button>
               <div className="sideTrust">
-                <span><CheckCircle2 /> Verified profile</span>
+                {provider.verified && <span><CheckCircle2 /> Verified profile</span>}
                 <span><Clock3 /> {provider.responseTime}</span>
                 <span><Star /> {provider.rating} rating</span>
               </div>

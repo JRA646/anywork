@@ -919,3 +919,125 @@ export async function subscribeToRequestMessages(
     if (message.request_id === requestId) onMessage(message)
   })
 }
+
+
+export type DbJobSchedule = {
+  id: string
+  request_id: string
+  proposed_start: string | null
+  proposed_end: string | null
+  confirmed_at: string | null
+  confirmed_by: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type DbJobActivity = {
+  id: string
+  request_id: string
+  actor_user_id: string | null
+  activity_type: string
+  title: string
+  detail: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+export type DbChangeRequest = {
+  id: string
+  request_id: string
+  provider_id: string
+  description: string
+  amount_delta: number
+  status: 'Pending' | 'Approved' | 'Rejected'
+  approved_by: string | null
+  approved_at: string | null
+  created_at: string
+}
+
+export async function getJobSchedule(requestId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_job_schedules').select('*').eq('request_id', requestId).maybeSingle()
+  if (error) throw error
+  return data as DbJobSchedule | null
+}
+
+export async function confirmJobSchedule(input: { requestId: string; start: string; end?: string | null; notes?: string | null }) {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_confirm_schedule', {
+    p_request_id: input.requestId,
+    p_start: input.start,
+    p_end: input.end || null,
+    p_notes: input.notes || null,
+  })
+  if (error) throw error
+  return data as DbRequest
+}
+
+export async function listJobActivities(requestId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_job_activities').select('*').eq('request_id', requestId).order('created_at', { ascending: true })
+  if (error) throw error
+  return (data || []) as DbJobActivity[]
+}
+
+export async function listChangeRequests(requestId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_change_requests').select('*').eq('request_id', requestId).order('created_at', { ascending: false })
+  if (error) throw error
+  return (data || []) as DbChangeRequest[]
+}
+
+export async function createChangeRequest(input: { requestId: string; description: string; amountDelta: number }) {
+  const client = requireSupabase()
+  const providerId = await getCurrentUserId()
+  const { data, error } = await client.from('anywork_change_requests').insert({
+    request_id: input.requestId,
+    provider_id: providerId,
+    description: input.description,
+    amount_delta: input.amountDelta,
+  }).select('*').single()
+  if (error) throw error
+  return data as DbChangeRequest
+}
+
+export async function approveChangeRequest(changeRequestId: string, approved: boolean) {
+  const client = requireSupabase()
+  const userId = await getCurrentUserId()
+  const { data: change, error: changeError } = await client.from('anywork_change_requests').select('*').eq('id', changeRequestId).single()
+  if (changeError) throw changeError
+
+  const { data, error } = await client.from('anywork_change_requests')
+    .update({
+      status: approved ? 'Approved' : 'Rejected',
+      approved_by: userId,
+      approved_at: new Date().toISOString(),
+    })
+    .eq('id', changeRequestId)
+    .eq('status', 'Pending')
+    .select('*')
+    .single()
+  if (error) throw error
+
+  if (approved && change.amount_delta) {
+    const request = await getRequest(change.request_id)
+    const currentBudget = Number(request.budget || 0)
+    await client.from('anywork_service_requests').update({ budget: currentBudget + Number(change.amount_delta) }).eq('id', change.request_id)
+  }
+  return data as DbChangeRequest
+}
+
+export async function submitJobReview(input: { requestId: string; providerId: string; rating: number; comment?: string }) {
+  const client = requireSupabase()
+  const customerId = await getCurrentUserId()
+  const { data, error } = await client.from('anywork_reviews').insert({
+    request_id: input.requestId,
+    customer_id: customerId,
+    provider_id: input.providerId,
+    rating: input.rating,
+    comment: input.comment || null,
+  }).select('*').single()
+  if (error) throw error
+  return data
+}

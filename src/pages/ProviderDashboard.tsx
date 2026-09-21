@@ -193,10 +193,13 @@ function ProviderRequests({ onNavigate }: { onNavigate: (path: string) => void }
 
   const filtered = useMemo(() => requests.filter((request) => {
     const quote = quoteByRequest.get(request.id)
+    const matchesStatus = filter === 'Scheduled' || filter === 'In Progress' || filter === 'Completed'
+      ? request.status === filter
+      : false
     const matchesFilter = filter === 'All'
       || (filter === 'Needs quote' && request.status === 'Requested' && !quote)
       || (filter === 'Quoted' && Boolean(quote))
-      || request.status === filter
+      || matchesStatus
     const text = (request.request_number + ' ' + request.title + ' ' + request.location).toLowerCase()
     return matchesFilter && text.includes(search.toLowerCase())
   }), [requests, quoteByRequest, filter, search])
@@ -215,7 +218,7 @@ function ProviderRequests({ onNavigate }: { onNavigate: (path: string) => void }
       <div className="providerStatusTabs">
         {filters.map((item) => (
           <button key={item} className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>
-            <span>{item}</span><b>{item === 'All' ? requests.length : item === 'Needs quote' ? requests.filter((request) => request.status === 'Requested' && !quoteByRequest.has(request.id)).length : item === 'Quoted' ? quotes.length : requests.filter((request) => request.status === item).length}</b>
+            <span>{item}</span><b>{item === 'All' ? requests.length : item === 'Needs quote' ? requests.filter((request) => request.status === 'Requested' && !quoteByRequest.has(request.id)).length : item === 'Quoted' ? quotes.length : requests.filter((request) => (item === 'Scheduled' || item === 'In Progress' || item === 'Completed') && request.status === item).length}</b>
           </button>
         ))}
       </div>

@@ -241,7 +241,7 @@ export function WorkspaceLayout({
     <div className="workspace">
       {sidebarOpen && <button className="workspaceMobileOverlay" type="button" aria-label="Close navigation" onClick={() => setSidebarOpen(false)} />}
       <aside className={'workspaceSidebar ' + (sidebarOpen ? 'open' : '')}>
-        <button className="workspaceBrand workspaceBrandLogo" onClick={onPublicSite}>
+        <button className="workspaceBrand workspaceBrandLogo" onClick={() => void handleSignOut()}>
           <BrandLogo variant="sidebar" />
         </button>
 

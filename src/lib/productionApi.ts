@@ -579,6 +579,16 @@ export async function listProviderAssignments(requestId?: string) {
   return data || []
 }
 
+export async function respondProviderAssignment(assignmentId: string, status: 'Assigned' | 'Declined') {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_respond_provider_assignment', {
+    p_assignment_id: assignmentId,
+    p_status: status,
+  })
+  if (error) throw error
+  return data
+}
+
 
 
 export async function listProviderServiceAreas() {

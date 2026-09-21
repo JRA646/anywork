@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ImagePlus, Trash2, Upload } from 'lucide-react'
 import { deleteRequestPhoto, listRequestPhotos, uploadRequestPhoto, type DbRequestPhoto } from '../lib/anyworkApi'
 import { confirmAction, showError, showSuccess } from '../lib/alerts'
@@ -15,7 +15,7 @@ export function RequestPhotos({
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
@@ -25,11 +25,11 @@ export function RequestPhotos({
     } finally {
       setLoading(false)
     }
-  }
+  }, [requestId])
 
   useEffect(() => {
     void load()
-  }, [requestId])
+  }, [load])
 
   const uploadFiles = async (files: FileList | null) => {
     if (!files?.length) return

@@ -583,3 +583,11 @@
 .reviewStars{display:flex;gap:4px;margin:12px 0}
 .reviewStars button{border:0;background:transparent;padding:3px;cursor:pointer;color:#f59e0b}
 .sideCard textarea{width:100%;box-sizing:border-box;border:1px solid #d9dee8;border-radius:12px;padding:10px;font:inherit;resize:vertical}
+
+.authSocialDivider{display:flex;align-items:center;gap:12px;margin:20px 0 12px;color:#98a2b3;font-size:12px}
+.authSocialDivider:before,.authSocialDivider:after{content:'';height:1px;background:#e7eaf0;flex:1}
+.authSocialGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.authSocialButton{height:44px;border:1px solid #dfe3ea;border-radius:12px;background:#fff;color:#172033;font-weight:700;display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer}
+.authSocialButton:hover:not(:disabled){border-color:#b9c0cd;background:#fafbfc}
+.authSocialButton:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:560px){.authSocialGrid{grid-template-columns:1fr}}

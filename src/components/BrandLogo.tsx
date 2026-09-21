@@ -1,6 +1,6 @@
 export function BrandLogo({ variant = 'header' }: { variant?: 'header' | 'sidebar' | 'auth' | 'hero' }) {
   const stacked = variant === 'sidebar' || variant === 'auth'
-  const whiteLockup = variant === 'header' || variant === 'hero'
+  const publicLockup = variant === 'header' || variant === 'hero'
 
   if (stacked) {
     return (
@@ -24,7 +24,7 @@ export function BrandLogo({ variant = 'header' }: { variant?: 'header' | 'sideba
     )
   }
 
-  if (whiteLockup) {
+  if (publicLockup) {
     return (
       <span className={'brandLockup brandLockup-' + variant} aria-label="ANYwork Services">
         <img
@@ -37,8 +37,8 @@ export function BrandLogo({ variant = 'header' }: { variant?: 'header' | 'sideba
         />
         <img
           className="brandHeaderWordmark"
-          src="/anywork_white.png"
-          alt="ANYwork Services"
+          src="/anywork-services.svg"
+          alt=""
           loading="eager"
           decoding="async"
         />

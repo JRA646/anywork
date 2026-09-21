@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { CalendarDays, CheckCircle2, Clock3, FileText, LifeBuoy, MapPin, Plus, ShieldCheck, Star, Trash2, WalletCards } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { CheckCircle2, FileText, LifeBuoy, Plus, ShieldCheck, Trash2 } from 'lucide-react'
 import { listAdminServices, type DbService, type DbRequest } from '../lib/anyworkApi'
 import {
   createSupportTicket, deleteAddress, getProviderVerification, listAddresses, listAdminAuditLogs, listAdminDisputes, listAdminJobs, listAdminPayments,

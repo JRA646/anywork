@@ -204,7 +204,7 @@ export function RequestDetailPage({
   }
 
   if (loading) {
-    return <div className="workspaceDashboard requestDetailPage"><div className="requestEmptyModern"><div className="requestLoadingPulse" /><h2>Loading request</h2><p>Fetching your request, quotes and provider details.</p></div></div>
+    return <div className="workspaceDashboard requestDetailPage"><div className="requestEmptyModern requestLoadingState"><div className="requestLoadingPulse" /><h2>Loading request</h2><p>Fetching your request, quotes and provider details.</p></div></div>
   }
 
   if (!request) {

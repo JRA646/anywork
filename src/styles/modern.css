@@ -738,3 +738,43 @@
   .calendarAvailabilityRow{min-height:68px;gap:12px}
   .calendarAvailabilityStatus{min-width:96px}
 }
+
+
+/* Admin service drawer polish + tags */
+.adminServiceForm select{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;padding:11px 12px;outline:0}
+.adminTagField{display:grid;gap:8px}
+.adminTagInputRow{display:grid;grid-template-columns:1fr auto;gap:8px}
+.adminAddTagButton{white-space:nowrap}
+.adminFormTags{display:flex;flex-wrap:wrap;gap:7px}
+.adminFormTag{display:inline-flex;align-items:center;gap:6px;border:1px solid #ded8ce;background:#f4f1eb;color:#111;border-radius:999px;padding:7px 9px;font-size:10px;font-weight:800}
+.adminFormTag:hover{background:#ebe7df}
+.adminTagField small{font-size:9px;color:#999;font-weight:500}
+
+/* Provider weekly calendar view */
+.providerWeekCalendar{display:grid;min-width:760px}
+.providerWeekHeader,.providerWeekBody{display:grid;grid-template-columns:68px repeat(7,minmax(90px,1fr))}
+.providerWeekHeader{border-bottom:1px solid #ece8e1}
+.providerWeekTimeGutter{display:flex;align-items:center;justify-content:center;padding:12px 6px;color:#a09a91;font-size:8px;letter-spacing:1.5px;font-weight:900}
+.providerWeekDayHead{display:grid;gap:4px;padding:12px 8px;border-left:1px solid #eee;min-width:0}
+.providerWeekDayHead strong{font-size:11px}
+.providerWeekDayHead span{font-size:9px;color:#999}
+.providerWeekDayHead.is-enabled strong{color:#111}
+.providerWeekDayHead.is-disabled strong,.providerWeekDayHead.is-disabled span{color:#9c827e}
+.providerWeekBody{min-height:390px}
+.providerWeekTimes{align-items:flex-start;justify-content:space-between;padding:16px 6px;border-right:1px solid #eee;color:#aaa;font-size:8px}
+.providerWeekDayColumn{border-left:1px solid #eee}
+.providerWeekCanvas{position:relative;height:390px;padding:14px 8px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 76px,#eee 77px)}
+.providerWeekCanvas.is-disabled{background-color:#fbf8f6}
+.providerWeekEvent{position:absolute;left:8px;right:8px;top:48px;min-height:105px;display:grid;align-content:start;gap:5px;text-align:left;border:1px solid #ded9d1;border-radius:10px;padding:10px 9px;background:#fff;color:#111;box-shadow:0 5px 15px rgba(18,18,18,.04)}
+.providerWeekEvent:hover{border-color:#bbb3a8;transform:translateY(-1px)}
+.providerWeekEvent.available{border-left:3px solid #c86b2e}
+.providerWeekEvent.unavailable{border-left:3px solid #a06f67;background:#fff9f7;color:#7c514a}
+.providerWeekEvent strong{font-size:10px}
+.providerWeekEvent span{font-size:9px;color:#888}
+.providerWeekTimeOff{position:absolute;left:8px;right:8px;bottom:12px;display:grid;gap:3px;padding:8px;border-radius:9px;background:#f1efeb;border:1px dashed #d5cec4;color:#666}
+.providerWeekTimeOff strong{font-size:9px}
+.providerWeekTimeOff span{font-size:8px;color:#999}
+@media(max-width:900px){
+  .providerWeekCalendar{min-width:0;overflow-x:auto}
+  .providerWeekHeader,.providerWeekBody{min-width:760px}
+}

@@ -11,7 +11,6 @@ import {
   Play,
   ShieldCheck,
 } from 'lucide-react'
-import { services } from '../data/mockData'
 import { StatusBadge } from '../components/StatusBadge'
 import { RequestPhotos } from '../components/RequestPhotos'
 import { confirmAction, showError, showSuccess } from '../lib/alerts'

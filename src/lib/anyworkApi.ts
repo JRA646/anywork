@@ -905,15 +905,6 @@ export async function subscribeToRequestMessages(
     if (message.request_id === requestId) onMessage(message)
   })
 }
- + Number(input.startingPrice).toLocaleString() : 'Quote'),
-      enabled: input.enabled ?? true,
-    })
-    .select('*')
-    .single()
-
-  if (error) throw error
-  return data as DbService & { category: string; subcategory: string }
-}
 
 export async function updateAdminService(id: string, input: Partial<AdminServiceInput>) {
   const client = requireSupabase()

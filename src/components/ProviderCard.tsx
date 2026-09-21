@@ -3,10 +3,11 @@ import type { Provider } from '../types/marketplace'
 import { providerImageById } from '../data/media'
 
 export function ProviderCard({ provider, compact = false, onClick }: { provider: Provider; compact?: boolean; onClick?: () => void }) {
+  const imageUrl = providerImageById[provider.id]
   return (
     <button
       className={'providerCardModern providerCardImage tw-image-shine group ' + (compact ? 'compact' : '')}
-      style={{ '--provider-image': 'url("' + providerImageById[provider.id] + '")' } as Record<string, string>}
+      style={imageUrl ? { '--provider-image': 'url("' + imageUrl + '")' } as Record<string, string> : undefined}
       onClick={onClick}
     >
       <div className="providerCardPhoto" />

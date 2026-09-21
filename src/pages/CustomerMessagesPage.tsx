@@ -80,9 +80,12 @@ const seedConversations: Conversation[] = [
   },
 ]
 
-export function CustomerMessagesPage({ onNavigate }: { onNavigate: (path: string) => void }) {
+export function CustomerMessagesPage({ onNavigate, requestId }: { onNavigate: (path: string) => void; requestId?: string }) {
+  const initialConversation = requestId
+    ? seedConversations.find((conversation) => conversation.requestId === requestId) || seedConversations[0]
+    : seedConversations[0]
   const [conversations, setConversations] = useState(seedConversations)
-  const [selectedId, setSelectedId] = useState(seedConversations[0].id)
+  const [selectedId, setSelectedId] = useState(initialConversation.id)
   const [query, setQuery] = useState('')
   const [draft, setDraft] = useState('')
 

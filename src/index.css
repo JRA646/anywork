@@ -4,3 +4,4 @@ html,body,#root{min-height:100%;width:100%}
 body{min-width:320px}
 button,input,textarea{font:inherit}
 button{cursor:pointer}
+@import "tailwindcss";

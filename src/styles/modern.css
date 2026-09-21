@@ -536,18 +536,19 @@
 }
 .brandHeaderMark{
   display:block;
-  width:27px;
-  height:27px;
+  width:29px;
+  height:29px;
   object-fit:contain;
   flex:none;
+  filter:brightness(0) saturate(100%);
 }
 .brandHeaderWordmark{
   display:block;
-  width:115px;
-  height:42px;
+  width:112px;
+  height:40px;
   object-fit:contain;
   object-position:left center;
-  filter:brightness(0) saturate(100%);
+  filter:none;
 }
 .brandButtonLogo .brandLockup-header,
 .footerBrandButton .brandLockup-header{

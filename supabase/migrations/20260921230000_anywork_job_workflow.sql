@@ -158,3 +158,57 @@ with check (
 grant select on public.anywork_job_schedules, public.anywork_job_activities, public.anywork_change_requests, public.anywork_reviews to authenticated;
 grant insert, update on public.anywork_change_requests to authenticated;
 grant insert on public.anywork_reviews to authenticated;
+
+create or replace function private.anywork_request_activity_trigger()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+begin
+  if new.status is distinct from old.status then
+    perform private.anywork_job_activity(
+      new.id,
+      'status.changed',
+      case new.status
+        when 'Quoted' then 'Quote accepted'
+        when 'Scheduled' then 'Schedule confirmed'
+        when 'In Progress' then 'Job started'
+        when 'Completed' then 'Job completed'
+        else 'Request status updated'
+      end,
+      'Status changed from ' || old.status || ' to ' || new.status,
+      jsonb_build_object('from', old.status, 'to', new.status)
+    );
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists anywork_request_activity_trigger on public.anywork_service_requests;
+create trigger anywork_request_activity_trigger
+after update of status on public.anywork_service_requests
+for each row execute function private.anywork_request_activity_trigger();
+
+create or replace function private.anywork_change_activity_trigger()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, private
+as $$
+begin
+  if tg_op = 'INSERT' then
+    perform private.anywork_job_activity(new.request_id, 'change.requested', 'Additional work requested',
+      new.description, jsonb_build_object('amount_delta', new.amount_delta, 'change_request_id', new.id));
+  elsif new.status is distinct from old.status then
+    perform private.anywork_job_activity(new.request_id, 'change.' || lower(new.status), 'Change request ' || lower(new.status),
+      new.description, jsonb_build_object('amount_delta', new.amount_delta, 'change_request_id', new.id));
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists anywork_change_activity_trigger on public.anywork_change_requests;
+create trigger anywork_change_activity_trigger
+after insert or update of status on public.anywork_change_requests
+for each row execute function private.anywork_change_activity_trigger();

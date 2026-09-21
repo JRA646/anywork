@@ -523,3 +523,48 @@
   white-space:nowrap!important;
   border:0!important;
 }
+
+/* Public brand: standalone mark followed by the white wordmark asset.
+   The white PNG is inverted on light surfaces so the lockup stays visible. */
+.brandLockup-header,
+.brandLockup-hero{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  width:auto;
+  height:44px;
+}
+.brandHeaderMark{
+  display:block;
+  width:27px;
+  height:27px;
+  object-fit:contain;
+  flex:none;
+}
+.brandHeaderWordmark{
+  display:block;
+  width:115px;
+  height:42px;
+  object-fit:contain;
+  object-position:left center;
+  filter:brightness(0) saturate(100%);
+}
+.brandButtonLogo .brandLockup-header,
+.footerBrandButton .brandLockup-header{
+  pointer-events:none;
+}
+@media(max-width:600px){
+  .brandLockup-header,
+  .brandLockup-hero{
+    gap:5px;
+    height:40px;
+  }
+  .brandHeaderMark{
+    width:24px;
+    height:24px;
+  }
+  .brandHeaderWordmark{
+    width:101px;
+    height:38px;
+  }
+}

@@ -19,6 +19,8 @@ import {
   getRequest,
   listProfiles,
   listQuotesForRequest,
+  subscribeToQuotes,
+  subscribeToRequests,
   type DbProfile,
   type DbQuote,
   type DbRequest,
@@ -80,6 +82,32 @@ export function ProviderRequestDetail({
     }
 
     void load()
+  }, [requestId, isUuid])
+
+  useEffect(() => {
+    if (!isUuid) return
+    let requestCleanup: (() => void) | undefined
+    let quoteCleanup: (() => void) | undefined
+
+    void subscribeToRequests((change) => {
+      if (change.record?.id === requestId) setRequest(change.record)
+      if (!change.record && change.oldRecord?.id === requestId) setRequest(null)
+    }).then((dispose) => { requestCleanup = dispose }).catch(() => undefined)
+
+    void subscribeToQuotes((change) => {
+      if (change.record?.request_id === requestId) {
+        void getCurrentUserId().then((providerId) => {
+          if (change.record?.provider_id !== providerId) return
+          setQuote(change.record)
+          setSent(true)
+          setAmount(String(change.record.amount))
+          setAvailability(change.record.availability ? new Date(change.record.availability).toISOString().slice(0, 16) : '')
+          setMessage(change.record.message)
+        }).catch(() => undefined)
+      }
+    }).then((dispose) => { quoteCleanup = dispose }).catch(() => undefined)
+
+    return () => { requestCleanup?.(); quoteCleanup?.() }
   }, [requestId, isUuid])
 
   const detail = request || mockRequest

@@ -151,16 +151,25 @@ function Application() {
               : <CustomerDashboard profile={profile} onNavigate={navigate} />
 
     return (
-      <WorkspaceLayout
-        role="customer"
-        profile={profile}
-        title={section === 'requests' ? 'Requests' : section === 'messages' ? 'Messages' : section === 'profile' ? 'Profile' : section === 'help' ? 'Help Center' : 'Overview'}
-        current={section}
-        onNavigate={(item) => navigate('/customer/' + (item === 'dashboard' ? '' : item))}
-        onPublicSite={handleSignOut}
-      >
-        {content}
-      </WorkspaceLayout>
+      <>
+        <WorkspaceLayout
+          role="customer"
+          profile={profile}
+          title={section === 'requests' ? 'Requests' : section === 'messages' ? 'Messages' : section === 'profile' ? 'Profile' : section === 'help' ? 'Help Center' : 'Overview'}
+          current={section}
+          onNavigate={(item) => navigate('/customer/' + (item === 'dashboard' ? '' : item))}
+          onPublicSite={handleSignOut}
+        >
+          {content}
+        </WorkspaceLayout>
+        {quoteOpen && (
+          <QuoteWizard
+            initialService={quoteService}
+            onClose={() => { setQuoteOpen(false); setQuoteCreatedCallback(null) }}
+            onCreated={(request) => quoteCreatedCallback?.(request.id)}
+          />
+        )}
+      </>
     )
   }
 

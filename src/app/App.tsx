@@ -73,6 +73,9 @@ function Application() {
           description: service.description,
           icon: service.icon,
           items: Array.isArray(service.items) ? service.items : [],
+          tags: Array.isArray(service.tags) ? service.tags : [],
+          category: service.category || service.title,
+          subcategory: service.subcategory || service.label,
           startingPrice: service.starting_price_label || (service.starting_price !== null ? '₱' + Number(service.starting_price).toLocaleString('en-PH') : 'Quote'),
         })))
       } catch {

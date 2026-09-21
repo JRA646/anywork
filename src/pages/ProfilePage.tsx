@@ -3,7 +3,7 @@ import { Bell, CheckCircle2, MapPin, Save, UserRound } from 'lucide-react'
 import type { AnyWorkProfile } from '../types/auth'
 import { useAuth } from '../auth/AuthContext'
 
-export function ProfilePage({ role }: { role: 'customer' | 'provider' }) {
+export function ProfilePage({ role }: { role: 'customer' | 'provider' | 'admin' }) {
   const { profile, user, updateProfile } = useAuth()
   const [form, setForm] = useState(() => profileToForm(profile))
   const [saving, setSaving] = useState(false)
@@ -51,7 +51,7 @@ export function ProfilePage({ role }: { role: 'customer' | 'provider' }) {
     <div className="workspaceDashboard">
       <div className="workspacePageTitle">
         <span className="eyebrow">ACCOUNT</span>
-        <h1>{role === 'provider' ? 'Business profile' : 'Your profile'}</h1>
+        <h1>{role === 'provider' ? 'Business profile' : role === 'admin' ? 'Operations profile' : 'Your profile'}</h1>
         <p>Keep your contact details and marketplace profile up to date.</p>
       </div>
 
@@ -59,7 +59,7 @@ export function ProfilePage({ role }: { role: 'customer' | 'provider' }) {
         <section className="dashboardCard profileSummaryCard">
           <div className="profileLargeAvatar">{profileInitials(profile)}</div>
           <div>
-            <span className="eyebrow">{role === 'provider' ? 'PROVIDER' : 'CUSTOMER'}</span>
+            <span className="eyebrow">{role === 'provider' ? 'PROVIDER' : role === 'admin' ? 'ADMIN' : 'CUSTOMER'}</span>
             <h2>{profile.display_name || 'Your profile'}</h2>
             <p>{user?.email}</p>
           </div>
@@ -99,7 +99,7 @@ export function ProfilePage({ role }: { role: 'customer' | 'provider' }) {
 
         <section className="dashboardCard profileAddressCard">
           <span className="eyebrow">SERVICE LOCATION</span>
-          <h2>{role === 'provider' ? 'Where you work' : 'Default address'}</h2>
+          <h2>{role === 'provider' ? 'Where you work' : role === 'admin' ? 'Operations contact' : 'Default address'}</h2>
           <p><MapPin size={16} /> {[form.addressLine1, form.city, form.state, form.postalCode].filter(Boolean).join(', ') || 'Add an address to improve service matching.'}</p>
           <span className="profileAddressNote"><UserRound size={14} /> Stored in your AnyWork profile.</span>
         </section>

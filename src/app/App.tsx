@@ -241,7 +241,7 @@ function PublicHeader({
 }) {
   const [mobile, setMobile] = useState(false)
   const active = useMemo(
-    () => path === '/' ? 'home' : path.startsWith('/services') ? 'services' : path.startsWith('/providers') ? 'providers' : '',
+    () => path === '/' ? 'home' : path.startsWith('/services') ? 'services' : '',
     [path],
   )
   const workspacePath = profile?.role ? '/' + profile.role : '/signin'
@@ -254,7 +254,6 @@ function PublicHeader({
         </button>
         <nav className="publicNav">
           <button className={active === 'services' ? 'active' : ''} onClick={() => onNavigate('/services')}>Services</button>
-          <button className={active === 'providers' ? 'active' : ''} onClick={() => onNavigate('/services')}>Providers</button>
           <button onClick={() => onNavigate('/')}>How it works</button>
         </nav>
         <div className="publicHeaderActions">
@@ -279,7 +278,6 @@ function PublicHeader({
       {mobile && (
         <div className="mobilePublicNav">
           <button onClick={() => { onNavigate('/services'); setMobile(false) }}>Services</button>
-          <button onClick={() => { onNavigate('/services'); setMobile(false) }}>Providers</button>
           <button onClick={() => { onNavigate(workspacePath); setMobile(false) }}>{profile ? 'My workspace' : 'Sign in'}</button>
           <button onClick={() => { onQuote(); setMobile(false) }}>Request a service</button>
         </div>

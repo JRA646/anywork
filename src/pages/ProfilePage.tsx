@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Bell, CheckCircle2, MapPin, Save, UserRound } from 'lucide-react'
 import type { AnyWorkProfile } from '../types/auth'
 import { useAuth } from '../auth/AuthContext'
@@ -108,7 +108,7 @@ export function ProfilePage({ role }: { role: 'customer' | 'provider' }) {
   )
 }
 
-function Field({ label, full = false, children }: { label: string; full?: boolean; children: React.ReactNode }) {
+function Field({ label, full = false, children }: { label: string; full?: boolean; children: ReactNode }) {
   return <label className={full ? 'profileField profileFieldFull' : 'profileField'}><span>{label}</span>{children}</label>
 }
 

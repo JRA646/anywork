@@ -23,6 +23,7 @@ import { AuthPage } from '../pages/AuthPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import { HelpCenterPage } from '../pages/HelpCenterPage'
 import { GuestRequestPage } from '../pages/GuestRequestPage'
+import { InvoicePage } from '../pages/InvoicePage'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
 import { BrandLogo } from '../components/BrandLogo'
@@ -114,6 +115,27 @@ function Application() {
   if (path.startsWith('/request/')) {
     const token = path.slice('/request/'.length)
     return <GuestRequestPage token={token} />
+  }
+
+  if (path.startsWith('/customer/invoices/')) {
+    const invoiceRequestId = path.split('/')[3]
+    if (!profile || profile.role !== 'customer') {
+      navigate('/signin')
+      return null
+    }
+
+    return (
+      <WorkspaceLayout
+        role="customer"
+        profile={profile}
+        title="Invoice"
+        current="requests"
+        onNavigate={(item) => navigate('/customer/' + (item === 'dashboard' ? '' : item))}
+        onPublicSite={handleSignOut}
+      >
+        <InvoicePage requestId={invoiceRequestId} onBack={() => navigate('/customer/requests/' + invoiceRequestId)} />
+      </WorkspaceLayout>
+    )
   }
 
   if (path === '/signin') {

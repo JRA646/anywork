@@ -79,6 +79,41 @@ Request -> Quote -> Schedule -> In Progress -> Completed
     /admin/customers         Customer management
     /admin/settings           Marketplace controls
 
+## Guest request and quote flow
+
+Guests can submit a service request without creating an account.
+
+    Public request -> guest email -> provider quote -> secure quote link -> accept quote
+
+Guest quote access uses a signed, expiring token and the request/quote portal at:
+
+    /request/:token
+
+Public request creation is rate-limited server-side. Provider quote emails are sent through the Supabase Edge Function and tracked in anywork_email_jobs.
+
+## Realtime
+
+The customer/provider workspaces use Supabase Realtime for:
+
+- requests
+- quotes
+- messages
+- persistent notifications
+- request activity events
+
+Notifications are stored in public.anywork_notifications so they survive refreshes and browser restarts.
+
+## Environment
+
+Supabase Edge Functions require these secrets:
+
+    RESEND_API_KEY=...
+    ANYWORK_EMAIL_FROM=ANYwork Services <quotes@your-domain.com>
+    ANYWORK_PUBLIC_URL=https://your-domain.com
+    ANYWORK_ACCESS_TOKEN_SECRET=<long-random-secret>
+
+Keep these values in Supabase Edge Function secrets. Do not commit them.
+
 ## Local development
 
     npm install
@@ -89,7 +124,7 @@ Request -> Quote -> Schedule -> In Progress -> Completed
     npm run lint
     npm run build
 
-The marketplace pages still use mock data from src/data/mockData.ts; authentication and profiles now use Supabase.
+The public service catalog now comes from public.anywork_services with a mock-data fallback. Provider performance/review data is still sourced from the existing mock catalog until the corresponding production tables are added.
 ## UI system
 
 ANYwork uses the existing marketplace design layer with reusable CSS components, responsive layouts, and shared motion/effects for page entrance, hover states, floating visuals, and image shine effects. No Tailwind/PostCSS dependency is required for the current branch.

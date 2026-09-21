@@ -492,3 +492,34 @@
   .modalActions{width:100%}
   .modalActions>*{flex:1;justify-content:center}
 }
+
+/* Public request contact section */
+.requestContactSection{
+  display:grid;
+  gap:12px;
+  padding:16px;
+  margin-top:3px;
+  border:1px solid #e7e2d9;
+  border-radius:14px;
+  background:#f8f6f1;
+}
+.requestContactIntro{
+  padding-bottom:0;
+}
+.requestContactIntro h3{
+  font-size:18px;
+}
+.requestContactSection .fieldGrid{
+  margin-top:0;
+}
+.requestHoneypot{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}

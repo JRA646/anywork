@@ -281,11 +281,11 @@ function AdminServices() {
         </div>
         <div className="softwareSubcategoryList">
           {[
-            ['General', Store],
-            ['Mobile Development', Smartphone],
-            ['Web Application', Globe],
-            ['AI', Sparkles],
-          ].map(([label, Icon]) => <button key={String(label)} onClick={() => { setCategory('Software'); setQuery(String(label)) }}><Icon size={17} /><span>{label}</span><ChevronRight size={15} /></button>)}
+            { label: 'General', Icon: Store },
+            { label: 'Mobile Development', Icon: Smartphone },
+            { label: 'Web Application', Icon: Globe },
+            { label: 'AI', Icon: Sparkles },
+          ].map(({ label, Icon }) => <button key={label} onClick={() => { setCategory('Software'); setQuery(label) }}><Icon size={17} /><span>{label}</span><ChevronRight size={15} /></button>)}
         </div>
       </section>
     )}

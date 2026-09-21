@@ -622,3 +622,5 @@
 .chartLabel{fill:#888;font-size:10px;font-weight:700}
 .chartValue{fill:#333;font-size:10px;font-weight:900}
 .providerAnalyticsCard{grid-column:span 2}
+
+@media (max-width: 760px){.providerAnalyticsCard{grid-column:span 1}.dashboardChart{min-width:620px}.dashboardChartWrap{overflow-x:auto;padding-bottom:4px}.dashboardChartLegend{font-size:9px}.chartLabel{font-size:9px}}

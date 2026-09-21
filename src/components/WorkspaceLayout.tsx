@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import {
   Bell,
+  Menu,
+  X,
   BriefcaseBusiness,
   ChevronDown,
   CircleHelp,
@@ -69,6 +71,7 @@ export function WorkspaceLayout({
   children: ReactNode
 }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const name = profile.display_name || profile.first_name || (role === 'admin' ? 'Operations' : 'ANYwork user')
   const initials = name.split(' ').slice(0, 2).map((part) => part[0]).join('').toUpperCase()
 
@@ -86,7 +89,8 @@ export function WorkspaceLayout({
 
   return (
     <div className="workspace">
-      <aside className="workspaceSidebar">
+      {sidebarOpen && <button className="workspaceMobileOverlay" type="button" aria-label="Close navigation" onClick={() => setSidebarOpen(false)} />}
+      <aside className={'workspaceSidebar ' + (sidebarOpen ? 'open' : '')}>
         <button className="workspaceBrand workspaceBrandLogo" onClick={onPublicSite}>
           <BrandLogo variant="sidebar" />
         </button>
@@ -97,7 +101,7 @@ export function WorkspaceLayout({
           {nav[role].map((item) => {
             const Icon = icons[item]
             return (
-              <button key={item} className={current === item ? 'active' : ''} onClick={() => onNavigate(item)}>
+              <button key={item} className={current === item ? 'active' : ''} onClick={() => { onNavigate(item); setSidebarOpen(false) }}>
                 <Icon size={16} />
                 <span>{labels[item] || item}</span>
               </button>
@@ -106,16 +110,21 @@ export function WorkspaceLayout({
         </nav>
 
         <div className="workspaceBottom">
-          <button onClick={() => onNavigate('help')}><CircleHelp size={16} /> Help center</button>
+          <button onClick={() => { onNavigate('help'); setSidebarOpen(false) }}><CircleHelp size={16} /> Help center</button>
           <button onClick={onPublicSite}><LogOut size={16} /> Sign out</button>
         </div>
       </aside>
 
       <div className="workspaceMain">
         <header className="workspaceTopbar">
-          <div>
-            <span className="workspaceKicker">{portalLabel}</span>
-            <strong>{title}</strong>
+          <div className="workspaceTopbarTitle">
+            <button className="workspaceMobileMenu" type="button" onClick={() => setSidebarOpen((value) => !value)} aria-label={sidebarOpen ? 'Close navigation' : 'Open navigation'}>
+              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+            <div>
+              <span className="workspaceKicker">{portalLabel}</span>
+              <strong>{title}</strong>
+            </div>
           </div>
 
           <div className="workspaceActions">

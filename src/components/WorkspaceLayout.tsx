@@ -1,3 +1,4 @@
+import { useState, type ReactNode } from 'react'
 import {
   Bell,
   BriefcaseBusiness,
@@ -14,14 +15,13 @@ import {
   UsersRound,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
 import type { Role } from '../types/marketplace'
 import type { AnyWorkProfile } from '../types/auth'
 
 const nav = {
   customer: ['dashboard', 'requests', 'messages', 'profile'],
   provider: ['dashboard', 'requests', 'jobs', 'services', 'earnings', 'messages', 'profile'],
-  admin: ['dashboard', 'requests', 'providers', 'services', 'customers', 'settings'],
+  admin: ['dashboard', 'requests', 'providers', 'services', 'customers', 'settings', 'profile'],
 } as const
 
 const labels: Record<string, string> = {
@@ -67,9 +67,21 @@ export function WorkspaceLayout({
   onPublicSite: () => void
   children: ReactNode
 }) {
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
   const name = profile.display_name || profile.first_name || (role === 'admin' ? 'Operations' : 'ANYwork user')
   const initials = name.split(' ').slice(0, 2).map((part) => part[0]).join('').toUpperCase()
-  const profileTarget = role === 'admin' ? 'settings' : 'profile'
+
+  const workspaceLabel = role === 'admin'
+    ? 'OPERATIONS WORKSPACE'
+    : role === 'provider'
+      ? 'PROVIDER WORKSPACE'
+      : 'CUSTOMER WORKSPACE'
+
+  const portalLabel = role === 'provider'
+    ? 'Provider portal'
+    : role === 'admin'
+      ? 'Operations'
+      : 'Customer portal'
 
   return (
     <div className="workspace">
@@ -79,7 +91,7 @@ export function WorkspaceLayout({
           <span>ANYwork</span>
         </button>
 
-        <div className="workspaceLabel">{role === 'admin' ? 'OPERATIONS WORKSPACE' : role === 'provider' ? 'PROVIDER WORKSPACE' : 'CUSTOMER WORKSPACE'}</div>
+        <div className="workspaceLabel">{workspaceLabel}</div>
 
         <nav>
           {nav[role].map((item) => {
@@ -87,7 +99,7 @@ export function WorkspaceLayout({
             return (
               <button key={item} className={current === item ? 'active' : ''} onClick={() => onNavigate(item)}>
                 <Icon size={16} />
-                <span>{labels[item] || item.replace('-', ' ')}</span>
+                <span>{labels[item] || item}</span>
               </button>
             )
           })}
@@ -102,12 +114,28 @@ export function WorkspaceLayout({
       <div className="workspaceMain">
         <header className="workspaceTopbar">
           <div>
-            <span className="workspaceKicker">{role === 'provider' ? 'Provider portal' : role === 'admin' ? 'Operations' : 'Customer portal'}</span>
+            <span className="workspaceKicker">{portalLabel}</span>
             <strong>{title}</strong>
           </div>
+
           <div className="workspaceActions">
-            <button className="roundIcon" aria-label="Notifications"><Bell size={18} /></button>
-            <button className="profileMenu" onClick={() => onNavigate(profileTarget)} aria-label="Open profile">
+            <div className="notificationWrap">
+              <button className={notificationsOpen ? 'roundIcon active' : 'roundIcon'} aria-label="Notifications" onClick={() => setNotificationsOpen((value) => !value)}>
+                <Bell size={18} />
+                <span className="notificationDot" />
+              </button>
+              {notificationsOpen && (
+                <div className="notificationPanel">
+                  <div className="notificationPanelHeader"><strong>Notifications</strong><span>3 new</span></div>
+                  <button><span className="notificationIndicator" /><div><strong>New provider response</strong><small>Signal Works sent a quote for AW-1027.</small></div></button>
+                  <button><span className="notificationIndicator" /><div><strong>Request needs attention</strong><small>AW-1025 still has no assigned provider.</small></div></button>
+                  <button><span className="notificationIndicator" /><div><strong>Profile update</strong><small>Your account details were synced successfully.</small></div></button>
+                  <button className="notificationFooter">View all notifications</button>
+                </div>
+              )}
+            </div>
+
+            <button className="profileMenu" onClick={() => onNavigate('profile')} aria-label="Open profile">
               <span>{profile.avatar_url ? <img src={profile.avatar_url} alt="" /> : initials}</span>
               <strong>{profile.first_name || name}</strong>
               <ChevronDown size={14} />

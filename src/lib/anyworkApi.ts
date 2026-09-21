@@ -115,17 +115,39 @@ export async function createAdminService(input: AdminServiceInput) {
       icon: input.icon || 'Store',
       items: input.items || [],
       starting_price: input.startingPrice ?? null,
-      starting_price_label: input.startingPriceLabel || (input.startingPrice != null ? '
-  id: string
-  provider_id: string
-  service_key: string
-  enabled: boolean
-  starting_price: number | null
-  minimum_job_value: number | null
-  service_area: string | null
-  lead_time_days: number
-  created_at: string
-  updated_at: string
+      starting_price_label: input.startingPriceLabel || (input.startingPrice != null ? '$' + Number(input.startingPrice).toLocaleString() : 'Quote'),
+      enabled: input.enabled ?? true,
+    })
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as DbService & { category: string; subcategory: string }
+}
+
+export async function updateAdminService(id: string, input: Partial<AdminServiceInput>) {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('anywork_services')
+    .update({
+      ...(input.category !== undefined ? { category: input.category } : {}),
+      ...(input.subcategory !== undefined ? { subcategory: input.subcategory } : {}),
+      ...(input.title !== undefined ? { title: input.title } : {}),
+      ...(input.label !== undefined ? { label: input.label } : {}),
+      ...(input.description !== undefined ? { description: input.description } : {}),
+      ...(input.icon !== undefined ? { icon: input.icon } : {}),
+      ...(input.items !== undefined ? { items: input.items } : {}),
+      ...(input.startingPrice !== undefined ? { starting_price: input.startingPrice } : {}),
+      ...(input.startingPriceLabel !== undefined ? { starting_price_label: input.startingPriceLabel } : {}),
+      ...(input.enabled !== undefined ? { enabled: input.enabled } : {}),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return data as DbService & { category: string; subcategory: string }
 }
 
 export type DbRequestPhoto = {

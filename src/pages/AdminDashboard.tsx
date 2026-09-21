@@ -218,33 +218,40 @@ export function AdminServices() {
       const items = form.items.split(',').map((item) => item.trim()).filter(Boolean)
       const startingPrice = form.startingPrice.trim() ? Number(form.startingPrice) : null
       if (startingPrice !== null && Number.isNaN(startingPrice)) throw new Error('Starting price must be a valid number.')
+
       if (editingId) {
         const updated = await updateAdminService(editingId, {
-          category: form.category,
-          subcategory: form.subcategory,
-          title: form.category,
-          label: form.label,
-          description: form.description,
+          category: form.category.trim(),
+          subcategory: form.subcategory.trim(),
+          title: form.category.trim(),
+          label: form.label.trim(),
+          description: form.description.trim(),
           items,
           startingPrice,
-          startingPriceLabel: startingPrice !== null ? '
-        category: form.category,
-        subcategory: form.subcategory,
-        title: form.category,
-        label: form.label,
-        description: form.description,
-        icon: form.subcategory === 'Mobile Development' ? 'Smartphone' : form.subcategory === 'Web Application' ? 'Globe' : form.subcategory === 'AI' ? 'Sparkles' : 'Store',
-        items,
-        startingPrice,
-        startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
-      })
-      setCatalog((current) => [created, ...current])
-      setActiveService((current) => ({ ...current, [created.id]: true }))
+          startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
+        })
+        setCatalog((current) => current.map((item) => item.id === editingId ? updated : item))
+      } else {
+        const created = await createAdminService({
+          category: form.category.trim(),
+          subcategory: form.subcategory.trim(),
+          title: form.category.trim(),
+          label: form.label.trim(),
+          description: form.description.trim(),
+          icon: 'Store',
+          items,
+          startingPrice,
+          startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
+        })
+        setCatalog((current) => [created, ...current])
+        setActiveService((current) => ({ ...current, [created.id]: true }))
+      }
+
       setShowForm(false)
       setEditingId(null)
       setForm({ category: categories[0] || 'General', subcategory: 'General', label: '', description: '', items: '', startingPrice: '' })
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Unable to add service.')
+      setError(submitError instanceof Error ? submitError.message : 'Unable to save service.')
     } finally {
       setSaving(false)
     }

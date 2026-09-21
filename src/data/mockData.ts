@@ -17,7 +17,7 @@ export const providers: Provider[] = [
 ]
 
 export const requests: ServiceRequest[] = [
-  { id: 'AW-1027', customer: 'John Doe', serviceId: 'print', title: 'Commercial banner installation', providerId: 'signal', status: 'Quoted', location: 'Parramatta', date: '24 Sep 2026 · 10:00 AM', budget: 1500, description: 'Supply and install a commercial banner for a retail frontage.', quotes: ['Q-201', 'Q-202', 'Q-203'] },
+  { id: 'AW-1027', customer: 'John Doe', serviceId: 'print', title: 'Commercial banner installation', status: 'Quoted', location: 'Parramatta', date: '24 Sep 2026 · 10:00 AM', budget: 1500, description: 'Supply and install a commercial banner for a retail frontage.', quotes: ['Q-201', 'Q-202', 'Q-203'] },
   { id: 'AW-1026', customer: 'John Doe', serviceId: 'build', title: 'Office furniture assembly', providerId: 'northside', status: 'Scheduled', location: 'North Sydney', date: '27 Sep 2026 · 9:00 AM', budget: 900, description: 'Assembly and positioning of custom office cabinetry.', quotes: ['Q-204'] },
   { id: 'AW-1025', customer: 'ABC Business', serviceId: 'maintain', title: 'Office maintenance visit', status: 'Requested', location: 'Mascot', date: '29 Sep 2026', budget: 750, description: 'General maintenance across the office and reception area.', quotes: [] },
   { id: 'AW-1024', customer: 'Retail Co.', serviceId: 'install', title: 'Store signage installation', providerId: 'signal', status: 'In Progress', location: 'Parramatta', date: '22 Sep 2026 · 1:30 PM', budget: 2000, description: 'Install new external and internal store signage.', quotes: ['Q-205'] },

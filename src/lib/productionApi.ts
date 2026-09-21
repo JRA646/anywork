@@ -372,3 +372,10 @@ export async function listAdminJobs() {
   if (error) throw error
   return (data || []) as DbRequest[]
 }
+
+export async function listAdminReviews() {
+  const client = requireSupabase()
+  const { data, error } = await client.from('anywork_reviews').select('*').order('created_at', { ascending: false }).limit(300)
+  if (error) throw error
+  return data || []
+}

@@ -17,7 +17,6 @@ import { quotes as mockQuotes, requests as mockRequests, providers as mockProvid
 import { StatusBadge } from '../components/StatusBadge'
 import { ProviderCard } from '../components/ProviderCard'
 import { RequestPhotos } from '../components/RequestPhotos'
-import { confirmAction, showError, showSuccess } from '../lib/alerts'
 import {
   acceptQuote,
   getRequest,

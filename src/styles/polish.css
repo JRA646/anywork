@@ -232,10 +232,12 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
 .requestFilterTabs button b{min-width:18px;height:18px;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.16);font-size:8px}
 .requestFilterTabs button:not(.active) b{background:#e2ded6;color:#766f66}
 .requestListEnhanced{gap:10px}
-.customerRequestCard{position:relative;overflow:hidden;grid-template-columns:minmax(0,1fr) 150px 20px;padding:0;min-height:118px;align-items:stretch;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.customerRequestCard{position:relative;overflow:hidden;grid-template-columns:minmax(0,1fr) 150px 20px;padding:0 0 0 4px;min-height:118px;align-items:stretch;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
 .customerRequestCard:hover{transform:translateY(-4px);box-shadow:0 20px 42px rgba(20,20,20,.08);border-color:#d8d0c5}
-.requestCardAccent{width:4px;align-self:stretch;background:linear-gradient(180deg,#c86b2e,#e2a16e)}
-.customerRequestMain{padding:19px 0 17px 20px;min-width:0;display:grid;align-content:center;gap:0}
+.requestCardAccent{position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#c86b2e,#e2a16e);z-index:2}
+.customerRequestMain{padding:19px 0 17px 16px;min-width:0;display:grid;align-content:center;gap:0;grid-column:1}
+.customerRequestSide{grid-column:2}
+.customerRequestArrow{grid-column:3}
 .customerRequestTopline{display:flex;align-items:center;gap:8px}
 .customerRequestTopline .statusBadge{margin-left:auto;display:none}
 .customerRequestMain h3{font-size:16px;margin:8px 0 6px;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

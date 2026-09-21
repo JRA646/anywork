@@ -6,3 +6,64 @@
 @media(max-width:420px){.requestHeroMeta{grid-template-columns:1fr}.profileActions{flex-direction:column}.footerGrid{grid-template-columns:1fr}.metricCard strong{font-size:22px}}
 
 .headerBrandImage{display:block;width:136px;height:44px;object-fit:contain;object-position:left center;transition:transform .35s ease,filter .35s ease}.brandButtonLogo:hover .headerBrandImage{transform:translateY(-2px) scale(1.035);filter:drop-shadow(0 10px 20px rgba(200,107,46,.16))}.footerBrandButton{display:inline-flex;align-items:center;border:0;background:transparent;padding:0;margin:0;color:inherit}.footerBrandImage{display:block;width:130px;height:44px;object-fit:contain;object-position:left center}.footerBrandButton:focus-visible{outline:2px solid rgba(200,107,46,.6);outline-offset:5px;border-radius:8px}
+
+/* Request creation flow */
+.requestWizardModal{display:flex;flex-direction:column;width:min(900px,calc(100vw - 40px));max-height:min(900px,calc(100vh - 40px));padding:0;overflow:hidden}
+.requestWizardHeader{padding:32px 36px 0;padding-right:78px}
+.requestWizardHeader h2{margin-bottom:9px}
+.requestWizardHeader .modalLead{margin:0;max-width:720px;line-height:1.55}
+.requestWizardModal .modalClose{z-index:3;top:20px;right:20px}
+.requestWizardModal .wizardSteps{flex:none;margin:18px 36px 0;padding:0;border-bottom:0;gap:9px}
+.requestWizardModal .wizardSteps button,
+.requestWizardModal .wizardSteps>span{border:0;background:#f3f1eb;color:#969087;border-radius:999px;padding:8px 11px;display:inline-flex;align-items:center;gap:6px;font-size:9px;letter-spacing:.9px;font-weight:900}
+.requestWizardModal .wizardSteps button:disabled{cursor:default;opacity:1}
+.requestWizardModal .wizardSteps button.active,
+.requestWizardModal .wizardSteps>span.active{background:#111;color:#fff}
+.requestWizardModal .wizardSteps button:not(:disabled):hover{background:#e9e6de;color:#111}
+.requestWizardBody{flex:1;min-height:0;overflow:auto;padding:22px 36px 24px;scrollbar-gutter:stable}
+.requestWizardStep{display:grid;gap:16px}
+.wizardSectionIntro{display:flex;align-items:flex-end;justify-content:space-between;gap:22px}
+.wizardSectionIntro h3{margin:7px 0 0;font-size:20px;letter-spacing:-.7px}
+.wizardSectionIntro>small{max-width:320px;color:#8b857c;font-size:10px;line-height:1.5;text-align:right}
+.selectedServiceBanner{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #e6e1d8;background:#f8f6f1;border-radius:13px;padding:13px 14px}
+.selectedServiceBanner>div{display:grid;gap:5px}
+.selectedServiceBanner strong{font-size:13px}
+.selectedServiceBanner .buttonGhost{padding:8px 10px;background:#fff}
+.requestWizardFullField{display:grid;gap:6px;position:relative}
+.requestWizardFullField>span,.fieldGrid label>span{font-size:10px;font-weight:800;color:#4d4942}
+.requestWizardFullField b,.fieldGrid b{color:#c86b2e}
+.requestWizardFullField>span small,.fieldGrid label>span small{color:#9a948b;font-weight:600}
+.requestWizardFullField input{width:100%;border:1px solid var(--line);padding:11px 12px;border-radius:9px;outline:0;background:#fff}
+.requestWizardFullField input:focus,.fieldGrid input:focus,.fieldLarge:focus{border-color:#111;box-shadow:0 0 0 4px rgba(17,17,17,.05)}
+.fieldLarge{min-height:125px}
+.fieldCounter{position:absolute;right:2px;bottom:-14px;color:#9b958c;font-size:9px}
+.requestWizardModal .fieldGrid{margin-top:0}
+.requestWizardModal .fieldGrid input{outline:0;background:#fff}
+.requestWizardModal .uploadDrop{margin-top:0;padding:14px 16px;background:#faf9f6}
+.uploadDropDisabled{border-style:solid;border-color:#ebe6dd;color:#999}
+.uploadDropDisabled strong{font-size:11px;color:#666}
+.requestReviewCard{display:grid;grid-template-columns:1fr 1fr;gap:1px;border:1px solid var(--line);background:var(--line);border-radius:14px;overflow:hidden}
+.requestReviewCard>div{background:#fff;padding:14px}
+.requestReviewCard span{display:block;color:#999;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px}
+.requestReviewCard strong{font-size:12px;line-height:1.4}
+.requestReviewDetails{grid-column:1 / -1}
+.requestReviewDetails p{margin:0;color:#6f6b64;font-size:11px;line-height:1.6;white-space:pre-wrap}
+.requestWizardFooter{flex:none;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 36px 18px;border-top:1px solid #ece8e1;background:rgba(255,255,255,.98);box-shadow:0 -8px 22px rgba(18,18,18,.04)}
+.requestWizardFooterHint{color:#99928a;font-size:10px;line-height:1.4}
+.requestWizardFooter .modalActions{margin:0;flex:none}
+@media(max-width:700px){
+  .requestWizardModal{width:calc(100vw - 20px);max-height:calc(100vh - 20px);border-radius:16px}
+  .requestWizardHeader{padding:25px 18px 0;padding-right:58px}
+  .requestWizardHeader h2{font-size:28px}
+  .requestWizardModal .wizardSteps{margin:15px 18px 0;overflow:auto;white-space:nowrap}
+  .requestWizardBody{padding:18px}
+  .wizardSectionIntro{align-items:flex-start;flex-direction:column;gap:7px}
+  .wizardSectionIntro>small{text-align:left;max-width:none}
+  .selectedServiceBanner{align-items:flex-start;flex-direction:column}
+  .selectedServiceBanner .buttonGhost{width:max-content}
+  .requestReviewCard{grid-template-columns:1fr}
+  .requestReviewDetails{grid-column:auto}
+  .requestWizardFooter{padding:13px 18px 16px;align-items:flex-end;flex-direction:column;gap:9px}
+  .requestWizardFooterHint{width:100%}
+  .requestWizardFooter .modalActions{width:100%;justify-content:flex-end}
+}

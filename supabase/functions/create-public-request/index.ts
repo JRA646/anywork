@@ -63,9 +63,27 @@ Deno.serve(async (req) => {
     if (preferredDate && Number.isNaN(preferredDate.getTime())) throw new Error('Please provide a valid preferred date.')
     if (budget !== null && (!Number.isFinite(budget) || budget < 0)) throw new Error('Please provide a valid budget.')
 
+    const forwarded = req.headers.get('x-forwarded-for') || ''
+    const ip = (req.headers.get('cf-connecting-ip') || forwarded.split(',')[0] || 'unknown').trim()
+
     const admin = createClient(supabaseUrl, adminKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     })
+
+    const { data: allowed, error: rateLimitError } = await admin.rpc(
+      'claim_anywork_request_rate_limit',
+      { p_email: requesterEmail, p_ip: ip },
+    )
+
+    if (rateLimitError) throw rateLimitError
+    if (allowed === false) {
+      return new Response(JSON.stringify({
+        error: 'Too many requests. Please wait a little while before submitting another service request.',
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Retry-After': '3600' },
+      })
+    }
 
     const { data, error } = await admin
       .from('anywork_service_requests')

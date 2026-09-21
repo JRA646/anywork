@@ -128,7 +128,7 @@ export function RequestDetailPage({
           <div className="requestSummaryCard requestSummaryHighlight">
             <span>Next step</span>
             <strong>{selectedQuote ? 'Confirm scheduling' : 'Review provider quotes'}</strong>
-            <small>{selectedQuote ? 'Your selected provider is ready to coordinate.' : 'Three providers have responded to this request.'}</small>
+            <small>{selectedQuote ? 'Your selected provider is ready to coordinate.' : `${requestQuotes.length} providers have responded to this request.`}</small>
           </div>
         </div>
       </section>

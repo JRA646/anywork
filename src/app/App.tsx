@@ -130,7 +130,7 @@ function Application() {
     : path === '/services'
       ? <PublicServices services={serviceCatalog} providers={providers} onQuote={openQuote} onProvider={(id) => navigate('/providers/' + id)} />
       : path === '/providers'
-        ? <PublicProviders services={services} providers={providers} onProvider={(id) => navigate('/providers/' + id)} />
+        ? <PublicProviders services={serviceCatalog} providers={providers} onProvider={(id) => navigate('/providers/' + id)} />
         : path === '/help'
         ? <HelpCenterPage />
       : path.startsWith('/providers/')

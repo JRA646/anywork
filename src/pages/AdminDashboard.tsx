@@ -231,10 +231,13 @@ export function AdminServices() {
     event.preventDefault()
     setSaving(true)
     setError('')
+
     try {
       const items = form.items.split(',').map((item) => item.trim()).filter(Boolean)
       const startingPrice = form.startingPrice.trim() ? Number(form.startingPrice) : null
-      if (startingPrice !== null && Number.isNaN(startingPrice)) throw new Error('Starting price must be a valid number.')
+      if (startingPrice !== null && Number.isNaN(startingPrice)) {
+        throw new Error('Starting price must be a valid number.')
+      }
 
       if (editingId) {
         const updated = await updateAdminService(editingId, {
@@ -247,13 +250,36 @@ export function AdminServices() {
           tags: form.tags,
           startingPrice,
           startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
-        })        setCatalog((current) => [created, ...current])
+        })
+        setCatalog((current) => current.map((item) => item.id === editingId ? updated : item))
+      } else {
+        const created = await createAdminService({
+          category: form.category.trim(),
+          subcategory: form.subcategory.trim(),
+          title: form.category.trim(),
+          label: form.label.trim(),
+          description: form.description.trim(),
+          icon: 'Store',
+          items,
+          tags: form.tags,
+          startingPrice,
+          startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
+        })
+        setCatalog((current) => [created, ...current])
         setActiveService((current) => ({ ...current, [created.id]: true }))
       }
 
       setShowForm(false)
       setEditingId(null)
-      setForm({ category: categories[0] || 'General', subcategory: 'General', label: '', description: '', items: '', tags: [], startingPrice: '' })
+      setForm({
+        category: categories[0] || 'General',
+        subcategory: 'General',
+        label: '',
+        description: '',
+        items: '',
+        tags: [],
+        startingPrice: '',
+      })
       setTagDraft('')
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Unable to save service.')

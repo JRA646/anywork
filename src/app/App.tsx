@@ -19,6 +19,7 @@ import { ProfilePage } from '../pages/ProfilePage'
 import { HelpCenterPage } from '../pages/HelpCenterPage'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
+import { BrandLogo } from '../components/BrandLogo'
 import '../styles/modern.css'
 import '../styles/polish.css'
 
@@ -248,9 +249,8 @@ function PublicHeader({
   return (
     <header className="publicHeader">
       <div className="container publicHeaderInner">
-        <button className="brandButton" onClick={() => onNavigate('/')}>
-          <span className="brandMark">AW</span>
-          <strong>ANYwork</strong>
+        <button className="brandButton brandButtonLogo" onClick={() => onNavigate('/')}>
+          <BrandLogo variant="header" />
         </button>
         <nav className="publicNav">
           <button className={active === 'services' ? 'active' : ''} onClick={() => onNavigate('/services')}>Services</button>
@@ -293,7 +293,7 @@ function PublicFooter({ onNavigate }: { onNavigate: (path: string) => void }) {
     <footer className="publicFooter">
       <div className="container footerGrid">
         <div>
-          <div className="footerBrand"><span className="brandMark">AW</span><strong>ANYwork</strong></div>
+          <div className="footerBrand"><BrandLogo variant="header" /></div>
           <p>Find the right service. Request the work. Track it to done.</p>
         </div>
         <div>
@@ -347,9 +347,7 @@ function AppLoading() {
   return (
     <main className="appLoading">
       <div className="appLoadingCard">
-        <span className="brandMark">AW</span>
-        <strong>ANYwork</strong>
-        <p>Loading your workspace…</p>
+        <BrandLogo variant="header" /><p>Loading your workspace…</p>
       </div>
     </main>
   )

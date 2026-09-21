@@ -37,3 +37,5 @@
   .providerDirectoryStats{gap:16px;overflow:auto}
   .providerDirectoryStats span{min-width:88px}
 }
+
+.providerEmptyState .buttonSecondary{border:1px solid #ddd;background:#fff;color:#111;border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer}

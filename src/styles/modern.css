@@ -713,3 +713,28 @@
 .accountModuleCard strong{font-size:13px}
 .accountModuleCard span{font-size:10px;color:#888;line-height:1.5}
 @media(max-width:650px){.accountModuleGrid{grid-template-columns:1fr}}
+
+
+/* Provider calendar / weekly availability */
+.providerCalendarWorkspace .productionPanel{box-shadow:0 7px 26px rgba(18,18,18,.025)}
+.calendarAvailabilityPanel{display:grid;gap:0}
+.calendarAvailabilityMeta{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:0 0 12px}
+.calendarAvailabilityMeta span{font-size:11px;font-weight:800;color:#777}
+.calendarAvailabilityMeta small{font-size:10px;color:#aaa;text-align:right}
+.calendarAvailabilityList{border-top:1px solid #eee}
+.calendarAvailabilityRow{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:74px;border-bottom:1px solid #eee}
+.calendarDay{display:grid;gap:4px;min-width:0}
+.calendarDay strong{font-size:13px;line-height:1.2}
+.calendarDay span{font-size:10px;color:#888}
+.calendarAvailabilityStatus{min-width:106px;justify-content:center;border-radius:10px!important;padding:10px 14px!important;font-size:12px!important;transition:border-color .16s ease,background .16s ease,color .16s ease,transform .16s ease}
+.calendarAvailabilityStatus.is-available{border-color:#dfd9d0;background:#fff;color:#111}
+.calendarAvailabilityStatus.is-available:hover{background:#f7f5f1;border-color:#cfc8be;transform:translateY(-1px)}
+.calendarAvailabilityStatus.is-unavailable{border-color:#ead7d2;background:#fff8f6;color:#8e4f45}
+.calendarAvailabilityStatus:disabled{opacity:.65}
+.calendarAvailabilityStatus:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+@media(max-width:600px){
+  .calendarAvailabilityMeta{display:grid;gap:4px;align-items:start}
+  .calendarAvailabilityMeta small{text-align:left}
+  .calendarAvailabilityRow{min-height:68px;gap:12px}
+  .calendarAvailabilityStatus{min-width:96px}
+}

@@ -14,6 +14,7 @@ import { CustomerMessagesPage } from '../pages/CustomerMessagesPage'
 import { RequestDetailPage } from '../pages/RequestDetailPage'
 import { ProviderDashboard } from '../pages/ProviderDashboard'
 import { ProviderRequestDetail } from '../pages/ProviderRequestDetail'
+import { ProviderJobDetail } from '../pages/ProviderJobDetail'
 import { AdminDashboard } from '../pages/AdminDashboard'
 import { AuthPage } from '../pages/AuthPage'
 import { ProfilePage } from '../pages/ProfilePage'
@@ -170,6 +171,22 @@ function Application() {
           />
         )}
       </>
+    )
+  }
+
+  if (path.startsWith('/provider/jobs/')) {
+    const id = path.split('/')[3]
+    return (
+      <WorkspaceLayout
+        role="provider"
+        profile={profile}
+        title="Job"
+        current="jobs"
+        onNavigate={(item) => navigate('/provider/' + item)}
+        onPublicSite={handleSignOut}
+      >
+        <ProviderJobDetail requestId={id} onBack={() => navigate('/provider/jobs')} onNavigate={navigate} />
+      </WorkspaceLayout>
     )
   }
 

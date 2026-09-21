@@ -15,6 +15,10 @@ import {
   UserRound,
   UsersRound,
   X,
+  Star,
+  CalendarDays,
+  ShieldCheck,
+  Activity,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Role } from '../types/marketplace'
@@ -29,9 +33,9 @@ import {
 import { confirmAction } from '../lib/alerts'
 
 const nav = {
-  customer: ['dashboard', 'requests', 'jobs', 'messages', 'profile'],
-  provider: ['dashboard', 'requests', 'jobs', 'services', 'earnings', 'messages', 'profile'],
-  admin: ['dashboard', 'requests', 'providers', 'services', 'customers', 'settings', 'profile'],
+  customer: ['dashboard', 'requests', 'jobs', 'messages', 'addresses', 'invoices', 'reviews', 'support', 'profile'],
+  provider: ['dashboard', 'requests', 'jobs', 'calendar', 'services', 'earnings', 'verification', 'checkins', 'invoices', 'reviews', 'support', 'profile'],
+  admin: ['dashboard', 'requests', 'jobs', 'providers', 'services', 'service-builder', 'customers', 'payments', 'reviews', 'disputes', 'support', 'audit', 'settings', 'profile'],
 } as const
 
 const labels: Record<string, string> = {
@@ -45,6 +49,18 @@ const labels: Record<string, string> = {
   providers: 'Providers',
   customers: 'Customers',
   settings: 'Settings',
+  addresses: 'Addresses',
+  invoices: 'Invoices',
+  payments: 'Payments',
+  reviews: 'Reviews',
+  support: 'Support',
+  calendar: 'Calendar',
+  verification: 'Verification',
+  checkins: 'Job Check-in',
+  'service-builder': 'Service Builder',
+  jobs: 'Jobs',
+  disputes: 'Disputes',
+  audit: 'Audit Log',
 }
 
 const icons: Record<string, LucideIcon> = {
@@ -58,6 +74,18 @@ const icons: Record<string, LucideIcon> = {
   providers: UsersRound,
   customers: UsersRound,
   settings: Settings2,
+  addresses: Store,
+  invoices: FileText,
+  payments: CircleDollarSign,
+  reviews: Star,
+  support: CircleHelp,
+  calendar: CalendarDays,
+  verification: ShieldCheck,
+  checkins: BriefcaseBusiness,
+  'service-builder': Store,
+  jobs: BriefcaseBusiness,
+  disputes: ShieldCheck,
+  audit: Activity,
 }
 
 type NotificationItem = DbNotification

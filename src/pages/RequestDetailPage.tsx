@@ -21,6 +21,8 @@ import {
   getRequest,
   listProfiles,
   listQuotesForRequest,
+  subscribeToQuotes,
+  subscribeToRequests,
   type DbProfile,
   type DbQuote,
   type DbRequest,
@@ -75,6 +77,34 @@ export function RequestDetailPage({
 
     void load()
   }, [requestId, isUuid])
+
+  useEffect(() => {
+    if (!isUuid) return
+    let requestCleanup: (() => void) | undefined
+    let quoteCleanup: (() => void) | undefined
+
+    void subscribeToRequests((change) => {
+      if (change.record?.id === requestId) setDbRequest(change.record)
+      if (!change.record && change.oldRecord?.id === requestId) setDbRequest(null)
+    }).then((dispose) => { requestCleanup = dispose }).catch(() => undefined)
+
+    void subscribeToQuotes((change) => {
+      if (change.record?.request_id === requestId) {
+        setDbQuotes((current) => [...current.filter((item) => item.id !== change.record!.id), change.record!].sort((a, b) => Number(a.amount) - Number(b.amount)))
+        const quoteProviderId = change.record.provider_id
+        if (!dbProfiles.some((profile) => profile.user_id === quoteProviderId)) {
+          void listProfiles([quoteProviderId]).then((rows) => {
+            if (rows.length) setDbProfiles((current) => [...current.filter((item) => item.user_id !== quoteProviderId), ...rows])
+          }).catch(() => undefined)
+        }
+        if (change.record.status === 'Accepted') setSelectedQuoteId(change.record.id)
+      } else if (!change.record && change.oldRecord?.request_id === requestId && change.oldRecord.id) {
+        setDbQuotes((current) => current.filter((item) => item.id !== change.oldRecord?.id))
+      }
+    }).then((dispose) => { quoteCleanup = dispose }).catch(() => undefined)
+
+    return () => { requestCleanup?.(); quoteCleanup?.() }
+  }, [requestId, isUuid, dbProfiles])
 
   const request = dbRequest || mockRequest
   const serviceKey = request && 'service_key' in request ? request.service_key : request?.serviceId

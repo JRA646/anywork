@@ -123,17 +123,177 @@ function DisputesPage({ admin }: { admin:boolean }) {
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="TRUST" title="Disputes" description="Get help when a service needs review or resolution."/>{!admin&&<Panel title="Open a dispute" kicker="YOUR JOB"><div className="productionFormGrid"><label>Job<select value={requestId} onChange={e=>setRequestId(e.target.value)}><option value="">Choose a job</option>{jobs.map(job=><option key={job.id} value={job.id}>{job.title} · {job.request_number}</option>)}</select></label><label>Reason<input value={reason} onChange={e=>setReason(e.target.value)}/></label><label>Description<textarea value={description} onChange={e=>setDescription(e.target.value)} rows={4} placeholder="Tell us what happened."/></label></div><button className="buttonPrimary" onClick={()=>void open()} disabled={!requestId||!description.trim()}>Open dispute</button></Panel>}<Panel title="Dispute queue" kicker="CASE MANAGEMENT">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.reason}</strong><span>{row.description}</span></div>{admin?<select value={row.status} onChange={e=>void updateDispute(row.id,e.target.value).then(load)}><option>Open</option><option>Under Review</option><option>Waiting Customer</option><option>Waiting Provider</option><option>Resolved</option><option>Closed</option></select>:<span className="statusBadge neutral">{row.status}</span>}</div>)}{!rows.length&&<Empty text="No disputes."/>}</Panel></div>
 }
 function ProviderCalendarPage() {
-  const [rows,setRows]=useState<any[]>([])
-  const [timeOff,setTimeOff]=useState<any[]>([])
-  const [areas,setAreas]=useState<any[]>([])
-  const [areaName,setAreaName]=useState('')
-  const [city,setCity]=useState('')
-  const [radius,setRadius]=useState('15')
-  const load=()=>void Promise.all([listProviderAvailability(),listProviderTimeOff(),listProviderServiceAreas()]).then(([a,t,sa])=>{setRows(a);setTimeOff(t);setAreas(sa)}).catch(()=>undefined)
-  useEffect(()=>{void load()},[])
-  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
-  const addArea=async()=>{if(!areaName.trim())return;await saveProviderServiceArea({areaName:areaName.trim(),city:city.trim(),radiusKm:Number(radius)||15});setAreaName('');setCity('');load()}
-  return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="SCHEDULE" title="Availability & service areas" description="Tell ANYwork when and where your team can accept service jobs."/><Panel title="Weekly availability" kicker="PROVIDER SCHEDULE">{days.map((day,i)=>{const row=rows.find(x=>x.weekday===i);return <div className="productionListRow" key={day}><div><strong>{day}</strong><span>{row?.start_time?.slice(0,5)||'09:00'} – {row?.end_time?.slice(0,5)||'17:00'}</span></div><button className="buttonSecondary" onClick={()=>void saveProviderAvailability({weekday:i,start_time:row?.start_time||'09:00',end_time:row?.end_time||'17:00',enabled:!(row?.enabled??true)}).then(()=>listProviderAvailability()).then(setRows)}>{row?.enabled===false?'Enable':'Available'}</button></div>})}</Panel><Panel title="Service coverage" kicker="WHERE YOU WORK"><div className="productionFormGrid"><label>Area / barangay<input value={areaName} onChange={e=>setAreaName(e.target.value)} placeholder="e.g. Alabang"/></label><label>City / municipality<input value={city} onChange={e=>setCity(e.target.value)} placeholder="e.g. Muntinlupa"/></label><label>Coverage radius (km)<input type="number" min="1" value={radius} onChange={e=>setRadius(e.target.value)}/></label></div><button className="buttonPrimary" onClick={()=>void addArea()} disabled={!areaName.trim()}><Plus size={15}/> Add service area</button>{areas.map(area=><div className="productionListRow" key={area.id}><div><strong>{area.area_name}</strong><span>{area.city||'Any city'} · within {area.radius_km} km</span></div><button className="buttonGhost" onClick={()=>void deleteProviderServiceArea(area.id).then(load)}><Trash2 size={14}/></button></div>)}{!areas.length&&<Empty text="No coverage areas added yet. Matching will use the service-area on each enabled provider service until you add areas here."/>}</Panel><Panel title="Time off" kicker="BLOCKED TIME">{timeOff.map(item=><div className="productionListRow" key={item.id}><div><strong>{new Date(item.starts_at).toLocaleDateString()}</strong><span>{item.reason||'Unavailable'} · {new Date(item.starts_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span></div></div>)}<button className="buttonSecondary" onClick={()=>void saveProviderTimeOff({starts_at:new Date().toISOString(),ends_at:new Date(Date.now()+3600000).toISOString(),reason:'Blocked time'}).then(()=>listProviderTimeOff()).then(setTimeOff)}>Block next hour</button></Panel></div>
+  const [rows, setRows] = useState<any[]>([])
+  const [timeOff, setTimeOff] = useState<any[]>([])
+  const [areas, setAreas] = useState<any[]>([])
+  const [areaName, setAreaName] = useState('')
+  const [city, setCity] = useState('')
+  const [radius, setRadius] = useState('15')
+  const [loading, setLoading] = useState(true)
+  const [savingWeekday, setSavingWeekday] = useState<number | null>(null)
+
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const defaultStart = '09:00'
+  const defaultEnd = '17:00'
+
+  const load = async () => {
+    setLoading(true)
+    try {
+      const [availability, blocked, serviceAreas] = await Promise.all([
+        listProviderAvailability(),
+        listProviderTimeOff(),
+        listProviderServiceAreas(),
+      ])
+      setRows(availability)
+      setTimeOff(blocked)
+      setAreas(serviceAreas)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void load()
+  }, [])
+
+  const toggleAvailability = async (weekday: number) => {
+    const row = rows.find(item => item.weekday === weekday)
+    const startTime = row?.start_time?.slice(0, 5) || defaultStart
+    const endTime = row?.end_time?.slice(0, 5) || defaultEnd
+    const nextEnabled = !(row?.enabled ?? true)
+
+    setSavingWeekday(weekday)
+    try {
+      const saved = await saveProviderAvailability({
+        weekday,
+        start_time: startTime,
+        end_time: endTime,
+        enabled: nextEnabled,
+      })
+      setRows(current => [...current.filter(item => item.weekday !== weekday), saved].sort((a, b) => a.weekday - b.weekday))
+    } finally {
+      setSavingWeekday(null)
+    }
+  }
+
+  const addArea = async () => {
+    if (!areaName.trim()) return
+    await saveProviderServiceArea({
+      areaName: areaName.trim(),
+      city: city.trim(),
+      radiusKm: Number(radius) || 15,
+    })
+    setAreaName('')
+    setCity('')
+    await load()
+  }
+
+  const activeDays = rows.filter(row => row.enabled !== false).length
+
+  return (
+    <div className="workspaceDashboard productionWorkspace providerCalendarWorkspace">
+      <PageHeader
+        kicker="SCHEDULE"
+        title="Availability & service areas"
+        description="Tell ANYwork when and where your team can accept service jobs."
+      />
+
+      <Panel title="Weekly availability" kicker="PROVIDER SCHEDULE">
+        <div className="calendarAvailabilityPanel">
+          <div className="calendarAvailabilityMeta">
+            <span>{activeDays} of 7 days available</span>
+            <small>Tap a status to pause or resume bookings for that day.</small>
+          </div>
+
+          <div className="calendarAvailabilityList">
+            {days.map((day, weekday) => {
+              const row = rows.find(item => item.weekday === weekday)
+              const enabled = row?.enabled !== false
+              const isSaving = savingWeekday === weekday
+
+              return (
+                <div className="calendarAvailabilityRow" key={day}>
+                  <div className="calendarDay">
+                    <strong>{day}</strong>
+                    <span>{row?.start_time?.slice(0, 5) || defaultStart} – {row?.end_time?.slice(0, 5) || defaultEnd}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={'calendarAvailabilityStatus ' + (enabled ? 'is-available' : 'is-unavailable')}
+                    disabled={isSaving || loading}
+                    aria-pressed={enabled}
+                    onClick={() => void toggleAvailability(weekday)}
+                  >
+                    {isSaving ? 'Saving…' : enabled ? 'Available' : 'Unavailable'}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </Panel>
+
+      <Panel title="Service coverage" kicker="WHERE YOU WORK">
+        <div className="productionFormGrid">
+          <label>
+            Area / barangay
+            <input value={areaName} onChange={e => setAreaName(e.target.value)} placeholder="e.g. Alabang" />
+          </label>
+          <label>
+            City / municipality
+            <input value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. Muntinlupa" />
+          </label>
+          <label>
+            Coverage radius (km)
+            <input type="number" min="1" value={radius} onChange={e => setRadius(e.target.value)} />
+          </label>
+        </div>
+        <button className="buttonPrimary" onClick={() => void addArea()} disabled={!areaName.trim()}>
+          <Plus size={15} /> Add service area
+        </button>
+
+        {areas.map(area => (
+          <div className="productionListRow" key={area.id}>
+            <div>
+              <strong>{area.area_name}</strong>
+              <span>{area.city || 'Any city'} · within {area.radius_km} km</span>
+            </div>
+            <button className="buttonGhost" onClick={() => void deleteProviderServiceArea(area.id).then(load)} aria-label={'Delete ' + area.area_name}>
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ))}
+        {!areas.length && (
+          <Empty text="No coverage areas added yet. Matching will use the service-area on each enabled provider service until you add areas here." />
+        )}
+      </Panel>
+
+      <Panel title="Time off" kicker="BLOCKED TIME">
+        {timeOff.map(item => (
+          <div className="productionListRow" key={item.id}>
+            <div>
+              <strong>{new Date(item.starts_at).toLocaleDateString()}</strong>
+              <span>
+                {item.reason || 'Unavailable'} · {new Date(item.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          </div>
+        ))}
+        {!timeOff.length && <Empty text="No blocked time is currently scheduled." />}
+        <button
+          className="buttonSecondary"
+          onClick={() => void saveProviderTimeOff({
+            starts_at: new Date().toISOString(),
+            ends_at: new Date(Date.now() + 3600000).toISOString(),
+            reason: 'Blocked time',
+          }).then(() => listProviderTimeOff()).then(setTimeOff)}
+        >
+          Block next hour
+        </button>
+      </Panel>
+    </div>
+  )
 }
 
 function ProviderVerificationPage() {

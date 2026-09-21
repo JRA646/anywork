@@ -18,7 +18,7 @@ import {
   ToggleRight,
   Users,
 } from 'lucide-react'
-import { providers, services } from '../data/mockData'
+import { services } from '../data/mockData'
 import { StatusBadge } from '../components/StatusBadge'
 import { CustomerMessagesPage } from './CustomerMessagesPage'
 import type { AnyWorkProfile } from '../types/auth'
@@ -325,14 +325,12 @@ function ProviderJobs({ onNavigate }: { onNavigate: (path: string) => void }) {
 }
 
 function ProviderServices() {
-  const [providerId, setProviderId] = useState('')
   const [configured, setConfigured] = useState<DbProviderService[]>([])
   const [saving, setSaving] = useState('')
   const [search, setSearch] = useState('')
 
   useEffect(() => {
     listProviderServices().then(setConfigured).catch(() => undefined)
-    getCurrentUserId().then(setProviderId).catch(() => undefined)
   }, [])
 
   const configuredByKey = new Map(configured.map((item) => [item.service_key, item]))

@@ -14,7 +14,7 @@ declare
   r public.anywork_service_requests;
   inv public.anywork_invoices;
   item jsonb;
-  subtotal numeric:=0;
+  v_subtotal numeric:=0;
   is_admin boolean := private.anywork_current_role()='admin';
 begin
   if private.anywork_current_role() not in ('provider','admin') then
@@ -55,12 +55,12 @@ begin
       coalesce((item->>'unit_price')::numeric,0),
       coalesce((item->>'amount')::numeric,0)
     );
-    subtotal:=subtotal+coalesce((item->>'amount')::numeric,0);
+    v_subtotal:=v_subtotal+coalesce((item->>'amount')::numeric,0);
   end loop;
 
   update public.anywork_invoices
-  set subtotal=subtotal,
-      total=greatest(0,subtotal+coalesce(p_tax,0)-coalesce(p_discount,0))
+  set subtotal=v_subtotal,
+      total=greatest(0,v_subtotal+coalesce(p_tax,0)-coalesce(p_discount,0))
   where id=inv.id
   returning * into inv;
 

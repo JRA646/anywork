@@ -51,6 +51,7 @@ export type DbService = {
   description: string
   icon: string
   items: string[]
+  tags?: string[]
   category?: string
   subcategory?: string
   starting_price: number | null
@@ -62,7 +63,7 @@ export async function listPublicServices() {
   const client = requireSupabase()
   const { data, error } = await client
     .from('anywork_services')
-    .select('id, title, label, description, icon, items, starting_price, starting_price_label, enabled')
+    .select('id, title, label, description, icon, items, tags, starting_price, starting_price_label, enabled')
     .eq('enabled', true)
     .order('title', { ascending: true })
 
@@ -81,6 +82,7 @@ export type AdminServiceInput = {
   items?: string[]
   startingPrice?: number | null
   startingPriceLabel?: string | null
+  tags?: string[]
   enabled?: boolean
 }
 
@@ -88,7 +90,7 @@ export async function listAdminServices() {
   const client = requireSupabase()
   const { data, error } = await client
     .from('anywork_services')
-    .select('id, category, subcategory, title, label, description, icon, items, starting_price, starting_price_label, enabled')
+    .select('id, category, subcategory, title, label, description, icon, items, tags, starting_price, starting_price_label, enabled')
     .order('category', { ascending: true })
     .order('subcategory', { ascending: true })
     .order('label', { ascending: true })
@@ -115,6 +117,7 @@ export async function createAdminService(input: AdminServiceInput) {
       description: input.description,
       icon: input.icon || 'Store',
       items: input.items || [],
+      tags: input.tags || [],
       starting_price: input.startingPrice ?? null,
       starting_price_label: input.startingPriceLabel || (input.startingPrice != null ? '$' + Number(input.startingPrice).toLocaleString() : 'Quote'),
       enabled: input.enabled ?? true,
@@ -138,6 +141,7 @@ export async function updateAdminService(id: string, input: Partial<AdminService
       ...(input.description !== undefined ? { description: input.description } : {}),
       ...(input.icon !== undefined ? { icon: input.icon } : {}),
       ...(input.items !== undefined ? { items: input.items } : {}),
+      ...(input.tags !== undefined ? { tags: input.tags } : {}),
       ...(input.startingPrice !== undefined ? { starting_price: input.startingPrice } : {}),
       ...(input.startingPriceLabel !== undefined ? { starting_price_label: input.startingPriceLabel } : {}),
       ...(input.enabled !== undefined ? { enabled: input.enabled } : {}),

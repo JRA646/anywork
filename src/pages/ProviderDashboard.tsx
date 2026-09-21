@@ -131,6 +131,25 @@ function ProviderHome({ profile, onNavigate }: { profile: AnyWorkProfile; onNavi
         <Metric label="Completed jobs" value={loading ? '—' : String(completed.length)} note="From your current account" icon={<Star />} />
       </div>
 
+      <section className="dashboardCard wide providerAnalyticsCard">
+        <CardHeading eyebrow="PERFORMANCE" title="Business performance" />
+        <div className="dashboardChartWrap">
+          <div className="dashboardChartLegend"><span><i className="chartDot chartDotPrimary" /> Accepted value</span><span><i className="chartDot chartDotSecondary" /> Completed jobs</span></div>
+          <svg className="dashboardChart" viewBox="0 0 720 230" role="img" aria-label="Provider accepted value and completed jobs for the last six months">
+            <line x1="45" y1="190" x2="700" y2="190" className="chartAxis" />
+            {buildProviderMonthlySeries(requests, acceptedQuotes).map((item, index) => {
+              const x = 70 + index * 125
+              const height = (item.value / Math.max(...buildProviderMonthlySeries(requests, acceptedQuotes).map((row) => row.value), 1)) * 135
+              return <g key={item.label}>
+                <rect x={x - 24} y={190 - height} width="48" height={height} rx="7" className="chartBar" />
+                <text x={x} y="212" textAnchor="middle" className="chartLabel">{item.label}</text>
+                <text x={x} y={185 - height} textAnchor="middle" className="chartValue">{item.value > 999 ? '$' + Math.round(item.value / 1000) + 'k' : item.value}</text>
+              </g>
+            })}
+          </svg>
+        </div>
+      </section>
+
       <div className="dashboardGrid providerDashboardGrid">
         <section className="dashboardCard wide providerActionCard">
           <CardHeading eyebrow="ACTION CENTER" title="Requests worth reviewing" action="View all" onClick={() => onNavigate('/provider/requests')} />
@@ -614,6 +633,17 @@ function timeSince(value: string) {
 
 function formatRequestDate(value: string | null) {
   return value ? new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Flexible schedule'
+}
+
+function buildProviderMonthlySeries(requests: DbRequest[], quotes: DbQuote[]) {
+  const now = new Date()
+  return Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1)
+    const key = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0')
+    const value = quotes.filter((quote) => quote.status === 'Accepted' && quote.created_at.startsWith(key)).reduce((sum, quote) => sum + Number(quote.amount), 0)
+    const jobs = requests.filter((request) => request.status === 'Completed' && request.created_at.startsWith(key)).length
+    return { label: date.toLocaleDateString(undefined, { month: 'short' }), value, jobs }
+  })
 }
 
 function MapPinIcon() {

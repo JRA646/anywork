@@ -147,6 +147,10 @@ function ProviderCalendarPage() {
       setRows(availability)
       setTimeOff(blocked)
       setAreas(serviceAreas)
+    } catch {
+      setRows([])
+      setTimeOff([])
+      setAreas([])
     } finally {
       setLoading(false)
     }

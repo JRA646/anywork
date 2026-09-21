@@ -79,10 +79,26 @@ export type DbMessage = {
 
 export async function getCurrentUserId() {
   const client = requireSupabase()
-  const { data, error } = await client.auth.getUser()
-  if (error) throw error
-  if (!data.user) throw new Error('You must be signed in.')
-  return data.user.id
+
+  // Prefer the locally persisted session so short-lived token-refresh races do
+  // not make an already authenticated workspace appear logged out.
+  const sessionResult = await client.auth.getSession()
+  if (sessionResult.data.session?.user) {
+    return sessionResult.data.session.user.id
+  }
+
+  // Recover once when the access token needs to be refreshed.
+  const refreshed = await client.auth.refreshSession()
+  if (refreshed.data.session?.user) {
+    return refreshed.data.session.user.id
+  }
+
+  const userResult = await client.auth.getUser()
+  if (!userResult.error && userResult.data.user) {
+    return userResult.data.user.id
+  }
+
+  throw new Error('Your login session is no longer available. Please sign in again.')
 }
 
 export async function uploadRequestPhoto(requestId: string, file: File) {

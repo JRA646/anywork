@@ -651,3 +651,42 @@
 @media(max-width:760px){.productionFormGrid{grid-template-columns:1fr}.verificationGrid{grid-template-columns:1fr 1fr}.productionListRow{align-items:flex-start}.productionListRow .statusBadge{margin-left:auto}.productionWorkspace .metricRow{grid-template-columns:1fr 1fr}}
 
 .requestCustomFields{margin-top:18px;padding-top:18px;border-top:1px solid #eee}.requestCustomFields .fieldGrid{margin-top:12px}.customFieldCheck{display:flex!important;align-items:center;gap:8px}.customFieldCheck input{width:auto!important}.requestCustomFields select[multiple]{min-height:100px}.productionButtonGrid .buttonPrimary,.productionButtonGrid .buttonSecondary{white-space:nowrap}
+
+
+/* Service-company dispatch center */
+.dispatchToolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:8px 0 14px;flex-wrap:wrap}
+.dispatchToolbar .searchField{min-width:280px;flex:1}
+.dispatchToolbar .requestFilterTabs{margin:0}
+.dispatchQueue{display:grid;gap:8px}
+.dispatchRow{display:grid;grid-template-columns:90px minmax(0,1fr) 110px auto;gap:14px;align-items:center;text-align:left;width:100%;padding:15px 16px;border:1px solid #e9e6df;border-radius:13px;background:#fff;cursor:pointer;transition:.18s ease}
+.dispatchRow:hover,.dispatchRow.active{border-color:#bdb7ad;box-shadow:0 7px 20px rgba(20,20,20,.05);transform:translateY(-1px)}
+.dispatchPriority{display:flex;align-items:center}
+.priorityDot{display:inline-flex;align-items:center;gap:6px;font-size:9px;font-weight:900;text-transform:uppercase}
+.priorityDot:before{content:"";width:7px;height:7px;border-radius:50%;background:#aaa}
+.priorityHigh:before,.priorityUrgent:before{background:#c85b3e}
+.priorityNormal:before{background:#c8a04a}
+.priorityLow:before{background:#6b9c77}
+.dispatchMain{display:grid;gap:5px;min-width:0}
+.dispatchMain strong{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dispatchMain small{display:flex;align-items:center;gap:4px;color:#888;font-size:10px}
+.dispatchDate{display:grid;gap:4px}
+.dispatchDate span{font-weight:800;font-size:11px}
+.dispatchDate small{font-size:9px;color:#999}
+.dispatchMatches{margin-top:15px}
+.dispatchMatches .cardHeading p{margin:4px 0 0;color:#888;font-size:11px}
+.dispatchLoading,.dispatchMessage{display:flex;align-items:center;gap:8px;padding:12px 14px;border-radius:10px;background:#f6f4ef;color:#666;font-size:11px;margin:10px 0}
+.providerMatchGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.providerMatchCard{border:1px solid #e9e6df;border-radius:14px;padding:16px;background:#fff;display:grid;gap:13px}
+.providerMatchTop{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center}
+.providerMatchTop>div:nth-child(2){display:grid;gap:3px}
+.providerMatchTop span{font-size:10px;color:#888}
+.providerMatchTop>b{font-size:16px}
+.providerMatchAvatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#f0eee8;font-weight:900}
+.providerMatchReasons{display:grid;gap:5px}
+.providerMatchReasons span{font-size:10px;color:#666}
+.providerMatchCard .buttonPrimary{width:100%;justify-content:center}
+@media(max-width:760px){
+  .dispatchRow{grid-template-columns:1fr;gap:8px}
+  .dispatchDate{display:flex;justify-content:space-between}
+  .providerMatchGrid{grid-template-columns:1fr}
+}

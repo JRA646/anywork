@@ -686,6 +686,68 @@ grant select,insert,update on public.anywork_change_requests to authenticated;
 grant execute on function public.anywork_accept_quote(uuid,uuid) to authenticated;
 grant execute on function public.anywork_confirm_schedule(uuid,timestamptz,timestamptz,text) to authenticated;
 
+alter table public.anywork_reviews enable row level security;
+alter table public.anywork_invoices enable row level security;
+alter table public.anywork_invoice_items enable row level security;
+alter table public.anywork_payments enable row level security;
+alter table public.anywork_provider_reviews enable row level security;
+alter table public.anywork_provider_verifications enable row level security;
+alter table public.anywork_disputes enable row level security;
+alter table public.anywork_support_tickets enable row level security;
+alter table public.anywork_audit_logs enable row level security;
+
+drop policy if exists "Review participants" on public.anywork_reviews;
+create policy "Review participants" on public.anywork_reviews for select to authenticated using(customer_id=auth.uid() or provider_id=auth.uid() or private.anywork_current_role()='admin');
+drop policy if exists "Customers create reviews" on public.anywork_reviews;
+create policy "Customers create reviews" on public.anywork_reviews for insert to authenticated with check(customer_id=auth.uid() and exists(select 1 from public.anywork_service_requests r where r.id=request_id and r.customer_id=auth.uid() and r.status='Completed'));
+
+drop policy if exists "Invoice participants" on public.anywork_invoices;
+create policy "Invoice participants" on public.anywork_invoices for select to authenticated using(customer_id=auth.uid() or provider_id=auth.uid() or private.anywork_current_role()='admin');
+
+drop policy if exists "Invoice items participants" on public.anywork_invoice_items;
+create policy "Invoice items participants" on public.anywork_invoice_items for select to authenticated using(exists(select 1 from public.anywork_invoices i where i.id=invoice_id and (i.customer_id=auth.uid() or i.provider_id=auth.uid() or private.anywork_current_role()='admin')));
+
+drop policy if exists "Payment participants" on public.anywork_payments;
+create policy "Payment participants" on public.anywork_payments for select to authenticated using(customer_id=auth.uid() or provider_id=auth.uid() or private.anywork_current_role()='admin');
+drop policy if exists "Customer payments" on public.anywork_payments;
+create policy "Customer payments" on public.anywork_payments for insert to authenticated with check(customer_id=auth.uid() or private.anywork_current_role()='admin');
+
+drop policy if exists "Provider review participants" on public.anywork_provider_reviews;
+create policy "Provider review participants" on public.anywork_provider_reviews for select to authenticated using(provider_id=auth.uid() or customer_id=auth.uid() or private.anywork_current_role()='admin');
+drop policy if exists "Providers create reviews" on public.anywork_provider_reviews;
+create policy "Providers create reviews" on public.anywork_provider_reviews for insert to authenticated with check(provider_id=auth.uid() and exists(select 1 from public.anywork_service_requests r where r.id=request_id and r.selected_provider_id=auth.uid() and r.status='Completed'));
+
+drop policy if exists "Provider verification participants" on public.anywork_provider_verifications;
+create policy "Provider verification participants" on public.anywork_provider_verifications for select to authenticated using(provider_id=auth.uid() or private.anywork_current_role()='admin');
+drop policy if exists "Providers submit verification" on public.anywork_provider_verifications;
+create policy "Providers submit verification" on public.anywork_provider_verifications for insert to authenticated with check(provider_id=auth.uid());
+drop policy if exists "Providers update verification request" on public.anywork_provider_verifications;
+create policy "Providers update verification request" on public.anywork_provider_verifications for update to authenticated using(provider_id=auth.uid()) with check(provider_id=auth.uid());
+
+drop policy if exists "Dispute participants" on public.anywork_disputes;
+create policy "Dispute participants" on public.anywork_disputes for select to authenticated using(opened_by=auth.uid() or assigned_to=auth.uid() or exists(select 1 from public.anywork_service_requests r where r.id=request_id and (r.customer_id=auth.uid() or r.selected_provider_id=auth.uid())) or private.anywork_current_role()='admin');
+drop policy if exists "Open disputes" on public.anywork_disputes;
+create policy "Open disputes" on public.anywork_disputes for insert to authenticated with check(opened_by=auth.uid());
+drop policy if exists "Admin dispute updates" on public.anywork_disputes;
+create policy "Admin dispute updates" on public.anywork_disputes for update to authenticated using(private.anywork_current_role()='admin') with check(private.anywork_current_role()='admin');
+
+drop policy if exists "Support participants" on public.anywork_support_tickets;
+create policy "Support participants" on public.anywork_support_tickets for select to authenticated using(user_id=auth.uid() or private.anywork_current_role()='admin');
+drop policy if exists "Create support tickets" on public.anywork_support_tickets;
+create policy "Create support tickets" on public.anywork_support_tickets for insert to authenticated with check(user_id=auth.uid());
+drop policy if exists "Admin support updates" on public.anywork_support_tickets;
+create policy "Admin support updates" on public.anywork_support_tickets for update to authenticated using(private.anywork_current_role()='admin') with check(private.anywork_current_role()='admin');
+
+drop policy if exists "Admin audit read" on public.anywork_audit_logs;
+create policy "Admin audit read" on public.anywork_audit_logs for select to authenticated using(private.anywork_current_role()='admin');
+
+grant select,insert on public.anywork_reviews to authenticated;
+grant select,insert on public.anywork_provider_reviews to authenticated;
+grant select,insert,update on public.anywork_provider_verifications to authenticated;
+grant select,insert,update on public.anywork_disputes, public.anywork_support_tickets to authenticated;
+grant select on public.anywork_invoices, public.anywork_invoice_items, public.anywork_payments, public.anywork_audit_logs to authenticated;
+grant insert on public.anywork_payments to authenticated;
+
 -- ---------------------------------------------------------------------------
 -- 11. Storage policies
 -- ---------------------------------------------------------------------------

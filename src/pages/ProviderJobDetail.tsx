@@ -14,7 +14,7 @@ import {
 import { services } from '../data/mockData'
 import { StatusBadge } from '../components/StatusBadge'
 import { RequestPhotos } from '../components/RequestPhotos'
-import { showError, showSuccess } from '../lib/alerts'
+import { confirmAction, showError, showSuccess } from '../lib/alerts'
 import {
   getRequest,
   getCurrentUserId,
@@ -98,6 +98,17 @@ export function ProviderJobDetail({
 
   const updateStatus = async (status: 'In Progress' | 'Completed') => {
     if (!request) return
+
+    const confirmed = await confirmAction({
+      title: status === 'Completed' ? 'Mark this job complete?' : 'Start this job?',
+      text: status === 'Completed'
+        ? 'The customer will see this job as completed.'
+        : 'This will move the job into the in-progress stage.',
+      confirmText: status === 'Completed' ? 'Mark complete' : 'Start job',
+      cancelText: 'Cancel',
+    })
+    if (!confirmed) return
+
     setBusy(true)
     setError('')
     try {

@@ -4,7 +4,6 @@ import type { Provider, Service } from '../types/marketplace'
 import { ServiceCard } from '../components/ServiceCard'
 import { ProviderCard } from '../components/ProviderCard'
 import { sampleImages } from '../data/media'
-import { sampleImages } from '../data/media'
 
 export function PublicHome({ services, providers, onNavigate, onQuote }: { services: Service[]; providers: Provider[]; onNavigate: (path: string) => void; onQuote: (serviceId?: string) => void }) {
   return <div>

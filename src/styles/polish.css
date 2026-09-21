@@ -597,3 +597,13 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
  .providerRequestToolbar{flex-direction:column;align-items:stretch}.providerServiceToolbar{align-items:stretch;flex-direction:column}.providerServiceToolbar .searchField{max-width:none}.providerServiceSummary{width:max-content}
  .providerQuoteComposer{position:static}
 }
+
+.providerServiceFooter{display:flex;align-items:center;gap:6px;color:#777;font-size:8px}
+.providerServiceFooter .textLink{margin-left:auto;font-size:8px}
+.providerServiceEditor{display:grid;gap:8px;background:#f7f5ef;border-radius:10px;padding:10px}
+.providerServiceEditor label{display:grid;gap:4px}
+.providerServiceEditor label span{font-size:8px;color:#8b857d;font-weight:800;text-transform:uppercase;letter-spacing:.6px}
+.providerServiceEditor input{width:100%;padding:8px;border:1px solid #dcd6cc;border-radius:8px;background:#fff;font-size:10px;outline:none}
+.providerServiceEditor input:focus{border-color:rgba(200,107,46,.4);box-shadow:0 0 0 3px rgba(200,107,46,.06)}
+.providerServiceEditor>div{display:flex;justify-content:flex-end;gap:6px}
+.providerServiceEditor .buttonPrimary,.providerServiceEditor .buttonGhost{font-size:8px;padding:7px 9px}

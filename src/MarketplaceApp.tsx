@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import {
   ArrowRight, BriefcaseBusiness, CalendarDays, CheckCircle2, ChevronRight, CircleDollarSign,
   Clock3, FileText, Hammer, HardHat, LayoutDashboard, Mail, MapPin, Menu, MessageCircle,
@@ -360,7 +360,7 @@ function AdminView({ page, go }: { page: string; go: (page: string) => void }) {
   return <AdminDashboard go={go} />
 }
 
-function AdminLayout({ children, active, go }: { children: React.ReactNode; active: string; go: (page: string) => void }) {
+function AdminLayout({ children, active, go }: { children: ReactNode; active: string; go: (page: string) => void }) {
   const items = ['dashboard', 'requests', 'providers', 'services', 'customers', 'settings']
   return <div className="adminShell"><aside className="adminSidebar"><div className="sideBrand"><span className="marketLogo">AW</span><strong>Operations</strong></div>{items.map((item) => <button className={active === item ? 'sideActive' : ''} key={item} onClick={() => go(item)}>{item === 'dashboard' ? <LayoutDashboard /> : item === 'requests' ? <FileText /> : item === 'providers' ? <Users /> : item === 'services' ? <Boxes /> : item === 'customers' ? <Users /> : <Settings />}{label(item)}</button>)}</aside><div className="adminBody">{children}</div></div>
 }

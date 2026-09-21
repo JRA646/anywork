@@ -7,7 +7,7 @@ export function ServiceCard({ service, onClick }: { service: Service; onClick?: 
   const Icon = icons[service.icon as keyof typeof icons]
   const image = serviceImageById[service.id]
   return (
-    <button className="serviceCardModern serviceCardImage" style={{ '--service-image': 'url("' + image + '")' } as Record<string, string>} onClick={onClick}>
+    <button className="serviceCardModern serviceCardImage tw-image-shine group" style={{ '--service-image': 'url("' + image + '")' } as Record<string, string>} onClick={onClick}>
       <div className="serviceCardPhoto" />
       <div className="serviceCardShade" />
       <div className="serviceCardIcon"><Icon size={21} /></div>

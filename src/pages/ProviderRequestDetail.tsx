@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
@@ -34,12 +34,11 @@ export function ProviderRequestDetail({
   onNavigate: (path: string) => void
 }) {
   const mockRequest = mockRequests.find((item) => item.id === requestId)
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[89ab][0-9a-f]{3}$/i.test(requestId) || /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId)
 
   const [request, setRequest] = useState<DbRequest | null>(null)
   const [customer, setCustomer] = useState<DbProfile | null>(null)
   const [quote, setQuote] = useState<DbQuote | null>(null)
-  const [providerId, setProviderId] = useState('')
   const [amount, setAmount] = useState('')
   const [availability, setAvailability] = useState('')
   const [message, setMessage] = useState('We can complete the requested work based on the details provided. Final measurements and access will be confirmed before the appointment.')
@@ -66,7 +65,6 @@ export function ProviderRequestDetail({
           listProfiles([dbRequest.customer_id]),
         ])
         const existingQuote = quotes.find((item) => item.provider_id === currentProviderId) || null
-        setProviderId(currentProviderId)
         setRequest(dbRequest)
         setCustomer(profiles[0] || null)
         setQuote(existingQuote)

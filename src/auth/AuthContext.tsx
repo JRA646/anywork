@@ -81,7 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     void bootstrap()
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (!mounted) return
+
       setSession(nextSession)
 
       if (!nextSession?.user) {
@@ -90,12 +92,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      setLoading(true)
-      window.setTimeout(() => {
-        void loadProfile(nextSession.user.id)
-          .catch(() => setProfile(null))
-          .finally(() => setLoading(false))
-      }, 0)
+      // Supabase refreshes the access token when the browser tab becomes active.
+      // Keep the current workspace mounted during TOKEN_REFRESHED so returning to
+      // the tab does not show the global loading screen again.
+      if (event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        return
+      }
+
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        setLoading(true)
+        window.setTimeout(() => {
+          void loadProfile(nextSession.user.id)
+            .catch(() => setProfile(null))
+            .finally(() => setLoading(false))
+        }, 0)
+      }
     })
 
     return () => {

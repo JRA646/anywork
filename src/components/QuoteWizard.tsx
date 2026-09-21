@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, MapPin, Upload, X } from 'lucide-react'
 import { services } from '../data/mockData'
+import { useAuth } from '../auth/AuthContext'
 import { createServiceRequest, uploadRequestPhoto, type DbRequest } from '../lib/anyworkApi'
 import { showError, showSuccess } from '../lib/alerts'
 
@@ -19,6 +20,8 @@ export function QuoteWizard({
   onClose: () => void
   onCreated?: (request: DbRequest) => void
 }) {
+  const { session, profile } = useAuth()
+  const isGuest = !session
   const validInitialService = services.some((item) => item.id === initialService) ? initialService : ''
   const [step, setStep] = useState(validInitialService ? 2 : 1)
   const [serviceId, setServiceId] = useState(validInitialService)
@@ -28,6 +31,9 @@ export function QuoteWizard({
   const [location, setLocation] = useState('')
   const [budget, setBudget] = useState('')
   const [accessNotes, setAccessNotes] = useState('')
+  const [requesterName, setRequesterName] = useState('')
+  const [requesterEmail, setRequesterEmail] = useState('')
+  const [requesterPhone, setRequesterPhone] = useState('')
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([])
   const [uploadingPhotoIndex, setUploadingPhotoIndex] = useState<number | null>(null)
   const [uploadedPhotoCount, setUploadedPhotoCount] = useState(0)
@@ -40,6 +46,7 @@ export function QuoteWizard({
   const detailsValid = Boolean(service && title.trim() && description.trim() && location.trim())
   const budgetValue = budget.trim() ? Number(budget) : null
   const budgetValid = budgetValue === null || (Number.isFinite(budgetValue) && budgetValue >= 0)
+  const requesterValid = !isGuest || Boolean(requesterName.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(requesterEmail.trim()))
 
   const photoPreviews = useMemo(
     () => selectedPhotos.map((file) => ({ name: file.name, url: URL.createObjectURL(file) })),
@@ -86,6 +93,13 @@ export function QuoteWizard({
     setStep(2)
   }
 
+  useEffect(() => {
+    if (!isGuest) {
+      setRequesterName(profile?.display_name || [profile?.first_name, profile?.last_name].filter(Boolean).join(' '))
+      setRequesterEmail(session?.user?.email || '')
+    }
+  }, [isGuest, profile, session])
+
   const goToReview = () => {
     if (!detailsValid) {
       setError('Complete the request title, service location and job details before reviewing.')
@@ -93,6 +107,10 @@ export function QuoteWizard({
     }
     if (!budgetValid) {
       setError('Enter a valid budget amount or leave the budget blank.')
+      return
+    }
+    if (!requesterValid) {
+      setError('Add your name and a valid email address so we can send you quotes.')
       return
     }
     setError('')
@@ -117,6 +135,10 @@ export function QuoteWizard({
         preferredDate: preferredDate ? new Date(preferredDate).toISOString() : null,
         accessNotes: accessNotes.trim() || null,
         budget: budgetValue,
+        requesterName: requesterName.trim(),
+        requesterEmail: requesterEmail.trim(),
+        requesterPhone: requesterPhone.trim() || null,
+        companyWebsite: '',
       })
 
       let uploadWarning = ''
@@ -173,7 +195,10 @@ export function QuoteWizard({
             <div className="successIcon"><CheckCircle2 size={34} /></div>
             <span className="eyebrow">REQUEST CREATED</span>
             <h2 id="request-wizard-title">Your request is ready.</h2>
-            <p>Matching providers can now review your requirements and respond with pricing and availability.</p>
+            <p>
+              Your request is now with the ANYwork provider network.
+              {requesterEmail ? ' Quotes will be sent to ' + requesterEmail + '.' : ''}
+            </p>
             <div className="successMeta">
               <span><CalendarDays size={15} /> {createdRequest?.request_number || 'Request submitted'}</span>
               <span><MapPin size={15} /> {location || 'Your service area'}</span>
@@ -381,7 +406,53 @@ export function QuoteWizard({
                     <div><span>Request</span><strong>{title}</strong></div>
                     <div><span>Location</span><strong>{location}</strong></div>
                     <div><span>Preferred date</span><strong>{preferredDate ? new Date(preferredDate).toLocaleString() : 'Flexible'}</strong></div>
-                    <div><span>Budget</span><strong>{budgetValue !== null ? '$' + budgetValue.toLocaleString() : 'Open to quotes'}</strong></div>
+                    <div><span>Budget</span><strong>{budgetValue !== null ? '
+                    <div className="requestReviewDetails"><span>Details</span><p>{description}</p></div>
+                    {accessNotes && <div className="requestReviewDetails"><span>Access notes</span><p>{accessNotes}</p></div>}
+                    <div className="requestReviewDetails">
+                      <span>Photos</span>
+                      <p>{selectedPhotos.length ? selectedPhotos.length + ' photo' + (selectedPhotos.length === 1 ? '' : 's') + ' will be uploaded with this request.' : 'No photos attached.'}</p>
+                    </div>
+                  </div>
+
+                  {error && <div className="formError" role="alert">{error}</div>}
+                </div>
+              )}
+            </div>
+
+            <div className="requestWizardFooter">
+              <div className="requestWizardFooterHint">
+                {step === 1 ? 'You can edit all job details on the next step.' : 'Providers will receive this request after you submit it.'}
+              </div>
+              <div className="modalActions">
+                {step > 1 && (
+                  <button className="buttonGhost" type="button" onClick={() => { setError(''); setStep(step - 1) }}>
+                    <ArrowLeft size={15} /> Back
+                  </button>
+                )}
+                {step === 1 ? (
+                  <button className="buttonPrimary" type="button" disabled={!serviceId} onClick={goToDetails}>
+                    Continue <ArrowRight size={16} />
+                  </button>
+                ) : step === 2 ? (
+                  <button className="buttonPrimary" type="button" disabled={!detailsValid || !budgetValid} onClick={goToReview}>
+                    Review request <ArrowRight size={16} />
+                  </button>
+                ) : (
+                  <button className="buttonPrimary" type="button" disabled={busy} onClick={handleSubmit}>
+                    {busy ? 'Creating request…' : 'Create request'} <ArrowRight size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </section>
+    </div>
+  )
+}
+ + budgetValue.toLocaleString() : 'Open to quotes'}</strong></div>
+                    <div><span>Quotes sent to</span><strong>{requesterEmail || 'Your account email'}</strong></div>
                     <div className="requestReviewDetails"><span>Details</span><p>{description}</p></div>
                     {accessNotes && <div className="requestReviewDetails"><span>Access notes</span><p>{accessNotes}</p></div>}
                     <div className="requestReviewDetails">

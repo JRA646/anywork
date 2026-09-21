@@ -607,3 +607,28 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
 .providerServiceEditor input:focus{border-color:rgba(200,107,46,.4);box-shadow:0 0 0 3px rgba(200,107,46,.06)}
 .providerServiceEditor>div{display:flex;justify-content:flex-end;gap:6px}
 .providerServiceEditor .buttonPrimary,.providerServiceEditor .buttonGhost{font-size:8px;padding:7px 9px}
+
+.providerJobDetail{max-width:1280px}
+.providerJobDetailHeader{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:15px}
+.providerJobDetailHeader>div:first-child{min-width:0}
+.providerJobDetailTitle{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.providerJobDetailTitle h1{font-size:38px;letter-spacing:-1.6px;margin:8px 0}
+.providerJobDetailHeader p{margin:0;color:#777;font-size:11px}
+.providerJobDetailActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.providerJobProgress{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#171717;color:#fff;border-radius:16px;padding:18px;margin-bottom:15px}
+.providerJobProgress>div{display:flex;align-items:center;gap:8px;padding:9px;border-radius:10px;background:#242424}
+.providerJobProgress>div>span{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#333;color:#aaa;font-size:9px;font-weight:900}
+.providerJobProgress>div.done>span{background:var(--brand);color:#fff}
+.providerJobProgress small{font-size:9px;color:#aaa}.providerJobProgress .done small{color:#fff}
+.providerJobDetailGrid{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:14px}
+.providerJobDetailGrid main{display:grid;gap:12px}
+.providerJobBriefText{color:#777;font-size:11px;line-height:1.7}
+.providerJobTimeline{display:grid}
+.providerJobTimelineItem{display:grid;grid-template-columns:32px 1fr;gap:10px;padding:14px 0;border-bottom:1px solid #eee}
+.providerJobTimelineItem:last-child{border-bottom:0}
+.providerJobTimelineItem>div{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#efeee8;color:#aaa}
+.providerJobTimelineItem.done>div{background:#e7f2e8;color:#397246}
+.providerJobTimelineItem>span{display:grid;gap:4px}
+.providerJobTimelineItem strong{font-size:11px}.providerJobTimelineItem small{font-size:9px;color:#888;line-height:1.5}
+@media(max-width:1050px){.providerJobDetailGrid{grid-template-columns:1fr}.providerJobDetailHeader{align-items:flex-start;flex-direction:column}.providerJobDetailActions{justify-content:flex-start}}
+@media(max-width:700px){.providerJobProgress{grid-template-columns:1fr 1fr}.providerJobDetailTitle h1{font-size:32px}.providerJobDetailActions{width:100%}.providerJobDetailActions button{flex:1;justify-content:center}}

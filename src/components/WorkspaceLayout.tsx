@@ -57,7 +57,6 @@ const labels: Record<string, string> = {
   reviews: 'Reviews',
   support: 'Support',
   calendar: 'Calendar',
-  verification: 'Verification',
   checkins: 'Job Check-in',
   'service-builder': 'Service Builder',
   disputes: 'Disputes',

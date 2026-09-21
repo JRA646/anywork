@@ -1,75 +1,73 @@
-# React + TypeScript + Vite
+# ANYwork
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+ANYwork is a modern two-sided service marketplace where customers discover providers, compare quotes, schedule work, and track jobs from request to completion.
 
-Currently, two official plugins are available:
+## Product structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Public marketplace: home, services, provider profiles, quote request flow
+- Customer workspace: dashboard, requests, quote comparison, messages, profile
+- Provider workspace: dashboard, incoming requests, quote responses, jobs, services, earnings, messages
+- Admin workspace: operations dashboard, requests, providers, services, customers, settings
 
-## React Compiler
+## Core lifecycle
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Request -> Quote -> Schedule -> In Progress -> Completed
 
-## Expanding the ESLint configuration
+## Frontend
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- React 19
+- TypeScript
+- Vite
+- Lucide React
+- Custom browser-history router for deep-linkable routes
+- Responsive design system with reusable marketplace components
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Demo access
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+The sign-in screen provides demo role access for Customer, Provider, and Admin. Replace the demo session storage implementation in `src/app/App.tsx` with Supabase/Auth0/Clerk or your preferred authentication provider before production.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Routes
 
 ```
+/                         Public marketplace
+/services                  Service discovery
+/providers/:id             Provider profile
+/signin                    Authentication / demo role selection
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+/customer                  Customer dashboard
+/customer/requests         Customer requests
+/customer/requests/:id     Request + quote comparison
+/customer/messages         Customer messages
+/customer/profile          Customer profile
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+/provider                  Provider dashboard
+/provider/requests         Provider request queue
+/provider/requests/:id     Provider quote response
+/provider/jobs             Provider jobs
+/provider/services         Provider service catalog
+/provider/earnings         Provider earnings
+/provider/messages         Provider messages
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+/admin                     Operations dashboard
+/admin/requests            Request operations
+/admin/providers           Provider directory
+/admin/services            Service catalog
+/admin/customers           Customer management
+/admin/settings            Marketplace controls
 ```
+
+## Local development
+
+```bash
+npm install
+npm run dev
+```
+
+## Quality checks
+
+```bash
+npm run lint
+npm run build
+```
+
+The current UI uses mock data from `src/data/mockData.ts`. The next backend integration should map those types to users, providers, services, service requests, quotes, appointments, messages, reviews, payments, and invoices.

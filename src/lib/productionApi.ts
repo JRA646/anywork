@@ -263,6 +263,15 @@ export async function recordPayment(input: { invoiceId: string; providerId: stri
   return data as Payment
 }
 
+export async function confirmManualPayment(paymentId: string) {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('anywork_confirm_manual_payment', {
+    p_payment_id: paymentId,
+  })
+  if (error) throw error
+  return data as Payment
+}
+
 export async function listReviews(role?: 'customer' | 'provider') {
   const client = requireSupabase()
   const userId = await getCurrentUserId()

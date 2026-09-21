@@ -209,6 +209,7 @@ export function AdminServices() {
           ...service,
           starting_price: null,
           starting_price_label: service.startingPrice,
+          image_url: service.imageUrl || null,
           enabled: true,
           category: service.title,
           subcategory: service.label,

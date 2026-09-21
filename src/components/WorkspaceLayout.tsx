@@ -29,7 +29,7 @@ import {
 import { confirmAction } from '../lib/alerts'
 
 const nav = {
-  customer: ['dashboard', 'requests', 'messages', 'profile'],
+  customer: ['dashboard', 'requests', 'jobs', 'messages', 'profile'],
   provider: ['dashboard', 'requests', 'jobs', 'services', 'earnings', 'messages', 'profile'],
   admin: ['dashboard', 'requests', 'providers', 'services', 'customers', 'settings', 'profile'],
 } as const

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ImagePlus, Trash2, Upload, X } from 'lucide-react'
+import { ImagePlus, Trash2, Upload } from 'lucide-react'
 import { deleteRequestPhoto, listRequestPhotos, uploadRequestPhoto, type DbRequestPhoto } from '../lib/anyworkApi'
 
 export function RequestPhotos({

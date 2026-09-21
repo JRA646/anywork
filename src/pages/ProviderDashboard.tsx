@@ -328,6 +328,9 @@ function ProviderServices() {
   const [configured, setConfigured] = useState<DbProviderService[]>([])
   const [saving, setSaving] = useState('')
   const [search, setSearch] = useState('')
+  const [editing, setEditing] = useState<string | null>(null)
+  const [price, setPrice] = useState('')
+  const [leadTime, setLeadTime] = useState('1')
 
   useEffect(() => {
     listProviderServices().then(setConfigured).catch(() => undefined)
@@ -335,6 +338,13 @@ function ProviderServices() {
 
   const configuredByKey = new Map(configured.map((item) => [item.service_key, item]))
   const catalog = services.filter((service) => service.title.toLowerCase().includes(search.toLowerCase()) || service.label.toLowerCase().includes(search.toLowerCase()))
+
+  const beginEdit = (serviceKey: string) => {
+    const current = configuredByKey.get(serviceKey)
+    setEditing(serviceKey)
+    setPrice(current?.starting_price != null ? String(current.starting_price) : '')
+    setLeadTime(String(current?.lead_time_days ?? 1))
+  }
 
   const toggle = async (serviceKey: string) => {
     const current = configuredByKey.get(serviceKey)
@@ -354,6 +364,25 @@ function ProviderServices() {
     }
   }
 
+  const saveConfig = async (serviceKey: string) => {
+    const current = configuredByKey.get(serviceKey)
+    setSaving(serviceKey)
+    try {
+      const saved = await saveProviderService({
+        serviceKey,
+        enabled: current?.enabled ?? true,
+        startingPrice: price ? Number(price) : null,
+        minimumJobValue: current?.minimum_job_value ?? null,
+        serviceArea: current?.service_area ?? null,
+        leadTimeDays: Math.max(0, Number(leadTime) || 1),
+      })
+      setConfigured((items) => [...items.filter((item) => item.service_key !== serviceKey), saved])
+      setEditing(null)
+    } finally {
+      setSaving('')
+    }
+  }
+
   return (
     <div className="workspaceDashboard providerHub">
       <PageTitle kicker="BUSINESS" title="Services" description="Control what customers can request, what you charge from, and how quickly you can respond." />
@@ -368,10 +397,29 @@ function ProviderServices() {
           return (
             <article className={'providerServiceCard ' + (enabled ? 'enabled' : '')} key={service.id}>
               <div className="providerServiceIcon"><BriefcaseBusiness size={20} /></div>
-              <div className="providerServiceCardHeader"><div><span className="eyebrow">{service.title}</span><h3>{service.label}</h3></div><button onClick={() => void toggle(service.id)} disabled={saving === service.id} aria-label={'Toggle ' + service.label}>{enabled ? <ToggleRight className="toggleOn" size={27} /> : <ToggleLeft size={27} />}</button></div>
+              <div className="providerServiceCardHeader">
+                <div><span className="eyebrow">{service.title}</span><h3>{service.label}</h3></div>
+                <button onClick={() => void toggle(service.id)} disabled={saving === service.id} aria-label={'Toggle ' + service.label}>
+                  {enabled ? <ToggleRight className="toggleOn" size={27} /> : <ToggleLeft size={27} />}
+                </button>
+              </div>
               <p>{service.description}</p>
-              <div className="providerServiceMeta"><span>Starting price<strong>{config?.starting_price ? '$' + Number(config.starting_price).toLocaleString() : service.startingPrice}</strong></span><span>Lead time<strong>{config?.lead_time_days ?? 1} day{(config?.lead_time_days ?? 1) === 1 ? '' : 's'}</strong></span></div>
-              <div className="providerServiceStatus"><span className={enabled ? 'enabledDot' : 'disabledDot'} /> {enabled ? 'Visible to customers' : 'Not accepting requests'}</div>
+              <div className="providerServiceMeta">
+                <span>Starting price<strong>{config?.starting_price != null ? '$' + Number(config.starting_price).toLocaleString() : service.startingPrice}</strong></span>
+                <span>Lead time<strong>{config?.lead_time_days ?? 1} day{(config?.lead_time_days ?? 1) === 1 ? '' : 's'}</strong></span>
+              </div>
+              {editing === service.id ? (
+                <div className="providerServiceEditor">
+                  <label><span>Starting price</span><input value={price} onChange={(event) => setPrice(event.target.value)} type="number" min="0" /></label>
+                  <label><span>Lead time (days)</span><input value={leadTime} onChange={(event) => setLeadTime(event.target.value)} type="number" min="0" /></label>
+                  <div><button className="buttonGhost" onClick={() => setEditing(null)}>Cancel</button><button className="buttonPrimary" disabled={saving === service.id} onClick={() => void saveConfig(service.id)}>{saving === service.id ? 'Saving…' : 'Save settings'}</button></div>
+                </div>
+              ) : (
+                <div className="providerServiceFooter">
+                  <span className={enabled ? 'enabledDot' : 'disabledDot'} /> {enabled ? 'Visible to customers' : 'Not accepting requests'}
+                  <button className="textLink" onClick={() => beginEdit(service.id)}>Configure</button>
+                </div>
+              )}
             </article>
           )
         })}

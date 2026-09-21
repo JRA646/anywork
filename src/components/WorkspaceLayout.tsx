@@ -21,14 +21,11 @@ import type { Role } from '../types/marketplace'
 import type { AnyWorkProfile } from '../types/auth'
 import { BrandLogo } from './BrandLogo'
 import {
-  listCustomerRequests,
-  subscribeToQuotes,
-  subscribeToRequests,
-  subscribeToUserMessages,
-  type DbQuote,
-  type DbRealtimeChange,
-  type DbRequest,
-  type DbMessage,
+  listNotifications,
+  markNotificationsRead,
+  subscribeToNotifications,
+  type DbNotification,
+  type RealtimeStatus,
 } from '../lib/anyworkApi'
 import { confirmAction } from '../lib/alerts'
 
@@ -64,16 +61,10 @@ const icons: Record<string, LucideIcon> = {
   settings: Settings2,
 }
 
-type NotificationItem = {
-  id: string
-  title: string
-  detail: string
-  createdAt: number
-  href?: string
-}
+type NotificationItem = DbNotification
 
-const notificationTime = (createdAt: number) => {
-  const seconds = Math.max(0, Math.floor((Date.now() - createdAt) / 1000))
+const notificationTime = (createdAt: string) => {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 1000))
   if (seconds < 10) return 'Just now'
   if (seconds < 60) return seconds + 's ago'
   const minutes = Math.floor(seconds / 60)
@@ -119,106 +110,54 @@ export function WorkspaceLayout({
       : 'Customer portal'
 
   useEffect(() => {
-    let requestCleanup: (() => void) | undefined
-    let quoteCleanup: (() => void) | undefined
-    let messageCleanup: (() => void) | undefined
-    let requestIds = new Set<string>()
+    let cleanup: (() => void) | undefined
 
-    const addNotification = (item: NotificationItem) => {
-      setNotifications((current) => {
-        if (current.some((existing) => existing.id === item.id)) return current
-        return [item, ...current].slice(0, 8)
-      })
-      setUnreadCount((current) => current + 1)
-    }
-
-    const handleRequestChange = (change: DbRealtimeChange<DbRequest>) => {
-      const record = change.record
-      const oldRecord = change.oldRecord
-
-      if (record?.customer_id === profile.user_id) requestIds.add(record.id)
-      if (oldRecord?.customer_id === profile.user_id && oldRecord.id) requestIds.add(oldRecord.id)
-
-      const relevant = role === 'admin'
-        || (role === 'customer' && record?.customer_id === profile.user_id)
-        || (role === 'provider' && (
-          record?.selected_provider_id === profile.user_id
-          || record?.status === 'Requested'
-          || oldRecord?.selected_provider_id === profile.user_id
-        ))
-
-      if (!relevant) return
-
-      const titleText = change.event === 'INSERT'
-        ? role === 'provider' ? 'New service request' : 'Request created'
-        : change.event === 'DELETE'
-          ? 'Request removed'
-          : 'Request updated'
-
-      addNotification({
-        id: 'request:' + (record?.id || oldRecord?.id || '') + ':' + change.event + ':' + Date.now(),
-        title: titleText,
-        detail: record?.title || 'A service request has changed.',
-        createdAt: Date.now(),
-        href: record?.id ? '/requests/' + record.id : undefined,
-      })
-    }
-
-    const handleQuoteChange = (change: DbRealtimeChange<DbQuote>) => {
-      const record = change.record
-      const relevant = role === 'admin'
-        || (role === 'provider' && record?.provider_id === profile.user_id)
-        || (role === 'customer' && !!record?.request_id && requestIds.has(record.request_id))
-
-      if (!relevant) return
-
-      addNotification({
-        id: 'quote:' + (record?.id || change.oldRecord?.id || '') + ':' + change.event + ':' + Date.now(),
-        title: change.event === 'INSERT' ? 'New quote activity' : 'Quote updated',
-        detail: role === 'customer' ? 'A provider has responded to one of your requests.' : 'A quote in your marketplace pipeline changed.',
-        createdAt: Date.now(),
-        href: record?.request_id ? '/requests/' + record.request_id : undefined,
-      })
-    }
-
-    const handleMessage = (message: DbMessage) => {
-      if (message.sender_id === profile.user_id || message.receiver_id !== profile.user_id) return
-
-      addNotification({
-        id: 'message:' + message.id,
-        title: 'New message',
-        detail: 'You received a new work conversation message.',
-        createdAt: Date.now(),
-        href: message.request_id
-          ? '/messages?request=' + message.request_id + '&provider=' + message.sender_id
-          : '/messages',
-      })
-    }
-
-    const start = async () => {
-      if (role === 'customer') {
-        try {
-          const rows = await listCustomerRequests()
-          requestIds = new Set(rows.map((row) => row.id))
-        } catch {
-          requestIds = new Set()
-        }
+    const load = async () => {
+      try {
+        const rows = await listNotifications()
+        setNotifications(rows)
+        setUnreadCount(rows.filter((item) => !item.read_at).length)
+      } catch {
+        setNotifications([])
+        setUnreadCount(0)
       }
 
-      requestCleanup = await subscribeToRequests(handleRequestChange)
-      quoteCleanup = await subscribeToQuotes(handleQuoteChange)
-      messageCleanup = await subscribeToUserMessages(handleMessage)
+      try {
+        cleanup = await subscribeToNotifications((notification) => {
+          setNotifications((current) => [
+            notification,
+            ...current.filter((item) => item.id !== notification.id),
+          ].slice(0, 30))
+          if (!notification.read_at) {
+            setUnreadCount((current) => current + 1)
+          }
+        }, (_status: RealtimeStatus) => undefined)
+      } catch {
+        cleanup = undefined
+      }
     }
 
-    void start()
+    void load()
+
+    const refreshOnFocus = () => {
+      if (document.visibilityState !== 'visible') return
+      void listNotifications()
+        .then((rows) => {
+          setNotifications(rows)
+          setUnreadCount(rows.filter((item) => !item.read_at).length)
+        })
+        .catch(() => undefined)
+    }
+
+    document.addEventListener('visibilitychange', refreshOnFocus)
+    window.addEventListener('focus', refreshOnFocus)
 
     return () => {
-      requestCleanup?.()
-      quoteCleanup?.()
-      messageCleanup?.()
+      cleanup?.()
+      document.removeEventListener('visibilitychange', refreshOnFocus)
+      window.removeEventListener('focus', refreshOnFocus)
     }
-  }, [profile.user_id, role])
-
+  }, [profile.user_id])
   const handleSignOut = async () => {
     const confirmed = await confirmAction({
       title: 'Sign out of ANYwork?',
@@ -234,7 +173,12 @@ export function WorkspaceLayout({
   const toggleNotifications = () => {
     const next = !notificationsOpen
     setNotificationsOpen(next)
-    if (next) setUnreadCount(0)
+    if (next && unreadCount > 0) {
+      const unreadIds = notifications.filter((item) => !item.read_at).map((item) => item.id)
+      void markNotificationsRead(unreadIds).catch(() => undefined)
+      setNotifications((current) => current.map((item) => unreadIds.includes(item.id) ? { ...item, read_at: new Date().toISOString() } : item))
+      setUnreadCount(0)
+    }
   }
 
   return (
@@ -305,8 +249,8 @@ export function WorkspaceLayout({
                       <span className="notificationIndicator" />
                       <div>
                         <strong>{notification.title}</strong>
-                        <small>{notification.detail}</small>
-                        <time>{notificationTime(notification.createdAt)}</time>
+                        <small>{notification.body}</small>
+                        <time>{notificationTime(notification.created_at)}</time>
                       </div>
                     </button>
                   )) : (

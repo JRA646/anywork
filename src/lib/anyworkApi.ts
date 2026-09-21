@@ -154,6 +154,38 @@ export async function listProfiles(userIds: string[]) {
   return (data || []) as DbProfile[]
 }
 
+export async function createQuote(input: {
+  requestId: string
+  amount: number
+  availability?: string | null
+  message: string
+}) {
+  const client = requireSupabase()
+  const providerId = await getCurrentUserId()
+
+  const { data, error } = await client
+    .from('anywork_quotes')
+    .insert({
+      request_id: input.requestId,
+      provider_id: providerId,
+      amount: input.amount,
+      availability: input.availability || null,
+      message: input.message,
+      status: 'Pending',
+    })
+    .select('*')
+    .single()
+
+  if (error) throw error
+
+  await client
+    .from('anywork_service_requests')
+    .update({ status: 'Quoted' })
+    .eq('id', input.requestId)
+
+  return data as DbQuote
+}
+
 export async function acceptQuote(requestId: string, quoteId: string, providerId: string) {
   const client = requireSupabase()
 

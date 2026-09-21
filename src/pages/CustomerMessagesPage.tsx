@@ -47,10 +47,12 @@ export function CustomerMessagesPage({
   onNavigate,
   requestId,
   providerId,
+  workspaceRole = 'customer',
 }: {
   onNavigate: (path: string) => void
   requestId?: string
   providerId?: string
+  workspaceRole?: 'customer' | 'provider'
 }) {
   const [currentUserId, setCurrentUserId] = useState('')
   const [messages, setMessages] = useState<DbMessage[]>([])
@@ -169,12 +171,12 @@ export function CustomerMessagesPage({
   }, [messages, currentUserId, requestId])
 
   return (
-    <div className="workspaceDashboard messagesPage">
+    <div className={"workspaceDashboard messagesPage messagesPage-" + workspaceRole}>
       <div className="messagesPageHeader">
         <div>
           <span className="eyebrow">MESSAGES</span>
-          <h1>Conversations</h1>
-          <p>Keep provider and support conversations connected to the work.</p>
+          <h1>{workspaceRole === 'provider' ? 'Customer conversations' : 'Conversations'}</h1>
+          <p>{workspaceRole === 'provider' ? 'Keep every customer conversation attached to its request and job.' : 'Keep provider and support conversations connected to the work.'}</p>
         </div>
         <div className="messagesHeaderStatus"><ShieldCheck size={16} /> Secure work conversations</div>
       </div>
@@ -205,7 +207,7 @@ export function CustomerMessagesPage({
         <section className="messageThread">
           <header className="messageThreadHeader">
             <div className="messageThreadIdentity">
-              <button className="messagesMobileBack" aria-label="Back" onClick={() => onNavigate(requestId ? '/customer/requests/' + requestId : '/customer/messages')}><ChevronLeft size={18} /></button>
+              <button className="messagesMobileBack" aria-label="Back" onClick={() => onNavigate(requestId ? '/' + workspaceRole + '/requests/' + requestId : '/' + workspaceRole + '/messages')}><ChevronLeft size={18} /></button>
               <span className="conversationAvatar large">{selected?.initials || initialsFrom(selectedProfile)}</span>
               <div><strong>{selected?.name || 'Select a conversation'}</strong><span>{selected?.subtitle || 'Choose a conversation to begin.'}</span></div>
             </div>
@@ -219,7 +221,7 @@ export function CustomerMessagesPage({
             <div className="messageRequestContext">
               <div className="messageRequestIcon"><FileText size={17} /></div>
               <div><span>CONNECTED REQUEST</span><strong>{selected.requestId}</strong></div>
-              <button onClick={() => onNavigate('/customer/requests/' + selected.requestId)} type="button">View request</button>
+              <button onClick={() => onNavigate('/' + workspaceRole + '/requests/' + selected.requestId)} type="button">View request</button>
             </div>
           )}
 

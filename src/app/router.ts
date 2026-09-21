@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 export function usePath() {
   const [path, setPath] = useState(window.location.pathname)
@@ -9,12 +9,12 @@ export function usePath() {
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
-  const navigate = (next: string) => {
+  const navigate = useCallback((next: string) => {
     if (next === window.location.pathname) return
     window.history.pushState({}, '', next)
     setPath(window.location.pathname)
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+  }, [])
 
   return { path, navigate }
 }

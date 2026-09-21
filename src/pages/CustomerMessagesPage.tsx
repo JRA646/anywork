@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   CheckCheck,
   ChevronLeft,
@@ -64,6 +64,8 @@ export function CustomerMessagesPage({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [realtime, setRealtime] = useState<'connecting' | 'live' | 'offline'>('connecting')
+  const threadEndRef = useRef<HTMLDivElement | null>(null)
+  const lastLoadedAtRef = useRef(0)
 
   const load = async () => {
     setLoading(true)
@@ -83,7 +85,22 @@ export function CustomerMessagesPage({
     }
   }
 
-  useEffect(() => { void load() }, [requestId, providerId])
+  useEffect(() => { void load().then(() => { lastLoadedAtRef.current = Date.now() }).catch(() => undefined) }, [requestId, providerId])
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState !== 'visible') return
+      if (Date.now() - lastLoadedAtRef.current < 1500) return
+      void load().then(() => { lastLoadedAtRef.current = Date.now() }).catch(() => undefined)
+    }
+
+    document.addEventListener('visibilitychange', handleVisibility)
+    window.addEventListener('focus', handleVisibility)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('focus', handleVisibility)
+    }
+  }, [requestId, providerId])
 
   useEffect(() => {
     if (!currentUserId) return
@@ -175,6 +192,10 @@ export function CustomerMessagesPage({
   }
 
   useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [selected?.id, selected?.messages.length])
+
+  useEffect(() => {
     const unread = messages.filter((message) => (
       message.receiver_id === currentUserId
       && !message.read_at
@@ -255,6 +276,7 @@ export function CustomerMessagesPage({
               </div>
             ))}
             {!selected?.messages.length && <div className="messageEmptyConversation"><strong>Start the conversation</strong><span>Send a clear question or update about this request.</span></div>}
+            <div ref={threadEndRef} />
           </div>
 
           <div className="messageComposer">

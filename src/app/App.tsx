@@ -234,7 +234,7 @@ function Application() {
               requestId={new URLSearchParams(window.location.search).get('request') || requestId}
               providerId={new URLSearchParams(window.location.search).get('provider') || undefined}
             />
-          : ['addresses','favorites','invoices','payments','reviews','support','disputes'].includes(section)
+          : ['account','addresses','favorites','invoices','payments','reviews','support','disputes'].includes(section)
             ? <ProductionWorkspacePage role="customer" section={section} profile={profile} onNavigate={navigate} />
         : section === 'profile'
             ? <ProfilePage role="customer" />

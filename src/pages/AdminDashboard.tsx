@@ -247,21 +247,7 @@ export function AdminServices() {
           tags: form.tags,
           startingPrice,
           startingPriceLabel: startingPrice !== null ? '$' + startingPrice.toLocaleString() : 'Quote',
-        })
-        setCatalog((current) => current.map((item) => item.id === editingId ? updated : item))
-      } else {
-        const created = await createAdminService({
-          category: form.category.trim(),
-          subcategory: form.subcategory.trim(),
-          title: form.category.trim(),
-          label: form.label.trim(),
-          description: form.description.trim(),
-          icon: 'Store',
-          items,
-          tags: form.tags,
-          startingPrice,
-          startingPriceLabel: startingPrice !== null ? '
-        setCatalog((current) => [created, ...current])
+        })        setCatalog((current) => [created, ...current])
         setActiveService((current) => ({ ...current, [created.id]: true }))
       }
 

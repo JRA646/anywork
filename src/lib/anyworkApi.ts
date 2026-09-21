@@ -3,7 +3,10 @@ import { requireSupabase } from './supabase'
 export type DbRequest = {
   id: string
   request_number: string
-  customer_id: string
+  customer_id: string | null
+  requester_name: string | null
+  requester_email: string | null
+  requester_phone: string | null
   service_key: string
   title: string
   description: string
@@ -200,14 +203,46 @@ export async function createServiceRequest(input: {
   preferredDate?: string | null
   accessNotes?: string | null
   budget?: number | null
+  requesterName?: string
+  requesterEmail?: string
+  requesterPhone?: string | null
+  companyWebsite?: string
 }) {
   const client = requireSupabase()
-  const customerId = await getCurrentUserId()
+
+  const sessionResult = await client.auth.getSession()
+  const userId = sessionResult.data.session?.user?.id
+
+  if (!userId) {
+    const { data, error } = await client.functions.invoke('create-public-request', {
+      body: {
+        serviceKey: input.serviceKey,
+        title: input.title,
+        description: input.description,
+        location: input.location,
+        preferredDate: input.preferredDate || null,
+        accessNotes: input.accessNotes || null,
+        budget: input.budget ?? null,
+        requesterName: input.requesterName?.trim() || '',
+        requesterEmail: input.requesterEmail?.trim() || '',
+        requesterPhone: input.requesterPhone?.trim() || '',
+        companyWebsite: input.companyWebsite || '',
+      },
+    })
+
+    if (error) throw error
+    const response = data as { request?: DbRequest; error?: string } | null
+    if (!response?.request) throw new Error(response?.error || 'Unable to create this request.')
+    return response.request
+  }
 
   const { data, error } = await client
     .from('anywork_service_requests')
     .insert({
-      customer_id: customerId,
+      customer_id: userId,
+      requester_name: input.requesterName?.trim() || null,
+      requester_email: input.requesterEmail?.trim() || sessionResult.data.session?.user?.email || null,
+      requester_phone: input.requesterPhone?.trim() || null,
       service_key: input.serviceKey,
       title: input.title,
       description: input.description,
@@ -355,6 +390,12 @@ export async function saveProviderService(input: {
   return data as DbProviderService
 }
 
+export type CreateQuoteResult = {
+  quote: DbQuote
+  emailSent: boolean
+  emailError?: string
+}
+
 export async function createQuote(input: {
   requestId: string
   amount: number
@@ -384,7 +425,28 @@ export async function createQuote(input: {
     .update({ status: 'Quoted' })
     .eq('id', input.requestId)
 
-  return data as DbQuote
+  try {
+    const { data: emailData, error: emailError } = await client.functions.invoke('send-quote-email', {
+      body: { quoteId: data.id },
+    })
+
+    if (emailError) {
+      return { quote: data as DbQuote, emailSent: false, emailError: emailError.message }
+    }
+
+    const response = emailData as { sent?: boolean; error?: string } | null
+    return {
+      quote: data as DbQuote,
+      emailSent: Boolean(response?.sent),
+      emailError: response?.error,
+    }
+  } catch (emailError) {
+    return {
+      quote: data as DbQuote,
+      emailSent: false,
+      emailError: emailError instanceof Error ? emailError.message : 'Unable to send quote email.',
+    }
+  }
 }
 
 export async function acceptQuote(requestId: string, quoteId: string, providerId: string) {

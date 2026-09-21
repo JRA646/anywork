@@ -1127,3 +1127,18 @@ html{scroll-behavior:smooth}.publicMain,.workspaceMain{position:relative;overflo
   .workspaceTopbar{height:68px!important;padding:0 12px!important}
   .workspaceContent{padding:18px 12px 48px!important}
 }
+
+
+/* ANYwork logo refresh */
+.brandImage-header{width:126px!important;height:48px!important;object-fit:contain!important;object-position:center!important}
+.brandImage-sidebar{width:150px!important;height:76px!important;object-fit:contain!important;object-position:center!important}
+.brandImage-auth{width:220px!important;height:92px!important;object-fit:contain!important;object-position:left center!important}
+@media(max-width:900px){
+  .brandImage-header{width:112px!important;height:44px!important}
+  .brandImage-sidebar{width:142px!important;height:72px!important}
+  .brandImage-auth{width:190px!important;height:82px!important}
+}
+@media(max-width:600px){
+  .brandImage-header{width:104px!important;height:40px!important}
+  .brandImage-auth{width:180px!important;height:76px!important}
+}

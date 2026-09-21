@@ -86,7 +86,7 @@ export function CustomerMessagesPage({
     }
   }
 
-  useEffect(() => { void load().then(() => { lastLoadedAtRef.current = Date.now() }).catch(() => undefined) }, [requestId, providerId])
+  useEffect(() => { void load().then(() => { lastLoadedAtRef.current = Date.now() }).catch(() => undefined) }, [load])
 
   useEffect(() => {
     const handleVisibility = () => {
@@ -101,7 +101,7 @@ export function CustomerMessagesPage({
       document.removeEventListener('visibilitychange', handleVisibility)
       window.removeEventListener('focus', handleVisibility)
     }
-  }, [requestId, providerId])
+  }, [load])
 
   useEffect(() => {
     if (!currentUserId) return

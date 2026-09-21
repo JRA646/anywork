@@ -607,3 +607,18 @@
   .adminLiveRow{grid-template-columns:1fr;gap:10px}
   .adminLiveRow select{width:100%}
 }
+
+/* Interactive role dashboard analytics */
+.dashboardChartWrap{margin-top:4px}
+.dashboardChartLegend{display:flex;gap:18px;align-items:center;flex-wrap:wrap;color:#777;font-size:10px;font-weight:800;margin-bottom:8px}
+.dashboardChartLegend span{display:inline-flex;align-items:center;gap:6px}
+.chartDot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.chartDotPrimary{background:#111}
+.chartDotSecondary{background:var(--brand)}
+.dashboardChart{width:100%;height:auto;min-height:220px;overflow:visible}
+.chartAxis{stroke:#e4e1d9;stroke-width:1}
+.chartBar{fill:#111;cursor:pointer;transition:opacity .18s,transform .18s;transform-origin:center bottom}
+.chartBar:hover{opacity:.78}
+.chartLabel{fill:#888;font-size:10px;font-weight:700}
+.chartValue{fill:#333;font-size:10px;font-weight:900}
+.providerAnalyticsCard{grid-column:span 2}

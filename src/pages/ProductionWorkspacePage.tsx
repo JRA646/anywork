@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ArrowRight, CheckCircle2, FileText, LifeBuoy, Plus, ShieldCheck, Trash2, WalletCards, Star } from 'lucide-react'
 import { listAdminServices, listPublicServices, listCustomerRequests, listProviderRequests, type DbService, type DbRequest, submitJobReview, updateAdminRequestStatus } from '../lib/anyworkApi'
 import {
@@ -8,7 +8,75 @@ import {
   type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets, listAdminReviews, listJobPhotos, getJobPhotoUrl, uploadJobPhoto, listAdminVerifications, updateProviderVerification, listFavorites, toggleFavorite,
 } from '../lib/productionApi'
 
-export function ProductionWorkspacePage({ role, section, onNavigate, profile: _profile }: { role: 'customer'|'provider'|'admin'; section: string; profile?: AnyWorkProfile; onNavigate: (path:string)=>void }) {
+type FavoriteRow = {
+  id: string
+  service_id: string | null
+  provider_id: string | null
+}
+
+type ReviewRow = {
+  id: string
+  rating: number | string
+  comment: string | null
+  created_at: string
+}
+
+type ProviderAvailabilityRow = {
+  id: string
+  weekday: number
+  start_time: string
+  end_time: string
+  enabled: boolean
+}
+
+type ProviderTimeOffRow = {
+  id: string
+  starts_at: string
+  ends_at: string
+  reason: string | null
+}
+
+type ProviderServiceAreaRow = {
+  id: string
+  area_name: string
+  city: string | null
+  radius_km: number | null
+}
+
+type ProviderVerificationRow = {
+  id: string
+  provider_id: string
+  status: string
+  identity_verified: boolean
+  business_verified: boolean
+  documents_verified: boolean
+  payment_verified: boolean
+  notes: string | null
+  created_at: string
+  reviewed_at: string | null
+}
+
+type JobPhotoRow = {
+  id: string
+  request_id: string
+  storage_path: string
+  file_name: string
+  mime_type: string
+  size_bytes: number
+  photo_type: string
+  created_at: string
+  url?: string
+}
+
+type AuditLogRow = {
+  id: string
+  action: string
+  entity_type: string
+  entity_id: string | null
+  created_at: string
+}
+
+export function ProductionWorkspacePage({ role, section, onNavigate }: { role: 'customer'|'provider'|'admin'; section: string; profile?: unknown; onNavigate: (path:string)=>void }) {
   if (section === 'account') return <AccountPage onNavigate={onNavigate} />
   if (section === 'addresses') return <AddressesPage />
   if (section === 'favorites') return <FavoritesPage />
@@ -44,17 +112,17 @@ function AccountPage({ onNavigate }: { onNavigate:(path:string)=>void }) {
 function AddressesPage() {
   const [rows,setRows]=useState<Address[]>([])
   const [form,setForm]=useState({label:'Home',address_line1:'',city:'',state:'',postal_code:''})
-  const load=()=>listAddresses().then(setRows).catch(()=>setRows([]))
-  useEffect(()=>{void load()},[])
+  const load=useCallback(()=>listAddresses().then(setRows).catch(()=>setRows([])),[])
+  useEffect(()=>{void load()},[load])
   const save=async()=>{if(!form.address_line1.trim())return;const row=await saveAddress(form);setRows(current=>[row,...current.filter(x=>x.id!==row.id)])}
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="PROFILE" title="Saved addresses" description="Reuse service locations and keep your job details consistent."/><Panel title="Add address" kicker="LOCATION"><div className="productionFormGrid">{Object.entries(form).map(([key,value])=><label key={key}>{key.replaceAll('_',' ')}<input value={value} onChange={e=>setForm({...form,[key]:e.target.value})}/></label>)}</div><button className="buttonPrimary" onClick={()=>void save()}><Plus size={15}/> Save address</button></Panel><Panel title="Your addresses" kicker="SAVED LOCATIONS">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.label}</strong><span>{row.address_line1}, {row.city} {row.postal_code}</span></div><button className="buttonGhost" onClick={()=>void deleteAddress(row.id).then(load)}><Trash2 size={14}/></button></div>)}{!rows.length&&<Empty text="No saved addresses yet."/>}</Panel></div>
 }
 
 function FavoritesPage() {
-  const [services,setServices]=useState<any[]>([])
-  const [favorites,setFavorites]=useState<any[]>([])
-  const load=()=>void Promise.all([listPublicServices(),listFavorites()]).then(([s,f])=>{setServices(s);setFavorites(f)}).catch(()=>undefined)
-  useEffect(load,[])
+  const [services,setServices]=useState<DbService[]>([])
+  const [favorites,setFavorites]=useState<FavoriteRow[]>([])
+  const load=useCallback(()=>void Promise.all([listPublicServices(),listFavorites()]).then(([s,f])=>{setServices(s);setFavorites(f as FavoriteRow[])}).catch(()=>undefined),[])
+  useEffect(()=>{void load()},[load])
   const serviceIds=new Set(favorites.filter(item=>item.service_id).map(item=>item.service_id))
   const toggle=async(id:string)=>{await toggleFavorite({serviceId:id});load()}
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="SAVED" title="Favorites" description="Keep preferred services ready for your next request."/><Panel title="Saved services" kicker="FAVORITES">{services.filter(service=>serviceIds.has(service.id)).map(service=><div className="productionListRow" key={service.id}><div><strong>{service.label}</strong><span>{service.description}</span></div><button className="buttonSecondary" onClick={()=>void toggle(service.id)}>Remove</button></div>)}{!services.some(service=>serviceIds.has(service.id))&&<Empty text="No favorite services yet."/>}</Panel><Panel title="Service catalog" kicker="DISCOVER">{services.map(service=><div className="productionListRow" key={service.id}><div><strong>{service.label}</strong><span>{service.starting_price_label||'Quote'}</span></div><button className={serviceIds.has(service.id)?'buttonSecondary':'buttonPrimary'} onClick={()=>void toggle(service.id)}>{serviceIds.has(service.id)?'Saved':'Save'}</button></div>)}</Panel></div>
@@ -70,8 +138,8 @@ function FinancePage({ role }: { role:'customer'|'provider'|'admin' }) {
   const [payInvoice,setPayInvoice]=useState<Invoice|null>(null)
   const [payMethod,setPayMethod]=useState('gcash')
   const [reference,setReference]=useState('')
-  const load=()=>{if(role==='admin')void listAdminPayments().then(setPayments).catch(()=>[]);else void Promise.all([listInvoices(role),listPayments(role)]).then(([i,p])=>{setInvoices(i);setPayments(p)}).catch(()=>undefined)}
-  useEffect(load,[role])
+  const load=useCallback(()=>{if(role==='admin')void listAdminPayments().then(setPayments).catch(()=>[]);else void Promise.all([listInvoices(role),listPayments(role)]).then(([i,p])=>{setInvoices(i);setPayments(p)}).catch(()=>undefined)},[role])
+  useEffect(()=>{void load()},[load])
   const total=payments.filter(p=>p.status==='Succeeded').reduce((s,p)=>s+Number(p.amount),0)
   const issueInvoice=async()=>{if(!requestId||!item||!amount)return;await createInvoice({requestId,items:[{description:item,quantity:1,unit_price:Number(amount),amount:Number(amount)}],tax:Number(tax)||0});setRequestId('');setItem('');setAmount('');setTax('');load()}
   const pay=async()=>{if(!payInvoice)return;await recordPayment({invoiceId:payInvoice.id,providerId:payInvoice.provider_id,amount:Number(payInvoice.total),method:payMethod,reference});setPayInvoice(null);setReference('');load()}
@@ -79,13 +147,13 @@ function FinancePage({ role }: { role:'customer'|'provider'|'admin' }) {
 }
 
 function ReviewsPage({ role }: { role:'customer'|'provider'|'admin' }) {
-  const [rows,setRows]=useState<any[]>([])
+  const [rows,setRows]=useState<ReviewRow[]>([])
   const [jobs,setJobs]=useState<DbRequest[]>([])
   const [requestId,setRequestId]=useState('')
   const [rating,setRating]=useState('5')
   const [comment,setComment]=useState('')
-  const load=()=>void (role==='admin'?listAdminReviews():listReviews(role)).then(setRows).catch(()=>setRows([]))
-  useEffect(()=>{void load()},[role])
+  const load=useCallback(()=>void (role==='admin'?listAdminReviews():listReviews(role)).then(rows=>setRows(rows as ReviewRow[])).catch(()=>setRows([])),[role])
+  useEffect(()=>{void load()},[load])
   useEffect(()=>{if(role==='customer')void listCustomerRequests().then(setJobs).catch(()=>setJobs([]));if(role==='provider')void listProviderRequests().then(rows=>setJobs(rows.filter(row=>row.selected_provider_id))).catch(()=>setJobs([]))},[role])
   const average=rows.length?rows.reduce((s,r)=>s+Number(r.rating),0)/rows.length:0
   const reviewableJobs=jobs.filter(job=>job.status==='Completed')
@@ -102,8 +170,8 @@ function SupportPage({ admin }: { admin:boolean }) {
   const [rows,setRows]=useState<SupportTicket[]>([])
   const [subject,setSubject]=useState('')
   const [description,setDescription]=useState('')
-  const load=()=> (admin?importAdminTickets():listSupportTickets()).then(setRows).catch(()=>setRows([]))
-  useEffect(()=>{void load()},[admin])
+  const load=useCallback(()=> (admin?importAdminTickets():listSupportTickets()).then(setRows).catch(()=>setRows([])),[admin])
+  useEffect(()=>{void load()},[load])
   const submit=async()=>{if(!subject.trim()||!description.trim())return;await createSupportTicket({subject,description});setSubject('');setDescription('');await load()}
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="SUPPORT" title="Support center" description="Create and track support tickets without leaving ANYwork."/><Panel title="New support ticket" kicker="CONTACT SUPPORT"><div className="productionFormGrid"><label>Subject<input value={subject} onChange={e=>setSubject(e.target.value)} placeholder="What do you need help with?"/></label><label>Description<textarea value={description} onChange={e=>setDescription(e.target.value)} rows={5}/></label></div><button className="buttonPrimary" onClick={()=>void submit()}><LifeBuoy size={15}/> Create ticket</button></Panel><Panel title="Tickets" kicker="TICKET HISTORY">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.ticket_number} · {row.subject}</strong><span>{row.priority} · {new Date(row.created_at).toLocaleDateString()}</span></div>{admin?<select value={row.status} onChange={e=>void updateSupportTicket(row.id,e.target.value).then(load)}><option>Open</option><option>In Progress</option><option>Waiting</option><option>Resolved</option><option>Closed</option></select>:<span className="statusBadge neutral">{row.status}</span>}</div>)}{!rows.length&&<Empty text="No support tickets."/>}</Panel></div>
 }
@@ -116,16 +184,16 @@ function DisputesPage({ admin }: { admin:boolean }) {
   const [requestId,setRequestId]=useState('')
   const [reason,setReason]=useState('Service issue')
   const [description,setDescription]=useState('')
-  const load=()=> (admin?listAdminDisputes():listDisputes()).then(setRows).catch(()=>setRows([]))
-  useEffect(()=>{void load()},[admin])
+  const load=useCallback(()=> (admin?listAdminDisputes():listDisputes()).then(setRows).catch(()=>setRows([])),[admin])
+  useEffect(()=>{void load()},[load])
   useEffect(()=>{if(!admin)void listCustomerRequests().then(setJobs).catch(()=>setJobs([]))},[admin])
   const open=async()=>{if(!requestId||!description)return;await openDispute(requestId,reason,description);setRequestId('');setDescription('');await load()}
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="TRUST" title="Disputes" description="Get help when a service needs review or resolution."/>{!admin&&<Panel title="Open a dispute" kicker="YOUR JOB"><div className="productionFormGrid"><label>Job<select value={requestId} onChange={e=>setRequestId(e.target.value)}><option value="">Choose a job</option>{jobs.map(job=><option key={job.id} value={job.id}>{job.title} · {job.request_number}</option>)}</select></label><label>Reason<input value={reason} onChange={e=>setReason(e.target.value)}/></label><label>Description<textarea value={description} onChange={e=>setDescription(e.target.value)} rows={4} placeholder="Tell us what happened."/></label></div><button className="buttonPrimary" onClick={()=>void open()} disabled={!requestId||!description.trim()}>Open dispute</button></Panel>}<Panel title="Dispute queue" kicker="CASE MANAGEMENT">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.reason}</strong><span>{row.description}</span></div>{admin?<select value={row.status} onChange={e=>void updateDispute(row.id,e.target.value).then(load)}><option>Open</option><option>Under Review</option><option>Waiting Customer</option><option>Waiting Provider</option><option>Resolved</option><option>Closed</option></select>:<span className="statusBadge neutral">{row.status}</span>}</div>)}{!rows.length&&<Empty text="No disputes."/>}</Panel></div>
 }
 function ProviderCalendarPage() {
-  const [rows, setRows] = useState<any[]>([])
-  const [timeOff, setTimeOff] = useState<any[]>([])
-  const [areas, setAreas] = useState<any[]>([])
+  const [rows, setRows] = useState<ProviderAvailabilityRow[]>([])
+  const [timeOff, setTimeOff] = useState<ProviderTimeOffRow[]>([])
+  const [areas, setAreas] = useState<ProviderServiceAreaRow[]>([])
   const [areaName, setAreaName] = useState('')
   const [city, setCity] = useState('')
   const [radius, setRadius] = useState('15')
@@ -136,7 +204,7 @@ function ProviderCalendarPage() {
   const defaultStart = '09:00'
   const defaultEnd = '17:00'
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
     try {
       const [availability, blocked, serviceAreas] = await Promise.all([
@@ -144,9 +212,9 @@ function ProviderCalendarPage() {
         listProviderTimeOff(),
         listProviderServiceAreas(),
       ])
-      setRows(availability)
-      setTimeOff(blocked)
-      setAreas(serviceAreas)
+      setRows(availability as ProviderAvailabilityRow[])
+      setTimeOff(blocked as ProviderTimeOffRow[])
+      setAreas(serviceAreas as ProviderServiceAreaRow[])
     } catch {
       setRows([])
       setTimeOff([])
@@ -154,11 +222,11 @@ function ProviderCalendarPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     void load()
-  }, [])
+  }, [load])
 
   const toggleAvailability = async (weekday: number) => {
     const row = rows.find(item => item.weekday === weekday)
@@ -333,16 +401,16 @@ function ProviderCalendarPage() {
 }
 
 function ProviderVerificationPage() {
-  const [verification,setVerification]=useState<any>(null)
+  const [verification,setVerification]=useState<ProviderVerificationRow | null>(null)
   useEffect(()=>{void getProviderVerification().then(setVerification).catch(()=>undefined)},[])
   const submit=async()=>setVerification(await submitProviderVerification({notes:'Provider requested verification review.'}))
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="TRUST" title="Provider verification" description="Build customer trust by completing your business verification."/><Panel title="Verification status" kicker="ACCOUNT TRUST"><div className="verificationGrid">{[['Identity',verification?.identity_verified],['Business',verification?.business_verified],['Documents',verification?.documents_verified],['Payment',verification?.payment_verified]].map(([label,ok])=><div key={String(label)}><ShieldCheck/><strong>{label}</strong><span>{ok?'Verified':'Pending review'}</span></div>)}</div><button className="buttonPrimary" onClick={()=>void submit()}><ShieldCheck size={15}/> Submit for review</button></Panel></div>
 }
 
 function AdminVerificationPage() {
-  const [rows,setRows]=useState<any[]>([])
-  const load=()=>void listAdminVerifications().then(setRows).catch(()=>setRows([]))
-  useEffect(load,[])
+  const [rows,setRows]=useState<ProviderVerificationRow[]>([])
+  const load=useCallback(()=>void listAdminVerifications().then(rows=>setRows(rows as ProviderVerificationRow[])).catch(()=>setRows([])),[])
+  useEffect(()=>{void load()},[load])
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="TRUST & SAFETY" title="Provider verification" description="Review and approve provider trust checks from the admin workspace."/><Panel title="Verification queue" kicker="PROVIDER REVIEW">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.provider_id}</strong><span>{row.status} · identity {row.identity_verified?'verified':'pending'} · business {row.business_verified?'verified':'pending'}</span></div><select value={row.status} onChange={e=>void updateProviderVerification(row.id,e.target.value).then(load)}><option>Pending</option><option>Under Review</option><option>Verified</option><option>Rejected</option></select></div>)}{!rows.length&&<Empty text="No provider verification records."/>}</Panel></div>
 }
 
@@ -350,7 +418,7 @@ function ProviderCheckinPage() {
   const [requestId,setRequestId]=useState('')
   const [type,setType]=useState('arrived')
   const [photoType,setPhotoType]=useState<'before'|'during'|'after'|'completion'|'invoice'|'other'>('during')
-  const [photos,setPhotos]=useState<any[]>([])
+  const [photos,setPhotos]=useState<JobPhotoRow[]>([])
   const [busy,setBusy]=useState(false)
   const loadPhotos=()=>{if(requestId)void listJobPhotos(requestId).then(async rows=>setPhotos(await Promise.all(rows.map(async row=>({...row,url:await getJobPhotoUrl(row.storage_path)})))))}
   const record=async()=>{let coords:{latitude?:number;longitude?:number}={};if(navigator.geolocation){try{const position=await new Promise<GeolocationPosition>((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:8000}));coords={latitude:position.coords.latitude,longitude:position.coords.longitude}}catch{}}await addCheckin(requestId,type,coords);loadPhotos()}
@@ -361,15 +429,15 @@ async function addCheckin(requestId:string,type:string,coords:{latitude?:number;
 
 function AdminJobsPage() {
   const [rows,setRows]=useState<DbRequest[]>([])
-  const load=()=>void listAdminJobs().then(setRows).catch(()=>setRows([]))
-  useEffect(load,[])
+  const load=useCallback(()=>void listAdminJobs().then(setRows).catch(()=>setRows([])),[])
+  useEffect(()=>{void load()},[load])
   const update=async(id:string,status:DbRequest['status'])=>{await updateAdminRequestStatus(id,status);load()}
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="OPERATIONS" title="Job management" description="Monitor scheduled, active and completed jobs and correct operational status."/><Panel title="Jobs" kicker="LIVE OPERATIONS">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.request_number} · {row.title}</strong><span>{row.location} · {row.preferred_date?new Date(row.preferred_date).toLocaleString():'No schedule'}</span></div><select value={row.status} onChange={e=>void update(row.id,e.target.value as DbRequest['status'])}><option>Scheduled</option><option>In Progress</option><option>Completed</option></select></div>)}{!rows.length&&<Empty text="No jobs found."/>}</Panel></div>
 }
 
 function AuditPage() {
-  const [rows,setRows]=useState<any[]>([])
-  useEffect(()=>{void listAdminAuditLogs().then(setRows).catch(()=>setRows([]))},[])
+  const [rows,setRows]=useState<AuditLogRow[]>([])
+  useEffect(()=>{void listAdminAuditLogs().then(rows=>setRows(rows as AuditLogRow[])).catch(()=>setRows([]))},[])
   return <div className="workspaceDashboard productionWorkspace"><PageHeader kicker="SECURITY" title="Audit log" description="Review important platform activity and administrative changes."/><Panel title="Recent activity" kicker="AUDIT TRAIL">{rows.map(row=><div className="productionListRow" key={row.id}><div><strong>{row.action} · {row.entity_type}</strong><span>{row.entity_id||'—'} · {new Date(row.created_at).toLocaleString()}</span></div></div>)}</Panel></div>
 }
 

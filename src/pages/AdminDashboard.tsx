@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import {
   Activity,
   ArrowRight,
@@ -211,7 +211,7 @@ function AdminServices() {
   })
   const activeCount = Object.values(activeService).filter(Boolean).length
 
-  const submitService = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submitService = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSaving(true)
     setError('')

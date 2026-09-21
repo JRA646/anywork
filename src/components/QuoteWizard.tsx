@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, MapPin, Upload, X } from 'lucide-react'
 import { services } from '../data/mockData'
-import { createServiceRequest, type DbRequest } from '../lib/anyworkApi'
+import { createServiceRequest, uploadRequestPhoto, type DbRequest } from '../lib/anyworkApi'
 
 const getLocalDateTimeMin = () => {
   const now = new Date()
@@ -27,6 +27,8 @@ export function QuoteWizard({
   const [location, setLocation] = useState('')
   const [budget, setBudget] = useState('')
   const [accessNotes, setAccessNotes] = useState('')
+  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([])
+  const [uploadingPhotoIndex, setUploadingPhotoIndex] = useState<number | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [createdRequest, setCreatedRequest] = useState<DbRequest | null>(null)
   const [busy, setBusy] = useState(false)
@@ -36,6 +38,42 @@ export function QuoteWizard({
   const detailsValid = Boolean(service && title.trim() && description.trim() && location.trim())
   const budgetValue = budget.trim() ? Number(budget) : null
   const budgetValid = budgetValue === null || (Number.isFinite(budgetValue) && budgetValue >= 0)
+
+  const photoPreviews = useMemo(
+    () => selectedPhotos.map((file) => ({ name: file.name, url: URL.createObjectURL(file) })),
+    [selectedPhotos],
+  )
+
+  useEffect(() => () => {
+    photoPreviews.forEach((preview) => URL.revokeObjectURL(preview.url))
+  }, [photoPreviews])
+
+  const handlePhotoSelection = (files: FileList | null) => {
+    if (!files) return
+    const next = [...selectedPhotos]
+    const errors: string[] = []
+    for (const file of Array.from(files)) {
+      if (next.length >= 6) {
+        errors.push('You can add up to 6 photos.')
+        break
+      }
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        errors.push(file.name + ' is not a supported image type.')
+        continue
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        errors.push(file.name + ' is larger than 5 MB.')
+        continue
+      }
+      if (!next.some((item) => item.name === file.name && item.size === file.size)) next.push(file)
+    }
+    setSelectedPhotos(next)
+    setError(errors[0] || '')
+  }
+
+  const removePhoto = (index: number) => {
+    setSelectedPhotos((current) => current.filter((_, photoIndex) => photoIndex !== index))
+  }
 
   const goToDetails = () => {
     if (!serviceId) {
@@ -78,11 +116,25 @@ export function QuoteWizard({
         accessNotes: accessNotes.trim() || null,
         budget: budgetValue,
       })
+
+      let uploadWarning = ''
+      for (let index = 0; index < selectedPhotos.length; index += 1) {
+        setUploadingPhotoIndex(index)
+        try {
+          await uploadRequestPhoto(created.id, selectedPhotos[index])
+        } catch {
+          uploadWarning = uploadWarning || 'Your request was created, but one or more photos could not be uploaded. You can add them from the request page.'
+        }
+      }
+
+      setUploadingPhotoIndex(null)
       setCreatedRequest(created)
+      setError(uploadWarning)
       setSubmitted(true)
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'We could not create the request. Please try again.')
     } finally {
+      setUploadingPhotoIndex(null)
       setBusy(false)
     }
   }
@@ -262,12 +314,40 @@ export function QuoteWizard({
                     />
                   </label>
 
-                  <div className="uploadDrop uploadDropDisabled" aria-label="Photo attachments">
-                    <Upload size={20} />
-                    <div>
-                      <strong>Photos can be added after the request is created</strong>
-                      <span>Use the request detail page to keep the creation flow focused.</span>
-                    </div>
+                  <div className="requestPhotoUpload">
+                    <input
+                      id="request-photo-input"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      multiple
+                      hidden
+                      onChange={(event) => {
+                        handlePhotoSelection(event.target.files)
+                        event.currentTarget.value = ''
+                      }}
+                    />
+                    <label className="uploadDrop" htmlFor="request-photo-input">
+                      <span className="uploadDropIcon"><Upload size={19} /></span>
+                      <span className="requestPhotoUploadCopy">
+                        <strong>Add job photos</strong>
+                        <small>JPG, PNG or WebP · up to 6 photos · 5 MB each</small>
+                      </span>
+                      <span className="buttonGhost uploadBrowseButton">Choose photos</span>
+                    </label>
+
+                    {photoPreviews.length > 0 && (
+                      <div className="requestPhotoPreviewGrid">
+                        {photoPreviews.map((preview, index) => (
+                          <div className="requestPhotoPreview" key={preview.url}>
+                            <img src={preview.url} alt={preview.name} />
+                            <button type="button" onClick={() => removePhoto(index)} aria-label={'Remove ' + preview.name}>
+                              <X size={13} />
+                            </button>
+                            {uploadingPhotoIndex === index && <span className="photoUploadProgress">Uploading…</span>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {error && <div className="formError" role="alert">{error}</div>}

@@ -138,7 +138,7 @@ function Application() {
       <WorkspaceLayout
         role="customer"
         profile={profile}
-        title={section === 'requests' ? 'Requests' : section === 'messages' ? 'Messages' : section === 'profile' ? 'Profile' : 'Overview'}
+        title={section === 'requests' ? 'Requests' : section === 'messages' ? 'Messages' : section === 'profile' ? 'Profile' : section === 'help' ? 'Help Center' : 'Overview'}
         current={section}
         onNavigate={(item) => navigate('/customer/' + (item === 'dashboard' ? '' : item))}
         onPublicSite={handleSignOut}

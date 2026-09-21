@@ -7,7 +7,6 @@ import {
   openDispute, saveAddress, saveProviderAvailability, saveProviderTimeOff, saveServiceField, submitProviderVerification, updateDispute,
   type Address, type Dispute, type Invoice, type Payment, type ServiceField, type SupportTicket, listDisputes, listAdminSupportTickets,
 } from '../lib/productionApi'
-import type { AnyWorkProfile } from '../types/auth'
 import { StatusBadge } from '../components/StatusBadge'
 
 export function ProductionWorkspacePage({ role, section, onNavigate }: { role: 'customer'|'provider'|'admin'; section: string; profile?: AnyWorkProfile; onNavigate: (path:string)=>void }) {

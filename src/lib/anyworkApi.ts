@@ -98,10 +98,11 @@ export async function listAdminServices() {
 
 export async function createAdminService(input: AdminServiceInput) {
   const client = requireSupabase()
-  const id = input.id || (input.category + '-' + input.subcategory + '-' + input.label)
+  const slug = (input.category + '-' + input.subcategory + '-' + input.label)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
+  const id = input.id || slug + '-' + crypto.randomUUID().slice(0, 8)
 
   const { data, error } = await client
     .from('anywork_services')

@@ -20,6 +20,7 @@ import {
   listProfiles,
   listQuotesForRequest,
   updateProviderJobStatus,
+  createChangeRequest,
   subscribeToRequests,
   subscribeToQuotes,
   type DbProfile,
@@ -42,6 +43,8 @@ export function ProviderJobDetail({
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [changeDescription, setChangeDescription] = useState('')
+  const [changeAmount, setChangeAmount] = useState('')
 
   useEffect(() => {
     const load = async () => {
@@ -93,6 +96,19 @@ export function ProviderJobDetail({
   const customerName = customer
     ? customer.company_name || customer.display_name || [customer.first_name, customer.last_name].filter(Boolean).join(' ')
     : 'Customer'
+
+  const submitChangeRequest = async () => {
+    if (!request || !changeDescription.trim()) return
+    setBusy(true); setError('')
+    try {
+      await createChangeRequest({ requestId: request.id, description: changeDescription.trim(), amountDelta: Number(changeAmount) || 0 })
+      setChangeDescription(''); setChangeAmount('')
+      await showSuccess('Change request sent', 'The customer must approve additional work before the amount changes.')
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Unable to send the change request.'
+      setError(message); await showError('Unable to send change request', message)
+    } finally { setBusy(false) }
+  }
 
   const updateStatus = async (status: 'In Progress' | 'Completed') => {
     if (!request) return
@@ -180,6 +196,19 @@ export function ProviderJobDetail({
             <p className="providerJobBriefText">{request.description}</p>
             {request.access_notes && <div className="providerAccessNote"><strong>Access notes</strong><span>{request.access_notes}</span></div>}
           </section>
+
+          {request.status === 'In Progress' && (
+            <section className="dashboardCard">
+              <span className="eyebrow">ADDITIONAL WORK</span>
+              <h2>Request customer approval</h2>
+              <p className="providerJobBriefText">Use a change request when the actual scope or price needs to change. The customer must approve it before the job value is updated.</p>
+              <div className="jobWorkflowForm">
+                <label><span>Work required</span><textarea value={changeDescription} onChange={(e) => setChangeDescription(e.target.value)} rows={3} placeholder="Describe the additional work..." /></label>
+                <label><span>Additional amount</span><input type="number" min="0" value={changeAmount} onChange={(e) => setChangeAmount(e.target.value)} placeholder="0" /></label>
+                <button className="buttonPrimary" disabled={busy || !changeDescription.trim()} onClick={() => void submitChangeRequest()}>Send approval request</button>
+              </div>
+            </section>
+          )}
 
           <section className="dashboardCard">
             <span className="eyebrow">JOB TIMELINE</span>

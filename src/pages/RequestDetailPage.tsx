@@ -51,6 +51,7 @@ export function RequestDetailPage({
   const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null)
   const [loading, setLoading] = useState(isUuid)
   const [error, setError] = useState('')
+  const [retryKey, setRetryKey] = useState(0)
 
   useEffect(() => {
     if (!isUuid) {
@@ -100,7 +101,7 @@ export function RequestDetailPage({
     }
 
     void load()
-  }, [requestId, isUuid])
+  }, [requestId, isUuid, retryKey])
 
   useEffect(() => {
     if (!isUuid) return
@@ -215,7 +216,7 @@ export function RequestDetailPage({
           <p>{error || 'This request is no longer available in your account.'}</p>
           <div className="requestEmptyActions">
             <button className="buttonSecondary" onClick={onBack}>Back to requests</button>
-            {isUuid && <button className="buttonPrimary" onClick={() => window.location.reload()}>Try again</button>}
+            {isUuid && <button className="buttonPrimary" onClick={() => setRetryKey((value) => value + 1)}>Try again</button>}
           </div>
         </div>
       </div>

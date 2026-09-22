@@ -19,6 +19,7 @@ import {
   Star,
   CalendarDays,
   ShieldCheck,
+  Activity,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Role } from '../types/marketplace'

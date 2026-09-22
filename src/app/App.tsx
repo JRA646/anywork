@@ -27,6 +27,9 @@ import { InvoicePage } from '../pages/InvoicePage'
 import { CustomerJobWorkspace } from '../pages/CustomerJobWorkspace'
 import { CustomerJobsPage } from '../pages/CustomerJobsPage'
 import { ProductionWorkspacePage } from '../pages/ProductionWorkspacePage'
+import { NotificationsPage } from '../pages/NotificationsPage'
+import { AdminReportsPage } from '../pages/AdminReportsPage'
+import { AdminEmailPage } from '../pages/AdminEmailPage'
 import { DispatchCenterPage } from '../pages/DispatchCenterPage'
 import { QuoteWizard } from '../components/QuoteWizard'
 import { WorkspaceLayout } from '../components/WorkspaceLayout'
@@ -269,8 +272,10 @@ function Application() {
               requestId={new URLSearchParams(window.location.search).get('request') || requestId}
               providerId={new URLSearchParams(window.location.search).get('provider') || undefined}
             />
-          : ['account','addresses','favorites','invoices','payments','reviews','support','disputes'].includes(section)
+          : ['account','addresses','favorites','invoices','payments','reviews','support','disputes','notifications'].includes(section)
             ? <ProductionWorkspacePage role="customer" section={section} profile={profile} onNavigate={navigate} />
+        : section === 'notifications'
+            ? <NotificationsPage />
         : section === 'profile'
             ? <ProfilePage role="customer" />
             : section === 'help'
@@ -335,8 +340,10 @@ function Application() {
 
   if (path === '/provider' || path.startsWith('/provider/')) {
     const section = path.split('/')[2] || 'dashboard'
-    const providerContent = ['calendar','verification','checkins','invoices','payments','reviews','support','disputes'].includes(section)
+    const providerContent = ['calendar','verification','checkins','invoices','payments','reviews','support','disputes','notifications'].includes(section)
       ? <ProductionWorkspacePage role="provider" section={section} profile={profile} onNavigate={navigate} />
+      : section === 'notifications'
+      ? <NotificationsPage />
       : section === 'profile'
       ? <ProfilePage role="provider" />
       : section === 'help'
@@ -370,6 +377,12 @@ function Application() {
       ? <DispatchCenterPage />
       : ['jobs','verification','payments','reviews','disputes','support','audit','service-builder'].includes(section)
       ? <ProductionWorkspacePage role="admin" section={section} profile={profile} onNavigate={navigate} />
+      : section === 'reports'
+      ? <AdminReportsPage />
+      : section === 'email'
+      ? <AdminEmailPage />
+      : section === 'notifications'
+      ? <NotificationsPage />
       : section === 'help'
       ? <HelpCenterPage />
       : section === 'profile'

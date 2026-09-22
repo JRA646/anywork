@@ -19,6 +19,7 @@ import {
   Star,
   CalendarDays,
   ShieldCheck,
+  Activity,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Role } from '../types/marketplace'
@@ -33,9 +34,9 @@ import {
 import { confirmAction } from '../lib/alerts'
 
 const nav = {
-  customer: ['dashboard', 'requests', 'jobs', 'messages', 'account', 'profile'],
-  provider: ['dashboard', 'requests', 'jobs', 'calendar', 'messages', 'services', 'earnings', 'verification', 'checkins', 'invoices', 'reviews', 'support', 'profile'],
-  admin: ['dashboard', 'requests', 'dispatch', 'jobs', 'providers', 'verification', 'services', 'customers', 'payments', 'reviews', 'support', 'settings', 'profile'],
+  customer: ['dashboard', 'requests', 'jobs', 'messages', 'notifications', 'account', 'profile'],
+  provider: ['dashboard', 'requests', 'jobs', 'calendar', 'messages', 'notifications', 'services', 'earnings', 'verification', 'checkins', 'invoices', 'reviews', 'support', 'profile'],
+  admin: ['dashboard', 'reports', 'requests', 'dispatch', 'jobs', 'providers', 'verification', 'services', 'customers', 'payments', 'reviews', 'support', 'email', 'notifications', 'settings', 'profile'],
 } as const
 
 const labels: Record<string, string> = {
@@ -63,6 +64,9 @@ const labels: Record<string, string> = {
   'service-builder': 'Service Builder',
   disputes: 'Disputes',
   audit: 'Audit Log',
+  notifications: 'Notifications',
+  reports: 'Reports',
+  email: 'Email Management',
 }
 
 const icons: Record<string, LucideIcon> = {
@@ -88,6 +92,9 @@ const icons: Record<string, LucideIcon> = {
   checkins: BriefcaseBusiness,
   'service-builder': Store,
   dispatch: BriefcaseBusiness,
+  notifications: Bell,
+  reports: Activity,
+  email: FileText,
 }
 
 type NotificationItem = DbNotification

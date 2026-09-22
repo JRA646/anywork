@@ -214,3 +214,5 @@ drop policy if exists "Users update own notifications" on public.anywork_notific
 create policy "Users view own notifications" on public.anywork_notifications for select to authenticated using(user_id=auth.uid() or private.anywork_current_role()='admin');
 create policy "Users update own notifications" on public.anywork_notifications for update to authenticated using(user_id=auth.uid() or private.anywork_current_role()='admin') with check(user_id=auth.uid() or private.anywork_current_role()='admin');
 
+
+alter table public.anywork_notifications add column if not exists category text not null default 'System';

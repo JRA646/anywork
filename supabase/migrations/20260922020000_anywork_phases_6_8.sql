@@ -200,3 +200,17 @@ for each row execute function private.anywork_set_updated_at();
 drop trigger if exists anywork_email_queue_updated_at on public.anywork_email_queue;
 create trigger anywork_email_queue_updated_at before update on public.anywork_email_queue
 for each row execute function private.anywork_set_updated_at();
+
+-- Compatibility with the Phase 1-5 notification model used by the existing workspace.
+alter table public.anywork_notifications add column if not exists type text;
+alter table public.anywork_notifications add column if not exists request_id uuid references public.anywork_service_requests(id) on delete cascade;
+alter table public.anywork_notifications add column if not exists quote_id uuid references public.anywork_quotes(id) on delete cascade;
+alter table public.anywork_notifications add column if not exists message_id uuid references public.anywork_messages(id) on delete cascade;
+update public.anywork_notifications set type=coalesce(type,event_key,'system') where type is null;
+alter table public.anywork_notifications alter column type set default 'system';
+
+drop policy if exists "Users view own notifications" on public.anywork_notifications;
+drop policy if exists "Users update own notifications" on public.anywork_notifications;
+create policy "Users view own notifications" on public.anywork_notifications for select to authenticated using(user_id=auth.uid() or private.anywork_current_role()='admin');
+create policy "Users update own notifications" on public.anywork_notifications for update to authenticated using(user_id=auth.uid() or private.anywork_current_role()='admin') with check(user_id=auth.uid() or private.anywork_current_role()='admin');
+

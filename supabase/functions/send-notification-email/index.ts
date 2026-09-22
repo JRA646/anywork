@@ -5,7 +5,15 @@ const cors={ 'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'a
 Deno.serve(async (req)=>{
  if(req.method==='OPTIONS') return new Response('ok',{headers:cors})
  try{
-  const supabase=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+  const serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const supabase=createClient(Deno.env.get('SUPABASE_URL')!,serviceKey)
+  const authHeader=req.headers.get('Authorization') || ''
+  if(!authHeader.startsWith('Bearer ')) throw new Error('Authentication required')
+  const userClient=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY') || serviceKey,{global:{headers:{Authorization:authHeader}}})
+  const {data:{user}}=await userClient.auth.getUser()
+  if(!user) throw new Error('Authentication required')
+  const {data:profile}=await supabase.from('anywork_profiles').select('role').eq('user_id',user.id).single()
+  if(profile?.role!=='admin') throw new Error('Admin access required')
   const resendKey=Deno.env.get('RESEND_API_KEY')
   const sender=Deno.env.get('ANYWORK_EMAIL_FROM') || 'ANYwork <no-reply@anywork.app>'
   if(!resendKey) throw new Error('RESEND_API_KEY is not configured')

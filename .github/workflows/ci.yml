@@ -4,12 +4,10 @@ on:
   push:
     branches:
       - main
-      - feature/anywork-phases-1-5-production
-      - feature/anywork-app-layout
+      - 'feature/**'
   pull_request:
     branches:
       - main
-      - feature/anywork-phases-1-5-production
 
 jobs:
   validate:
@@ -17,18 +15,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-
       - name: Install dependencies
         run: npm ci
-
       - name: Lint
         run: npm run lint
-
       - name: Build
         run: npm run build

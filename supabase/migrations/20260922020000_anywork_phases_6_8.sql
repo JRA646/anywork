@@ -216,3 +216,7 @@ create policy "Users update own notifications" on public.anywork_notifications f
 
 
 alter table public.anywork_notifications add column if not exists category text not null default 'System';
+
+drop policy if exists "Admins update email queue" on public.anywork_email_queue;
+create policy "Admins update email queue" on public.anywork_email_queue for update to authenticated using(private.anywork_current_role()='admin') with check(private.anywork_current_role()='admin');
+grant update on public.anywork_email_queue to authenticated;
